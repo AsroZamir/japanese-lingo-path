@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { curriculumUnits, lessonTemplate, levelDetails, masteryStages, skillTracks, type CurriculumLevel, type CurriculumUnit } from "./curriculum-data";
 
 type View = "dashboard" | "learn" | "practice" | "review" | "tutor" | "conversation" | "jlpt" | "progress" | "settings" | "lesson";
 
@@ -18,9 +19,9 @@ const navItems: NavItem[] = [
 ];
 
 const lessons = [
-  { no: "01", title: "Greetings", meta: "6 min · Vocabulary", state: "done" },
-  { no: "02", title: "Introducing Yourself", meta: "8 min · Grammar", state: "active" },
-  { no: "03", title: "Countries & Languages", meta: "7 min · Vocabulary", state: "next" },
+  { no: "01", title: "How Japanese Writing Works", meta: "Preview · Orientation", state: "done" },
+  { no: "02", title: "Japanese Sounds", meta: "Shell · Pronunciation", state: "active" },
+  { no: "03", title: "Japanese Sentence Basics", meta: "Shell · Grammar awareness", state: "next" },
 ] as const;
 
 const pageMeta: Record<View, { eyebrow: string; title: string; copy: string }> = {
@@ -70,9 +71,9 @@ function Dashboard({ go }: { go: (view: View) => void }) {
       <section className="hero-card">
         <div className="hero-copy">
           <span className="card-kicker">CONTINUE YOUR PATH</span>
-          <h2>First conversations<br />start with <em>こんにちは</em></h2>
-          <p>N5 · Unit 1 · Lesson 2</p>
-          <button className="primary-button" onClick={() => go("lesson")}>Continue lesson <span>→</span></button>
+          <h2>Your Japanese journey<br />starts with <em>あ・ア・日</em></h2>
+          <p>Pre-N5 · Unit P0 · Japanese Orientation</p>
+          <button className="primary-button" onClick={() => go("lesson")}>Open orientation <span>→</span></button>
         </div>
         <div className="path-art" aria-hidden="true">
           <div className="sun"></div><div className="mountain mountain-back"></div><div className="mountain mountain-front"></div>
@@ -116,31 +117,32 @@ function Dashboard({ go }: { go: (view: View) => void }) {
   );
 }
 
-function Learn({ go }: { go: (view: View) => void }) {
-  const units = [
-    { number: "01", title: "First Steps in Japanese", detail: "Greetings, introductions, countries", progress: 36, state: "Current" },
-    { number: "02", title: "Everyday Basics", detail: "Numbers, time, family, daily actions", progress: 0, state: "Next" },
-    { number: "03", title: "Around Town", detail: "Places, directions, shopping", progress: 0, state: "Planned" },
-    { number: "04", title: "Daily Life", detail: "Routines, hobbies, invitations", progress: 0, state: "Planned" },
-  ];
+function Learn({ openUnit }: { openUnit: (unit: CurriculumUnit) => void }) {
+  const [level, setLevel] = useState<CurriculumLevel>("PRE_N5");
+  const units = curriculumUnits.filter((unit) => unit.level === level);
+  const details = levelDetails[level];
   return (
     <>
       <PageHeader view="learn" />
-      <div className="path-overview">
-        <div><span className="level-big">N5</span><div><small>CURRENT LEVEL</small><strong>Foundation Japanese</strong></div></div>
-        <div className="path-progress"><span><i style={{ width: "18%" }}></i></span><small>18% complete</small></div>
-        <button className="primary-button compact" onClick={() => go("lesson")}>Continue path →</button>
+      <div className="curriculum-tabs" role="tablist" aria-label="Pilih level kurikulum">
+        {(["PRE_N5", "N5"] as CurriculumLevel[]).map((item) => <button role="tab" aria-selected={level === item} className={level === item ? "active" : ""} onClick={() => setLevel(item)} key={item}><strong>{levelDetails[item].label}</strong><span>{levelDetails[item].name}</span></button>)}
       </div>
-      <section className="unit-list">
+      <section className="curriculum-overview">
+        <div className="curriculum-overview-copy"><span className="blueprint-badge">BLUEPRINT READY</span><p className="eyebrow">{details.label} CURRICULUM</p><h2>{details.name}</h2><p>{details.description}</p><div className="curriculum-meta"><span>{details.unitCount}</span><span>{details.lessonCount}</span><span>7 kemampuan utama</span></div></div>
+        <div className="curriculum-target"><small>EXIT TARGET</small><p>{details.exitTarget}</p><div>{details.stats.map((stat) => <span key={stat}>{stat}</span>)}</div></div>
+      </section>
+      <div className="curriculum-section-heading"><div><span className="card-kicker dark">COMPLETE UNIT MAP</span><h3>{details.unitCount} sudah memiliki cangkang modul</h3></div><p>Pilih unit untuk melihat rincian dan preview.</p></div>
+      <section className="unit-list curriculum-unit-list">
         {units.map((unit) => (
-          <article className={`unit-card ${unit.state === "Current" ? "current" : ""}`} key={unit.number}>
-            <div className="unit-number">{unit.number}</div>
-            <div className="unit-info"><small>{unit.state}</small><h3>{unit.title}</h3><p>{unit.detail}</p></div>
-            <div className="unit-progress"><strong>{unit.progress}%</strong><span><i style={{ width: `${unit.progress}%` }}></i></span></div>
-            <button aria-label={`Open ${unit.title}`} onClick={() => unit.state === "Current" && go("lesson")}>{unit.state === "Current" ? "→" : "○"}</button>
+          <article className="unit-card curriculum-unit" key={unit.id}>
+            <div className="unit-number">{unit.code}</div>
+            <div className="unit-info"><small>{unit.focus}</small><h3>{unit.title}</h3><p>{unit.subtitle}</p><div className="unit-tags">{unit.skills.slice(0, 3).map((skill) => <span key={skill}>{skill}</span>)}</div></div>
+            <div className="unit-inventory"><span><small>WORDS</small>{unit.vocabulary}</span><span><small>KANJI</small>{unit.kanji}</span><span><small>GRAMMAR</small>{unit.grammar}</span><b>{unit.lessons.length} lessons</b></div>
+            <button aria-label={`Buka ${unit.title}`} onClick={() => openUnit(unit)}>→</button>
           </article>
         ))}
       </section>
+      <section className="curriculum-footer-map"><div><span className="card-kicker dark">SKILL COVERAGE</span><h3>Satu jalur, kemampuan yang terhubung</h3></div><div>{skillTracks.map((skill) => <span key={skill}>{skill}</span>)}</div></section>
     </>
   );
 }
@@ -249,33 +251,56 @@ function Settings({ notify }: { notify: (message: string) => void }) {
   );
 }
 
-function Lesson({ go, notify }: { go: (view: View) => void; notify: (message: string) => void }) {
+function Lesson({ go, notify, unit }: { go: (view: View) => void; notify: (message: string) => void; unit: CurriculumUnit }) {
+  const modules = [
+    ["01", "Objectives & Can-do", `${unit.objectives.length} objectives · ${unit.canDo.length} can-do targets`, "Ready"],
+    ["02", "Vocabulary", `${unit.vocabulary} target items · lists added gradually`, unit.vocabulary === "Review" ? "Review" : "Shell"],
+    ["03", "Kana & Kanji", `${unit.kanji} kanji target · readings and writing slots`, "Shell"],
+    ["04", "Grammar & Expressions", `${unit.grammar} target patterns · explanations and examples`, "Shell"],
+    ["05", "Reading", "Progressive text, information retrieval, and practical task", "Planned"],
+    ["06", "Listening", "Phrase, exchange, conversation, and information extraction", "Planned"],
+    ["07", "Speaking", "Repeat, guided response, scenario, and free response", "Planned"],
+    ["08", "Writing", "Kana, word, sentence, and short connected writing", "Planned"],
+    ["09", "Exercise Bank", "Recognition, recall, production, listening, and roleplay", "Shell"],
+    ["10", "Checkpoint & Review", unit.checkpoint, "Ready"],
+  ];
   return (
     <>
-      <button className="back-button" onClick={() => go("learn")}>← Back to learning path</button>
-      <PageHeader view="lesson" />
-      <div className="lesson-progress-top"><span><i style={{ width: "20%" }}></i></span><small>1 of 5 sections</small></div>
-      <section className="lesson-layout">
-        <div className="lesson-canvas">
-          <div className="lesson-intro"><span className="japanese-chip">はじめまして</span><h2>Nice to meet you</h2><p>This is the lesson container. Vocabulary, grammar explanations, audio, examples, and exercises can be added as independent content blocks.</p></div>
-          <div className="content-slots"><article><span>01</span><div><small>CONTENT BLOCK</small><h3>Vocabulary introduction</h3><p>Reserved for words, audio, and examples.</p></div><b>Empty</b></article><article><span>02</span><div><small>CONTENT BLOCK</small><h3>Grammar explanation</h3><p>Reserved for patterns, formation, and notes.</p></div><b>Empty</b></article><article><span>03</span><div><small>PRACTICE BLOCK</small><h3>Quick check</h3><p>Reserved for interactive questions.</p></div><b>Empty</b></article></div>
-          <button className="primary-button" onClick={() => notify("Lesson navigation is ready. Content comes next.")}>Continue to next section →</button>
-        </div>
-        <aside className="lesson-outline"><span className="card-kicker dark">LESSON OUTLINE</span>{["Welcome", "Vocabulary", "Grammar", "Examples", "Quick check"].map((item, index) => <div className={index === 0 ? "active" : ""} key={item}><span>{index + 1}</span><strong>{item}</strong></div>)}</aside>
+      <button className="back-button" onClick={() => go("learn")}>← Kembali ke peta kurikulum</button>
+      <section className="unit-detail-hero">
+        <div><div className="detail-labels"><span>{levelDetails[unit.level].label}</span><b>BLUEPRINT READY</b></div><p className="eyebrow">UNIT {unit.code} · {unit.focus.toUpperCase()}</p><h1>{unit.title}</h1><p>{unit.subtitle}</p><div className="unit-tags hero-tags">{unit.skills.map((skill) => <span key={skill}>{skill}</span>)}</div></div>
+        <div className="unit-detail-score"><small>STRUCTURE</small><strong>{unit.lessons.length}</strong><span>lesson shells</span><i>Content preview included</i></div>
       </section>
+      <section className="unit-goals-grid">
+        <article><span className="card-kicker dark">LEARNING OBJECTIVES</span>{unit.objectives.map((item) => <p key={item}><i>✓</i>{item}</p>)}</article>
+        <article><span className="card-kicker dark">CAN-DO OUTCOMES</span>{unit.canDo.map((item) => <p key={item}><i>→</i>{item}</p>)}</article>
+      </section>
+      <section className="curriculum-detail-layout">
+        <div>
+          <div className="curriculum-section-heading"><div><span className="card-kicker dark">CONTENT ARCHITECTURE</span><h3>Bagian yang akan diisi bertahap</h3></div><p>Semua slot utama sudah tersedia.</p></div>
+          <div className="module-shell-grid">{modules.map(([number, title, copy, state]) => <button key={number} onClick={() => notify(`${title}: cangkang sudah siap dan konten lengkap akan ditambahkan bertahap.`)}><span>{number}</span><div><small>MODULE SHELL</small><h3>{title}</h3><p>{copy}</p></div><b className={state === "Ready" ? "ready" : ""}>{state}</b></button>)}</div>
+        </div>
+        <aside className="unit-preview-card"><span className="card-kicker">CONTENT PREVIEW</span><div className="preview-symbol">{unit.previews[0].slice(0, 3)}</div><h3>Contoh isi unit</h3>{unit.previews.map((item, index) => <div className="preview-line" key={item}><span>0{index + 1}</span><p>{item}</p><button onClick={() => notify("Audio dan penilaian pengucapan akan dihubungkan pada tahap konten.")}>▷</button></div>)}<button className="preview-action" onClick={() => notify("Preview latihan interaktif akan dibangun saat isi pelajaran diperdalam.")}>Try preview exercise →</button></aside>
+      </section>
+      <section className="lesson-shell-section">
+        <div className="curriculum-section-heading"><div><span className="card-kicker dark">LESSON MAP</span><h3>{unit.lessons.length} pelajaran dalam unit ini</h3></div><p>Urutan final blueprint; isi materi masih bertahap.</p></div>
+        <div className="lesson-shell-list">{unit.lessons.map((lesson, index) => <article key={lesson}><span>{String(index + 1).padStart(2, "0")}</span><div><small>{index === 0 ? "PREVIEW AVAILABLE" : "CONTENT SHELL"}</small><h3>{lesson}</h3><p>{lessonTemplate.slice(0, index === 0 ? 6 : 4).join(" · ")}</p></div><b>{index === 0 ? "Preview" : "Planned"}</b><button onClick={() => notify(`${lesson}: struktur pelajaran sudah siap.`)}>→</button></article>)}</div>
+      </section>
+      <section className="mastery-roadmap"><div><span className="card-kicker">MASTERY SYSTEM</span><h3>Setiap item bergerak dari baru hingga dikuasai</h3><p>Review akan dijadwalkan berdasarkan performa di setiap tahap.</p></div><div>{masteryStages.map((stage, index) => <span key={stage}><b>{index + 1}</b>{stage}</span>)}</div></section>
     </>
   );
 }
-
 function EmptySlot({ label, title, copy }: { label: string; title: string; copy: string }) {
   return <section className="empty-slot"><div className="empty-icon">＋</div><div><span className="card-kicker dark">{label}</span><h3>{title}</h3><p>{copy}</p></div></section>;
 }
 
 export default function Home() {
   const [view, setView] = useState<View>("dashboard");
+  const [selectedUnit, setSelectedUnit] = useState<CurriculumUnit>(curriculumUnits[0]);
   const [toast, setToast] = useState("");
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 3600); };
   const go = (next: View) => { setView(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const openUnit = (unit: CurriculumUnit) => { setSelectedUnit(unit); go("lesson"); };
 
   return (
     <main className="app-shell">
@@ -285,14 +310,14 @@ export default function Home() {
           <p className="nav-label">YOUR JOURNEY</p>
           {navItems.map((item) => <button className={`nav-item ${view === item.id || (view === "lesson" && item.id === "learn") ? "active" : ""}`} onClick={() => go(item.id)} key={item.id}><span className="nav-icon">{item.icon}</span><span>{item.label}</span>{item.badge && <span className="nav-badge">{item.badge}</span>}</button>)}
         </nav>
-        <div className="sidebar-footer"><div className="streak-card"><span className="streak-flame">火</span><div><strong>7 day streak</strong><small>Keep your rhythm going!</small></div></div><button className="profile-row" onClick={() => go("settings")}><div className="avatar">AR</div><div><strong>Asro</strong><small>Beginner · N5</small></div><span>•••</span></button></div>
+        <div className="sidebar-footer"><div className="streak-card"><span className="streak-flame">火</span><div><strong>7 day streak</strong><small>Keep your rhythm going!</small></div></div><button className="profile-row" onClick={() => go("settings")}><div className="avatar">AR</div><div><strong>Asro</strong><small>Starter · Pre-N5</small></div><span>•••</span></button></div>
       </aside>
 
       <section className="workspace">
-        <header className="topbar"><button className="mobile-brand" onClick={() => go("dashboard")}><span>日</span> Japanese Lingo Path</button><span className="prototype-pill">PROTOTYPE SHELL</span><div className="top-actions"><button className="icon-button" aria-label="Notifications" onClick={() => notify("No new notifications.")}>◦</button><button className="level-pill" onClick={() => go("progress")}><span>初心者</span> N5 Beginner</button></div></header>
+        <header className="topbar"><button className="mobile-brand" onClick={() => go("dashboard")}><span>日</span> Japanese Lingo Path</button><span className="prototype-pill">PROTOTYPE SHELL</span><div className="top-actions"><button className="icon-button" aria-label="Notifications" onClick={() => notify("No new notifications.")}>◦</button><button className="level-pill" onClick={() => go("progress")}><span>初心者</span> Pre-N5 Starter</button></div></header>
         <div className="content">
           {view === "dashboard" && <Dashboard go={go} />}
-          {view === "learn" && <Learn go={go} />}
+          {view === "learn" && <Learn openUnit={openUnit} />}
           {view === "practice" && <Practice notify={notify} />}
           {view === "review" && <Review notify={notify} />}
           {view === "tutor" && <Tutor notify={notify} />}
@@ -300,7 +325,7 @@ export default function Home() {
           {view === "jlpt" && <Jlpt notify={notify} />}
           {view === "progress" && <Progress />}
           {view === "settings" && <Settings notify={notify} />}
-          {view === "lesson" && <Lesson go={go} notify={notify} />}
+          {view === "lesson" && <Lesson go={go} notify={notify} unit={selectedUnit} />}
         </div>
         <nav className="mobile-nav" aria-label="Mobile navigation">{navItems.slice(0, 5).map((item) => <button className={view === item.id ? "active" : ""} key={item.id} onClick={() => go(item.id)}><span>{item.icon}</span><small>{item.label}</small></button>)}</nav>
       </section>
