@@ -8,7 +8,7 @@ import { ToastProvider, useToast } from "./toast-provider";
 type NavItem = { id: string; icon: string; label: string; path: string; badge?: string };
 
 const navItems: NavItem[] = [
-  { id: "dashboard", icon: "⌂", label: "Beranda", path: "/" },
+  { id: "dashboard", icon: "⌂", label: "Beranda", path: "/beranda" },
   { id: "learn", icon: "道", label: "Belajar", path: "/belajar" },
   { id: "practice", icon: "練", label: "Latihan", path: "/latihan" },
   { id: "review", icon: "↻", label: "Ulangi", path: "/ulangi", badge: String(reviewSummary.dueNow) },
@@ -74,7 +74,7 @@ function AppShellContent({ user, children }: { user: CurrentUser; children: Reac
 
       <section className="workspace">
         <header className="topbar">
-          <button className="mobile-brand" onClick={() => go("/")}><span>日</span> Japanese Lingo Path</button>
+          <button className="mobile-brand" onClick={() => go("/beranda")}><span>日</span> Japanese Lingo Path</button>
           <span className="prototype-pill">VERSI AWAL</span>
           <div className="top-actions">
             <NotificationBell />

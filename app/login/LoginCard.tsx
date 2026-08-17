@@ -16,7 +16,7 @@ export function LoginCard() {
   const signInWithGoogle = async () => {
     setPending(true);
     const supabase = createClient();
-    const next = searchParams.get("next") ?? "/";
+    const next = searchParams.get("next") ?? "/beranda";
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

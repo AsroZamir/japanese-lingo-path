@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/login", "/auth"];
 
 function isPublicPath(pathname: string) {
+  if (pathname === "/") return true;
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
@@ -38,9 +39,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && request.nextUrl.pathname === "/login") {
+  if (user && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/beranda";
     url.search = "";
     return NextResponse.redirect(url);
   }
