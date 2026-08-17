@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .vercel",
-    "seed:kana": "tsx scripts/seed-kana-characters.ts"
+    "seed:kana": "tsx scripts/seed-kana-characters.ts",
+    "fetch:kana-strokes": "tsx scripts/fetch-kana-stroke-data.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",
