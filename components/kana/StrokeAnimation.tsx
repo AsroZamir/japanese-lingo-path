@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { medianLength, medianPathD, type KanaStrokeData } from "./stroke-geometry";
 
-export type KanaStrokeData = { strokes: string[]; medians: number[][][] };
+export type { KanaStrokeData };
 
 export type StrokeAnimationProps = {
   character: string;
@@ -16,20 +17,6 @@ const BASE_STROKE_DURATION_MS = 500;
 const MASK_STROKE_WIDTH = 180;
 const GUIDE_OPACITY = 0.12;
 const STROKE_FILL = "#1a2b45";
-
-function medianPathD(points: number[][]): string {
-  if (points.length === 0) return "";
-  const [first, ...rest] = points;
-  return `M ${first[0]},${first[1]} ` + rest.map(([x, y]) => `L ${x},${y}`).join(" ");
-}
-
-function medianLength(points: number[][]): number {
-  let total = 0;
-  for (let i = 1; i < points.length; i++) {
-    total += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
-  }
-  return total;
-}
 
 function GridBackground() {
   return (

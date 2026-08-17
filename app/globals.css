@@ -681,3 +681,13 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .stroke-animation__controls button:disabled { opacity: .4; cursor: not-allowed; }
 .stroke-animation__control--active { background: var(--red) !important; border-color: var(--red) !important; color: white !important; }
 .stroke-animation__count { margin-left: 4px; color: var(--muted); font-size: 10px; font-weight: 700; }
+
+.writing-canvas { display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
+.writing-canvas__svg { width: 280px; height: 280px; max-width: 100%; background: white; border: 1px solid var(--line); border-radius: 16px; touch-action: none; cursor: crosshair; }
+.writing-canvas__reference { width: 80px; height: 80px; background: #fafcfe; border: 1px solid var(--line); border-radius: 10px; }
+.writing-canvas--empty { align-items: center; justify-content: center; width: 280px; height: 280px; border: 1px dashed #ccd7e5; border-radius: 16px; text-align: center; color: #8b99aa; font-size: 11px; padding: 16px; }
+.writing-canvas__placeholder-char { font-size: 40px; color: #c3ccd8; }
+.writing-canvas__controls { display: flex; align-items: center; gap: 10px; }
+.writing-canvas__controls button { height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--navy); font-size: 11px; cursor: pointer; }
+.writing-canvas__controls button:hover { background: #edf4fc; }
+.writing-canvas__count { color: var(--muted); font-size: 10px; font-weight: 700; }

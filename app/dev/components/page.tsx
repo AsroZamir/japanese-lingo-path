@@ -9,6 +9,7 @@ import {
 import { RomajiText } from "@/components/kana/RomajiText";
 import { AudioButton } from "@/components/kana/AudioButton";
 import { StrokeAnimation, type KanaStrokeData } from "@/components/kana/StrokeAnimation";
+import { WritingCanvas, type WritingCanvasMode, type WritingCanvasResult } from "@/components/kana/WritingCanvas";
 import { DEMO_BEEP_URL } from "./demo-audio";
 
 const SAMPLES = [
@@ -167,6 +168,70 @@ function StrokeAnimationDemo() {
   );
 }
 
+const WRITING_MODES: WritingCanvasMode[] = ["trace", "guided", "copy", "faint_grid", "blind"];
+const WRITING_CANVAS_CHARACTER = "あ";
+
+function WritingCanvasDemo() {
+  const [strokeData, setStrokeData] = useState<KanaStrokeData | null>(null);
+  const [mode, setMode] = useState<WritingCanvasMode>("trace");
+  const [result, setResult] = useState<WritingCanvasResult | null>(null);
+  // Forces WritingCanvas to remount (clean slate) when switching mode —
+  // demo-page convenience, not something WritingCanvas needs itself.
+  const [resetKey, setResetKey] = useState(0);
+
+  useEffect(() => {
+    fetch(`/kana-strokes/hiragana/${encodeURIComponent(WRITING_CANVAS_CHARACTER)}.json`)
+      .then((res) => res.json())
+      .then(setStrokeData);
+  }, []);
+
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <h2>4. WritingCanvas</h2>
+      <p style={{ marginBottom: 12 }}>
+        <strong>Mode (Stage 1–5): </strong>
+        {WRITING_MODES.map((m) => (
+          <button
+            key={m}
+            onClick={() => {
+              setMode(m);
+              setResult(null);
+              setResetKey((k) => k + 1);
+            }}
+            style={{
+              marginRight: 8,
+              padding: "4px 10px",
+              fontWeight: mode === m ? 800 : 400,
+              border: "1px solid #ccc",
+              borderRadius: 6,
+              background: mode === m ? "#eef" : "white",
+              cursor: "pointer",
+            }}
+          >
+            {m}
+          </button>
+        ))}
+      </p>
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <WritingCanvas key={resetKey} character={WRITING_CANVAS_CHARACTER} strokeData={strokeData} mode={mode} onResult={setResult} />
+        <div style={{ maxWidth: 320, fontSize: 12 }}>
+          <p style={{ color: "#666" }}>
+            Gambar {strokeData?.strokes.length ?? "…"} coretan あ dengan mouse atau sentuhan. Warna coretan yang sudah
+            digambar: <span style={{ color: "#22886c" }}>hijau</span> = semua benar,{" "}
+            <span style={{ color: "#c98a1e" }}>kuning</span> = bentuk oke tapi arah/urutan meleset,{" "}
+            <span style={{ color: "#c0392b" }}>merah</span> = bentuk jauh dari target.
+          </p>
+          {result && (
+            <pre style={{ background: "#f5f5f5", padding: 10, borderRadius: 8, overflowX: "auto", fontSize: 11 }}>
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function DevComponentsPage() {
   return (
     <RomajiPreferenceProvider>
@@ -179,6 +244,7 @@ export default function DevComponentsPage() {
         <RomajiTextDemo />
         <AudioButtonDemo />
         <StrokeAnimationDemo />
+        <WritingCanvasDemo />
       </div>
     </RomajiPreferenceProvider>
   );
