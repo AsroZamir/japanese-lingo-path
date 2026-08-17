@@ -11,13 +11,16 @@
     "start": "next start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .vercel",
     "seed:kana": "tsx scripts/seed-kana-characters.ts",
-    "fetch:kana-strokes": "tsx scripts/fetch-kana-stroke-data.ts"
+    "fetch:kana-strokes": "tsx scripts/fetch-kana-stroke-data.ts",
+    "seed:first-lesson": "tsx scripts/seed-first-lesson.ts",
+    "generate:kana-audio": "tsx scripts/generate-kana-audio.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",
     "@supabase/supabase-js": "2.112.3",
     "drizzle-orm": "0.45.2",
     "next": "^16.2.6",
+    "openai": "7.5.0",
     "postgres": "^3.4.9",
     "react": "19.2.6",
     "react-dom": "19.2.6",
