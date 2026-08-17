@@ -681,6 +681,7 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .stroke-animation__controls button:disabled { opacity: .4; cursor: not-allowed; }
 .stroke-animation__control--active { background: var(--red) !important; border-color: var(--red) !important; color: white !important; }
 .stroke-animation__count { margin-left: 4px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.stroke-animation--compact .stroke-animation__svg { width: 96px; height: 96px; border-radius: 10px; }
 
 .writing-canvas { display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
 .writing-canvas__svg { width: 280px; height: 280px; max-width: 100%; background: white; border: 1px solid var(--line); border-radius: 16px; touch-action: none; cursor: crosshair; }
@@ -700,3 +701,17 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .kana-typing-input--correct .kana-typing-input__field { background: #eaf8f4; }
 .kana-typing-input--incorrect .kana-typing-input__icon { color: #c0392b; }
 .kana-typing-input--incorrect .kana-typing-input__field { background: #fdecea; }
+
+.kana-chart { display: flex; flex-direction: column; gap: 16px; }
+.kana-chart__eyebrow { color: #8b9aae; font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.kana-chart__header h3 { margin: 4px 0 0; color: var(--deep-navy); font-size: 16px; }
+.kana-chart__groups { display: flex; flex-direction: column; gap: 10px; }
+.kana-chart__row { display: flex; align-items: center; gap: 12px; }
+.kana-chart__row-label { width: 20px; flex: 0 0 auto; color: var(--muted); font-size: 11px; font-weight: 800; text-align: center; }
+.kana-chart__row-cells { display: flex; flex-wrap: wrap; gap: 8px; }
+.kana-chart__cell-wrap { position: relative; }
+.kana-chart__cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 56px; height: 56px; border: 1px solid var(--line); border-radius: 12px; background: white; font-size: 22px; transition: .15s ease; }
+.kana-chart__cell:hover { border-color: #bcd1ea; box-shadow: 0 6px 16px rgba(17,47,82,.08); }
+.kana-chart__cell--untaught { opacity: .38; }
+.kana-chart__cell--playing { border-color: var(--red); background: #fff5f5; }
+.kana-chart__preview { position: absolute; z-index: 10; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: white; box-shadow: 0 14px 34px rgba(17,47,82,.16); }

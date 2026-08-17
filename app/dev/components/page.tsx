@@ -11,6 +11,7 @@ import { AudioButton } from "@/components/kana/AudioButton";
 import { StrokeAnimation, type KanaStrokeData } from "@/components/kana/StrokeAnimation";
 import { WritingCanvas, type WritingCanvasMode, type WritingCanvasResult } from "@/components/kana/WritingCanvas";
 import { KanaTypingInput, type KanaTypingResult } from "@/components/kana/KanaTypingInput";
+import { KanaChart, type KanaChartCharacter } from "@/components/kana/KanaChart";
 import { DEMO_BEEP_URL } from "./demo-audio";
 
 const SAMPLES = [
@@ -264,6 +265,58 @@ function KanaTypingInputDemo() {
   );
 }
 
+const KANA_CHART_ROWS: { group: string; entries: [string, string][] }[] = [
+  { group: "A", entries: [["あ", "a"], ["い", "i"], ["う", "u"], ["え", "e"], ["お", "o"]] },
+  { group: "B", entries: [["か", "ka"], ["き", "ki"], ["く", "ku"], ["け", "ke"], ["こ", "ko"]] },
+  { group: "C", entries: [["さ", "sa"], ["し", "shi"], ["す", "su"], ["せ", "se"], ["そ", "so"]] },
+];
+
+function buildInitialCharacters(): KanaChartCharacter[] {
+  let id = 0;
+  return KANA_CHART_ROWS.flatMap((row) =>
+    row.entries.map(([character, romaji], index) => ({
+      id: id++,
+      character,
+      romaji,
+      groupCode: row.group,
+      orderInGroup: index + 1,
+      audioUrl: null, // matches the real current state — no kana audio recorded yet
+      strokeData: null as KanaStrokeData | null,
+      taught: row.group === "A", // simulate "Phase 1 L01 has only taught the あ row so far"
+    })),
+  );
+}
+
+function KanaChartDemo() {
+  // Lazy initializer instead of setState in an effect — the row/romaji
+  // data is static, so there's no external system to synchronize with
+  // at mount, just an initial value to compute once.
+  const [characters, setCharacters] = useState<KanaChartCharacter[] | null>(buildInitialCharacters);
+
+  useEffect(() => {
+    (characters ?? []).forEach((item) => {
+      fetch(`/kana-strokes/hiragana/${encodeURIComponent(item.character)}.json`)
+        .then((res) => res.json())
+        .then((data: KanaStrokeData) => {
+          setCharacters((prev) => prev?.map((c) => (c.id === item.id ? { ...c, strokeData: data } : c)) ?? null);
+        });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch-once-on-mount by design; `characters` only ever gains strokeData afterward, re-running this on that change would refetch forever.
+  }, []);
+
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <h2>6. KanaChart</h2>
+      <p style={{ fontSize: 13, color: "#666", marginBottom: 12 }}>
+        Baris A dianggap sudah diajarkan (terang, bisa diklik untuk audio — meski hasilnya &quot;belum tersedia&quot;
+        karena memang belum ada). Baris B/C dianggap belum diajarkan: redup tapi tetap bisa dijelajahi. Arahkan mouse
+        ke karakter mana pun (atau tekan-tahan di layar sentuh) untuk preview animasi coretan.
+      </p>
+      {characters && <KanaChart script="hiragana" phase="Modul 02 · Phase 1 · L01" characters={characters} />}
+    </section>
+  );
+}
+
 export default function DevComponentsPage() {
   return (
     <RomajiPreferenceProvider>
@@ -278,6 +331,7 @@ export default function DevComponentsPage() {
         <StrokeAnimationDemo />
         <WritingCanvasDemo />
         <KanaTypingInputDemo />
+        <KanaChartDemo />
       </div>
     </RomajiPreferenceProvider>
   );

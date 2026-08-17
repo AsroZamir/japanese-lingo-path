@@ -11,6 +11,8 @@ export type StrokeAnimationProps = {
   /** Playback speed multiplier — 1 = normal, 2 = twice as fast, 0.5 = half speed. */
   speed?: number;
   showGrid?: boolean;
+  /** Hides the control bar and shrinks the canvas, for embedding as a hover/tap preview (e.g. KanaChart) rather than as the main practice view. Autoplays once since there's no play button to press. */
+  compact?: boolean;
 };
 
 const BASE_STROKE_DURATION_MS = 500;
@@ -30,7 +32,7 @@ function GridBackground() {
   );
 }
 
-export function StrokeAnimation({ character, strokeData, speed = 1, showGrid = false }: StrokeAnimationProps) {
+export function StrokeAnimation({ character, strokeData, speed = 1, showGrid = false, compact = false }: StrokeAnimationProps) {
   const maskId = useId();
   const [revealedCount, setRevealedCount] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -57,7 +59,7 @@ export function StrokeAnimation({ character, strokeData, speed = 1, showGrid = f
     setPrevStrokeData(strokeData);
     setRevealedCount(0);
     setProgress(0);
-    setPlaying(false);
+    setPlaying(compact); // compact mode has no play button, so it autoplays once instead
   }
 
   useEffect(() => {
@@ -125,7 +127,7 @@ export function StrokeAnimation({ character, strokeData, speed = 1, showGrid = f
   const isDone = revealedCount >= totalStrokes;
 
   return (
-    <div className="stroke-animation">
+    <div className={`stroke-animation ${compact ? "stroke-animation--compact" : ""}`}>
       <svg viewBox="0 0 1024 1024" className="stroke-animation__svg" role="img" aria-label={`Animasi urutan coretan ${character}`}>
         {showGrid && <GridBackground />}
         <g transform="scale(1, -1) translate(0, -900)">
@@ -157,25 +159,27 @@ export function StrokeAnimation({ character, strokeData, speed = 1, showGrid = f
         </g>
       </svg>
 
-      <div className="stroke-animation__controls">
-        <button type="button" onClick={playing ? handlePause : handlePlay} disabled={isDone && !playing} aria-label={playing ? "Jeda" : "Putar"}>
-          {playing ? "⏸" : "▶"}
-        </button>
-        <button type="button" onClick={handleRestart} aria-label="Ulang dari awal">↻</button>
-        <button
-          type="button"
-          onClick={() => setSlowMotion((prev) => !prev)}
-          aria-pressed={slowMotion}
-          className={slowMotion ? "stroke-animation__control--active" : ""}
-          aria-label="Slow motion"
-        >
-          0.35x
-        </button>
-        <button type="button" onClick={handleStep} disabled={isDone} aria-label="Maju satu coretan">⏭</button>
-        <span className="stroke-animation__count">
-          {Math.min(revealedCount + (progress > 0 ? 1 : 0), totalStrokes)}/{totalStrokes}
-        </span>
-      </div>
+      {!compact && (
+        <div className="stroke-animation__controls">
+          <button type="button" onClick={playing ? handlePause : handlePlay} disabled={isDone && !playing} aria-label={playing ? "Jeda" : "Putar"}>
+            {playing ? "⏸" : "▶"}
+          </button>
+          <button type="button" onClick={handleRestart} aria-label="Ulang dari awal">↻</button>
+          <button
+            type="button"
+            onClick={() => setSlowMotion((prev) => !prev)}
+            aria-pressed={slowMotion}
+            className={slowMotion ? "stroke-animation__control--active" : ""}
+            aria-label="Slow motion"
+          >
+            0.35x
+          </button>
+          <button type="button" onClick={handleStep} disabled={isDone} aria-label="Maju satu coretan">⏭</button>
+          <span className="stroke-animation__count">
+            {Math.min(revealedCount + (progress > 0 ? 1 : 0), totalStrokes)}/{totalStrokes}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
