@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .vercel",
     "seed:kana": "tsx scripts/seed-kana-characters.ts",
-    "fetch:kana-strokes": "tsx scripts/fetch-kana-stroke-data.ts"
+    "fetch:kana-strokes": "tsx scripts/fetch-kana-stroke-data.ts",
+    "seed:first-lesson": "tsx scripts/seed-first-lesson.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",
