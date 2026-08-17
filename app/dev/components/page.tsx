@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   RomajiPreferenceProvider,
   useRomajiPreference,
@@ -7,6 +8,7 @@ import {
 } from "@/components/kana/RomajiPreferenceContext";
 import { RomajiText } from "@/components/kana/RomajiText";
 import { AudioButton } from "@/components/kana/AudioButton";
+import { StrokeAnimation, type KanaStrokeData } from "@/components/kana/StrokeAnimation";
 import { DEMO_BEEP_URL } from "./demo-audio";
 
 const SAMPLES = [
@@ -120,6 +122,51 @@ function AudioButtonDemo() {
   );
 }
 
+const STROKE_ANIMATION_SAMPLES = [
+  { label: "あ (3 stroke, sudah dibersihkan dari duplikat Fase 3)", script: "hiragana", character: "あ" },
+  { label: "きゃ (youon, dirakit dari き + ゃ)", script: "hiragana", character: "きゃ" },
+  { label: "ヲ (katakana)", script: "katakana", character: "ヲ" },
+];
+
+function StrokeAnimationDemo() {
+  const [dataByChar, setDataByChar] = useState<Record<string, KanaStrokeData | undefined>>({});
+
+  useEffect(() => {
+    // Demo-page-only fetch of the static JSON produced in Fase 3 — the
+    // component itself never fetches; it only ever receives strokeData
+    // as a prop, exactly like a real lesson page would load it.
+    STROKE_ANIMATION_SAMPLES.forEach(({ script, character }) => {
+      fetch(`/kana-strokes/${script}/${encodeURIComponent(character)}.json`)
+        .then((res) => res.json())
+        .then((data: KanaStrokeData) => setDataByChar((prev) => ({ ...prev, [character]: data })));
+    });
+  }, []);
+
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <h2>3. StrokeAnimation</h2>
+      <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "flex-start" }}>
+        {STROKE_ANIMATION_SAMPLES.map(({ label, character }) => (
+          <div key={character}>
+            <p style={{ fontSize: 12, color: "#666", marginBottom: 6, maxWidth: 220 }}>{label}</p>
+            <StrokeAnimation character={character} strokeData={dataByChar[character] ?? null} showGrid />
+          </div>
+        ))}
+        <div>
+          <p style={{ fontSize: 12, color: "#666", marginBottom: 6, maxWidth: 220 }}>
+            strokeData null (mis. karakter belum diproses Bagian C)
+          </p>
+          <StrokeAnimation character="ゐ" strokeData={null} />
+        </div>
+      </div>
+      <p style={{ marginTop: 8, fontSize: 13, color: "#666" }}>
+        Kontrol: ▶/⏸ putar-jeda, ↻ ulang dari awal, &quot;0.35x&quot; toggle slow motion, ⏭ maju satu coretan.
+        Angka kanan bawah = coretan selesai / total.
+      </p>
+    </section>
+  );
+}
+
 export default function DevComponentsPage() {
   return (
     <RomajiPreferenceProvider>
@@ -131,6 +178,7 @@ export default function DevComponentsPage() {
         </p>
         <RomajiTextDemo />
         <AudioButtonDemo />
+        <StrokeAnimationDemo />
       </div>
     </RomajiPreferenceProvider>
   );

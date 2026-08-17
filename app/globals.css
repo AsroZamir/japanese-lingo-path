@@ -670,3 +670,14 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .audio-button:disabled { opacity: .4; cursor: not-allowed; }
 .audio-button--playing { background: var(--red); border-color: var(--red); color: white; }
 .audio-button__icon { font-size: 12px; line-height: 1; }
+
+.stroke-animation { display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
+.stroke-animation__svg { width: 220px; height: 220px; max-width: 100%; background: white; border: 1px solid var(--line); border-radius: 16px; }
+.stroke-animation--empty { align-items: center; justify-content: center; width: 220px; height: 220px; border: 1px dashed #ccd7e5; border-radius: 16px; text-align: center; color: #8b99aa; font-size: 11px; padding: 16px; }
+.stroke-animation__placeholder-char { font-size: 40px; color: #c3ccd8; }
+.stroke-animation__controls { display: flex; align-items: center; gap: 6px; }
+.stroke-animation__controls button { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--navy); font-size: 13px; cursor: pointer; }
+.stroke-animation__controls button:hover:not(:disabled) { background: #edf4fc; }
+.stroke-animation__controls button:disabled { opacity: .4; cursor: not-allowed; }
+.stroke-animation__control--active { background: var(--red) !important; border-color: var(--red) !important; color: white !important; }
+.stroke-animation__count { margin-left: 4px; color: var(--muted); font-size: 10px; font-weight: 700; }
