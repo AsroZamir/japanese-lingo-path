@@ -56,19 +56,19 @@ export const levelDetails: Record<CurriculumLevel, {
 }> = {
   PRE_N5: {
     label: "PRE-N5",
-    name: "Japanese Starter Foundation",
+    name: "Fondasi Bahasa Jepang untuk Pemula",
     description: "Untuk pemula total: kuasai kana, bunyi bahasa Jepang, pola kalimat pertama, dan situasi survival sebelum masuk N5.",
-    unitCount: "11 unit",
-    lessonCount: "82 learning sessions",
+    unitCount: "11 modul",
+    lessonCount: "82 sesi belajar",
     stats: ["250–350 kosakata", "40–60 kanji", "15–20 pola", "10 skenario bicara"],
     exitTarget: "Siap membaca kana, membangun kalimat dasar, dan memulai jalur N5.",
   },
   N5: {
     label: "N5",
-    name: "Complete Beginner Japanese",
+    name: "Bahasa Jepang Dasar Lengkap",
     description: "Bangun kemampuan Jepang sehari-hari yang terhubung: kosakata, kanji, grammar, membaca, menyimak, berbicara, dan menulis.",
-    unitCount: "12 unit",
-    lessonCount: "81 learning sessions",
+    unitCount: "12 modul",
+    lessonCount: "81 sesi belajar",
     stats: ["800–1.200 kosakata", "100–150 kanji", "35–45 pola", "7 skill terintegrasi"],
     exitTarget: "Mampu menghadapi komunikasi harian sederhana dan memenuhi ambang kesiapan N5.",
   },
@@ -78,11 +78,11 @@ type UnitBase = Omit<CurriculumUnit, "operations">;
 
 const preN5: UnitBase[] = [
   {
-    id: "P0", level: "PRE_N5", order: 0, code: "P0", title: "Japanese Orientation", subtitle: "Kenali cara kerja bahasa Jepang", focus: "Awareness", vocabulary: "20", kanji: "—", grammar: "—",
-    lessons: ["How Japanese Writing Works", "Japanese Sounds", "Japanese Sentence Basics", "How to Study Japanese"],
+    id: "P0", level: "PRE_N5", order: 0, code: "P0", title: "Orientasi Bahasa Jepang", subtitle: "Kenali cara kerja bahasa Jepang", focus: "Pengenalan", vocabulary: "20", kanji: "—", grammar: "—",
+    lessons: ["Mengenal Sistem Tulisan Jepang", "Mengenal Bunyi Bahasa Jepang", "Dasar Kalimat Bahasa Jepang", "Cara Belajar Bahasa Jepang"],
     objectives: ["Membedakan hiragana, katakana, kanji, dan romaji", "Mengenali lima vokal dan ritme mora", "Memahami gambaran dasar urutan kalimat Jepang"],
     canDo: ["Mengidentifikasi jenis tulisan", "Membaca bunyi Jepang paling dasar", "Memilih strategi belajar yang tepat"],
-    skills: ["Script awareness", "Pronunciation", "Study skills"],
+    skills: ["Pengenalan huruf", "Pelafalan", "Cara belajar"],
     previews: ["あ · ア · 日 · a", "Long vowel: おばさん / おばあさん", "Small sounds: きゃ · きゅ · きょ"],
     checkpoint: "Kenali sistem tulisan dan bunyi sebelum membuka latihan kana.",
   },
@@ -300,18 +300,18 @@ export const curriculumUnits: CurriculumUnit[] = [...preN5, ...n5].map((unit) =>
 
 function perLessonTarget(scope: string, lessonCount: number) {
   const numbers = scope.match(/\d+/g)?.map(Number) ?? [];
-  if (!numbers.length) return "Integrated as needed";
+  if (!numbers.length) return "Dikenalkan seperlunya";
   const low = Math.max(1, Math.floor(numbers[0] / lessonCount));
   const highBase = numbers.length > 1 ? numbers[1] : numbers[0];
   const high = Math.max(low, Math.ceil(highBase / lessonCount));
-  return low === high ? `${low} focus item${low === 1 ? "" : "s"}` : `${low}–${high} focus items`;
+  return low === high ? `${low} fokus utama` : `${low}–${high} fokus utama`;
 }
 
 export function getLessonBlueprint(unit: CurriculumUnit, lessonIndex: number): LessonBlueprint {
   const title = unit.lessons[lessonIndex];
   const isFinal = lessonIndex === unit.lessons.length - 1;
   const progress = (lessonIndex + 1) / unit.lessons.length;
-  const phase = isFinal ? "Integration & Checkpoint" : progress <= .34 ? "Input & Recognition" : progress <= .7 ? "Pattern Building" : "Guided Production";
+  const phase = isFinal ? "Ujian Modul" : progress <= .34 ? "Kenali Materi" : progress <= .7 ? "Bangun Pemahaman" : "Praktik Terbimbing";
   const objective = isFinal
     ? unit.checkpoint
     : `${unit.objectives[lessonIndex % unit.objectives.length]} melalui fokus “${title}”.`;
@@ -320,30 +320,30 @@ export function getLessonBlueprint(unit: CurriculumUnit, lessonIndex: number): L
   return {
     title,
     phase,
-    duration: isFinal ? "20–25 min" : "14–18 min",
+    duration: isFinal ? "20–25 menit" : "14–18 menit",
     objective,
     contentTargets: [
-      { label: "Vocabulary", target: perLessonTarget(op.vocabulary, unit.lessons.length), scope: op.vocabulary },
-      { label: "Kana / Kanji", target: perLessonTarget(op.script, unit.lessons.length), scope: op.script },
-      { label: "Grammar", target: perLessonTarget(op.grammar, unit.lessons.length), scope: op.grammar },
+      { label: "Kosakata", target: perLessonTarget(op.vocabulary, unit.lessons.length), scope: op.vocabulary },
+      { label: "Huruf / Kanji", target: perLessonTarget(op.script, unit.lessons.length), scope: op.script },
+      { label: "Pola Kalimat", target: perLessonTarget(op.grammar, unit.lessons.length), scope: op.grammar },
     ],
     practiceFlow: [
-      { step: "01", label: "Retrieval warm-up", detail: "Aktifkan materi prasyarat tanpa petunjuk." },
-      { step: "02", label: "Meaning & form", detail: `Perkenalkan inti ${title} dengan audio dan contoh.` },
-      { step: "03", label: "Guided recognition", detail: "Matching, sorting, atau pilihan berbasis konteks." },
-      { step: "04", label: "Context input", detail: "Baca atau dengarkan informasi dengan target yang jelas." },
-      { step: "05", label: "Active production", detail: isFinal ? "Selesaikan mini-mission terintegrasi." : "Bangun respons lisan atau tulisan terbimbing." },
-      { step: "06", label: "Quick check & review", detail: "Nilai mastery dan jadwalkan item yang belum stabil." },
+      { step: "01", label: "Pemanasan", detail: "Ingat kembali materi sebelumnya dengan satu latihan singkat." },
+      { step: "02", label: "Pelajari Inti", detail: `Kenali inti ${title} melalui penjelasan, audio, dan contoh.` },
+      { step: "03", label: "Kenali Pola", detail: "Pilih, cocokkan, atau urutkan jawaban dengan petunjuk." },
+      { step: "04", label: "Pahami Konteks", detail: "Baca atau dengarkan contoh dalam situasi sederhana." },
+      { step: "05", label: "Coba Gunakan", detail: isFinal ? "Selesaikan tantangan akhir yang menggabungkan semua materi." : "Buat respons lisan atau tulisan dengan bantuan." },
+      { step: "06", label: "Cek & Ulangi", detail: "Lihat hasil dan ulangi bagian yang masih belum lancar." },
     ],
     skillTasks: [
-      { skill: "Reading", task: `${op.reading} · bagian ${lessonIndex + 1}/${unit.lessons.length}` },
-      { skill: "Listening", task: `${op.listening} · audio bertahap dari lambat ke natural` },
-      { skill: "Speaking", task: `${op.speaking} · dari guided response ke scenario` },
-      { skill: "Writing", task: `${op.writing} · form-to-meaning lalu free response` },
+      { skill: "Membaca", task: "Temukan informasi penting dari teks atau tulisan singkat." },
+      { skill: "Mendengar", task: "Dengarkan contoh dari tempo pelan menuju tempo alami." },
+      { skill: "Berbicara", task: "Tirukan contoh, lalu berikan respons dengan kata-kata sendiri." },
+      { skill: "Menulis", task: "Susun bentuk yang dipelajari menjadi jawaban pendek." },
     ],
-    assets: ["Vocabulary deck", "Audio model", "Example bank", "Guided practice", "Quick-check bank", "Scoring rubric"],
+    assets: ["Kartu kosakata", "Audio contoh", "Contoh penggunaan", "Latihan bertahap", "Cek pemahaman", "Review otomatis"],
     examples: unit.previews.map((item, index) => unit.previews[(index + lessonIndex) % unit.previews.length]),
-    masteryGate: isFinal ? unit.checkpoint : "Recognition ≥80% · contextual recall ≥70% · kesalahan masuk review queue.",
+    masteryGate: isFinal ? unit.checkpoint : "Raih nilai minimal 80%. Bagian yang keliru akan otomatis masuk ke sesi review.",
   };
 }
 
@@ -352,6 +352,6 @@ export const lessonTemplate = [
   "Guided Practice", "Free Practice", "Mini Conversation", "Quick Assessment", "Review Schedule",
 ];
 
-export const masteryStages = ["New", "Introduced", "Familiar", "Recalling", "Contextual", "Mastered"];
+export const masteryStages = ["Baru", "Dikenalkan", "Mulai Kenal", "Mengingat", "Menggunakan", "Dikuasai"];
 
 export const skillTracks = ["Kana", "Vocabulary", "Kanji", "Grammar", "Reading", "Listening", "Speaking", "Writing"];
