@@ -77,6 +77,8 @@ export type ExerciseRunnerResult = {
 export type ExerciseRunnerProps = {
   items: ExerciseItem[];
   config?: ExerciseRunnerConfig;
+  /** Fires after every single answer, correct or wrong — for persisting each one as it happens rather than batching until the end. */
+  onAttempt?: (attempt: ExerciseAttemptResult) => void;
   onComplete?: (result: ExerciseRunnerResult) => void;
 };
 
@@ -132,7 +134,7 @@ function ExercisePrompt({ item }: { item: ExerciseItem }) {
   );
 }
 
-export function ExerciseRunner({ items, config, onComplete }: ExerciseRunnerProps) {
+export function ExerciseRunner({ items, config, onAttempt, onComplete }: ExerciseRunnerProps) {
   const orderedItems = useMemo(() => (config?.shuffle ? shuffleArray(items) : items), [items, config?.shuffle]);
 
   const [index, setIndex] = useState(0);
@@ -157,6 +159,7 @@ export function ExerciseRunner({ items, config, onComplete }: ExerciseRunnerProp
     const result: ExerciseAttemptResult = { ...partial, responseTimeMs: now - startedAt };
     const nextAttempts = [...attempts, result];
     setAttempts(nextAttempts);
+    onAttempt?.(result);
 
     if (result.isCorrect || !config?.allowRetry) {
       setLastWrongOptionId(null);
