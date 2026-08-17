@@ -9,6 +9,16 @@ function isPublicPath(pathname: string) {
 }
 
 export async function proxy(request: NextRequest) {
+  // /dev/* adalah halaman verifikasi internal (bukan fitur produk) — di
+  // production, path ini harus 404 murni (bukan redirect ke /login),
+  // supaya keberadaannya tidak bocor ke siapa pun yang mengetuk URL-nya.
+  if (
+    process.env.NODE_ENV === "production" &&
+    (request.nextUrl.pathname === "/dev" || request.nextUrl.pathname.startsWith("/dev/"))
+  ) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
