@@ -6,6 +6,8 @@ import {
   type GlobalRomajiPreference,
 } from "@/components/kana/RomajiPreferenceContext";
 import { RomajiText } from "@/components/kana/RomajiText";
+import { AudioButton } from "@/components/kana/AudioButton";
+import { DEMO_BEEP_URL } from "./demo-audio";
 
 const SAMPLES = [
   { kana: "あ", romaji: "a" },
@@ -80,6 +82,44 @@ function RomajiTextDemo() {
   );
 }
 
+function AudioButtonDemo() {
+  const rows: { label: string; url: string | null }[] = [
+    { label: "null (audio_url belum ada di data — kondisi nyata sekarang)", url: null },
+    { label: "URL rusak/404 (simulasi gagal load)", url: "/kana-audio-does-not-exist.mp3" },
+    { label: "URL valid (beep 0.3s, generated lokal untuk demo)", url: DEMO_BEEP_URL },
+  ];
+
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <h2>2. AudioButton</h2>
+      <table style={{ borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left", padding: 6, borderBottom: "2px solid #333" }}>url</th>
+            <th style={{ textAlign: "left", padding: 6, borderBottom: "2px solid #333" }}>tombol</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.label}>
+              <td style={{ padding: 6, borderBottom: "1px solid #eee" }}>{r.label}</td>
+              <td style={{ padding: 6, borderBottom: "1px solid #eee" }}>
+                <AudioButton url={r.url} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p style={{ marginTop: 8, fontSize: 13, color: "#666" }}>
+        Baris 1: tombol nonaktif, hover untuk lihat tooltip &quot;Audio belum tersedia&quot; — ini kondisi
+        <code> audio_url</code> yang sebenarnya sekarang di seluruh <code>kana_characters</code>. Baris 2: tombol
+        nonaktif dengan tooltip berbeda (&quot;Audio gagal dimuat&quot;) setelah percobaan load gagal. Baris 3: klik
+        untuk memutar/berhenti, ikon berubah jadi ■ dan tombol memerah saat sedang memutar.
+      </p>
+    </section>
+  );
+}
+
 export default function DevComponentsPage() {
   return (
     <RomajiPreferenceProvider>
@@ -90,6 +130,7 @@ export default function DevComponentsPage() {
           satu section setiap komponen selesai.
         </p>
         <RomajiTextDemo />
+        <AudioButtonDemo />
       </div>
     </RomajiPreferenceProvider>
   );
