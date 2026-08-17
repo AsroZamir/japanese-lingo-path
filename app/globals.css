@@ -691,3 +691,12 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .writing-canvas__controls button { height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--navy); font-size: 11px; cursor: pointer; }
 .writing-canvas__controls button:hover { background: #edf4fc; }
 .writing-canvas__count { color: var(--muted); font-size: 10px; font-weight: 700; }
+
+.kana-typing-input { display: inline-flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+.kana-typing-input__target { min-width: 32px; color: var(--ink); font-size: 22px; text-align: center; }
+.kana-typing-input__field { width: 140px; padding: 6px 8px; border: 0; border-radius: 8px; background: #f4f7fb; font-size: 16px; outline: 0; }
+.kana-typing-input__icon { font-size: 16px; font-weight: 800; }
+.kana-typing-input--correct .kana-typing-input__icon { color: #22886c; }
+.kana-typing-input--correct .kana-typing-input__field { background: #eaf8f4; }
+.kana-typing-input--incorrect .kana-typing-input__icon { color: #c0392b; }
+.kana-typing-input--incorrect .kana-typing-input__field { background: #fdecea; }

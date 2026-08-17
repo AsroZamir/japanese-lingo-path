@@ -10,6 +10,7 @@ import { RomajiText } from "@/components/kana/RomajiText";
 import { AudioButton } from "@/components/kana/AudioButton";
 import { StrokeAnimation, type KanaStrokeData } from "@/components/kana/StrokeAnimation";
 import { WritingCanvas, type WritingCanvasMode, type WritingCanvasResult } from "@/components/kana/WritingCanvas";
+import { KanaTypingInput, type KanaTypingResult } from "@/components/kana/KanaTypingInput";
 import { DEMO_BEEP_URL } from "./demo-audio";
 
 const SAMPLES = [
@@ -232,6 +233,37 @@ function WritingCanvasDemo() {
   );
 }
 
+const TYPING_TARGETS = ["あ", "ア", "きゃ", "たべる"];
+
+function KanaTypingInputDemo() {
+  const [log, setLog] = useState<KanaTypingResult[]>([]);
+
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <h2>5. KanaTypingInput</h2>
+      <p style={{ fontSize: 13, color: "#666", marginBottom: 12 }}>
+        Ketik romaji-nya (mis. &quot;a&quot; untuk あ, &quot;kya&quot; untuk きゃ) — wanakana mengubahnya jadi kana
+        otomatis saat mengetik, tanpa keyboard Jepang. Auto-submit begitu benar, atau tekan Enter untuk cek jawaban
+        yang salah.
+      </p>
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
+        {TYPING_TARGETS.map((target) => (
+          <KanaTypingInput
+            key={target}
+            expected={target}
+            onResult={(result) => setLog((prev) => [result, ...prev].slice(0, 8))}
+          />
+        ))}
+      </div>
+      {log.length > 0 && (
+        <pre style={{ background: "#f5f5f5", padding: 10, borderRadius: 8, overflowX: "auto", fontSize: 11 }}>
+          {JSON.stringify(log, null, 2)}
+        </pre>
+      )}
+    </section>
+  );
+}
+
 export default function DevComponentsPage() {
   return (
     <RomajiPreferenceProvider>
@@ -245,6 +277,7 @@ export default function DevComponentsPage() {
         <AudioButtonDemo />
         <StrokeAnimationDemo />
         <WritingCanvasDemo />
+        <KanaTypingInputDemo />
       </div>
     </RomajiPreferenceProvider>
   );
