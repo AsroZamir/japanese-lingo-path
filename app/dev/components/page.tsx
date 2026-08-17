@@ -12,6 +12,7 @@ import { StrokeAnimation, type KanaStrokeData } from "@/components/kana/StrokeAn
 import { WritingCanvas, type WritingCanvasMode, type WritingCanvasResult } from "@/components/kana/WritingCanvas";
 import { KanaTypingInput, type KanaTypingResult } from "@/components/kana/KanaTypingInput";
 import { KanaChart, type KanaChartCharacter } from "@/components/kana/KanaChart";
+import { ExerciseRunner, type ExerciseItem, type ExerciseRunnerResult } from "@/components/kana/ExerciseRunner";
 import { DEMO_BEEP_URL } from "./demo-audio";
 
 const SAMPLES = [
@@ -317,6 +318,80 @@ function KanaChartDemo() {
   );
 }
 
+// id: あ=1 い=2 う=3 か=4 き=5 — reused across items so the "wrong answer"
+// coloring and selectedOptionId in the result log are easy to read.
+const CHOICES_AIUKAKI = [
+  { id: 1, label: "あ" },
+  { id: 2, label: "い" },
+  { id: 3, label: "う" },
+  { id: 4, label: "か" },
+];
+
+const EXERCISE_ITEMS: ExerciseItem[] = [
+  {
+    id: "1", type: "recall", kanaId: 1,
+    promptRomaji: "a",
+    options: CHOICES_AIUKAKI,
+    correctOptionId: 1,
+  },
+  {
+    id: "2", type: "visual_to_sound", kanaId: 2,
+    promptKana: "い", promptAudioUrl: null,
+    options: [{ id: 1, label: "a" }, { id: 2, label: "i" }, { id: 3, label: "u" }, { id: 4, label: "ka" }],
+    correctOptionId: 2,
+  },
+  {
+    id: "3", type: "typing", kanaId: 3,
+    promptKana: "う",
+    expectedTyping: "う",
+  },
+  {
+    id: "4", type: "sound_to_visual", kanaId: 1,
+    promptAudioUrl: null, // real block: no audio exists yet, see BlockedNote
+    options: CHOICES_AIUKAKI,
+    correctOptionId: 1,
+  },
+  {
+    id: "5", type: "timed_recognition", kanaId: 4,
+    promptRomaji: "ka",
+    options: CHOICES_AIUKAKI,
+    correctOptionId: 4,
+    timeLimitSeconds: 6,
+  },
+];
+
+function ExerciseRunnerDemo() {
+  const [result, setResult] = useState<ExerciseRunnerResult | null>(null);
+  const [runKey, setRunKey] = useState(0);
+
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <h2>7. ExerciseRunner</h2>
+      <p style={{ fontSize: 13, color: "#666", marginBottom: 12 }}>
+        5 soal berturutan: recall, visual→sound, typing, sound→visual (butuh audio — lihat catatan kuning), lalu
+        timed_recognition (6 detik). Klik jawaban salah dulu di soal manapun untuk lihat sorot merah +
+        selected_option_id tercatat di hasil JSON.
+      </p>
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <ExerciseRunner key={runKey} items={EXERCISE_ITEMS} onComplete={setResult} />
+        <div style={{ maxWidth: 380 }}>
+          <button
+            onClick={() => { setResult(null); setRunKey((k) => k + 1); }}
+            style={{ marginBottom: 8, padding: "6px 12px", border: "1px solid #ccc", borderRadius: 6, background: "white", cursor: "pointer" }}
+          >
+            ↻ Ulang dari soal 1
+          </button>
+          {result && (
+            <pre style={{ background: "#f5f5f5", padding: 10, borderRadius: 8, overflowX: "auto", fontSize: 11 }}>
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function DevComponentsPage() {
   return (
     <RomajiPreferenceProvider>
@@ -332,6 +407,7 @@ export default function DevComponentsPage() {
         <WritingCanvasDemo />
         <KanaTypingInputDemo />
         <KanaChartDemo />
+        <ExerciseRunnerDemo />
       </div>
     </RomajiPreferenceProvider>
   );
