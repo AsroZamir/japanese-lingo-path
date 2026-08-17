@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { curriculumUnits, lessonTemplate, levelDetails, masteryStages, skillTracks, type CurriculumLevel, type CurriculumUnit } from "./curriculum-data";
+import { curriculumUnits, getLessonBlueprint, levelDetails, masteryStages, skillTracks, type CurriculumLevel, type CurriculumUnit } from "./curriculum-data";
 
 type View = "dashboard" | "learn" | "practice" | "review" | "tutor" | "conversation" | "jlpt" | "progress" | "settings" | "lesson";
 
@@ -117,6 +117,10 @@ function Dashboard({ go }: { go: (view: View) => void }) {
   );
 }
 
+function metricCount(scope: string) {
+  return scope.match(/\d+(?:–\d+)?/)?.[0] ?? "Review";
+}
+
 function Learn({ openUnit }: { openUnit: (unit: CurriculumUnit) => void }) {
   const [level, setLevel] = useState<CurriculumLevel>("PRE_N5");
   const units = curriculumUnits.filter((unit) => unit.level === level);
@@ -137,7 +141,7 @@ function Learn({ openUnit }: { openUnit: (unit: CurriculumUnit) => void }) {
           <article className="unit-card curriculum-unit" key={unit.id}>
             <div className="unit-number">{unit.code}</div>
             <div className="unit-info"><small>{unit.focus}</small><h3>{unit.title}</h3><p>{unit.subtitle}</p><div className="unit-tags">{unit.skills.slice(0, 3).map((skill) => <span key={skill}>{skill}</span>)}</div></div>
-            <div className="unit-inventory"><span><small>WORDS</small>{unit.vocabulary}</span><span><small>KANJI</small>{unit.kanji}</span><span><small>GRAMMAR</small>{unit.grammar}</span><b>{unit.lessons.length} lessons</b></div>
+            <div className="unit-inventory"><span><small>LESSONS</small>{unit.lessons.length}</span><span><small>VOCAB</small>{unit.vocabulary}</span><span><small>KANJI</small>{unit.kanji}</span><span><small>GRAMMAR</small>{unit.grammar}</span><span><small>READ</small>{metricCount(unit.operations.reading)}</span><span><small>LISTEN</small>{metricCount(unit.operations.listening)}</span><b>{unit.operations.speaking} · {unit.operations.writing}</b></div>
             <button aria-label={`Buka ${unit.title}`} onClick={() => openUnit(unit)}>→</button>
           </article>
         ))}
@@ -252,39 +256,73 @@ function Settings({ notify }: { notify: (message: string) => void }) {
 }
 
 function Lesson({ go, notify, unit }: { go: (view: View) => void; notify: (message: string) => void; unit: CurriculumUnit }) {
+  const [activeLessonIndex, setActiveLessonIndex] = useState(0);
+  const activeLesson = getLessonBlueprint(unit, activeLessonIndex);
+  const operationalScope = [
+    ["課", "Lessons", `${unit.lessons.length} operational flows`],
+    ["語", "Vocabulary", unit.operations.vocabulary],
+    ["字", "Kana / Kanji", unit.operations.script],
+    ["文", "Grammar", unit.operations.grammar],
+    ["読", "Reading", unit.operations.reading],
+    ["聴", "Listening", unit.operations.listening],
+    ["話", "Speaking", unit.operations.speaking],
+    ["書", "Writing", unit.operations.writing],
+    ["練", "Practice", unit.operations.practice],
+  ];
   const modules = [
     ["01", "Objectives & Can-do", `${unit.objectives.length} objectives · ${unit.canDo.length} can-do targets`, "Ready"],
-    ["02", "Vocabulary", `${unit.vocabulary} target items · lists added gradually`, unit.vocabulary === "Review" ? "Review" : "Shell"],
-    ["03", "Kana & Kanji", `${unit.kanji} kanji target · readings and writing slots`, "Shell"],
-    ["04", "Grammar & Expressions", `${unit.grammar} target patterns · explanations and examples`, "Shell"],
-    ["05", "Reading", "Progressive text, information retrieval, and practical task", "Planned"],
-    ["06", "Listening", "Phrase, exchange, conversation, and information extraction", "Planned"],
-    ["07", "Speaking", "Repeat, guided response, scenario, and free response", "Planned"],
-    ["08", "Writing", "Kana, word, sentence, and short connected writing", "Planned"],
-    ["09", "Exercise Bank", "Recognition, recall, production, listening, and roleplay", "Shell"],
-    ["10", "Checkpoint & Review", unit.checkpoint, "Ready"],
+    ["02", "Vocabulary Bank", unit.operations.vocabulary, "Specified"],
+    ["03", "Kana & Kanji Bank", unit.operations.script, "Specified"],
+    ["04", "Grammar & Expressions", unit.operations.grammar, "Specified"],
+    ["05", "Reading Assets", unit.operations.reading, "Specified"],
+    ["06", "Listening Assets", unit.operations.listening, "Specified"],
+    ["07", "Speaking Tasks", unit.operations.speaking, "Specified"],
+    ["08", "Writing Tasks", unit.operations.writing, "Specified"],
+    ["09", "Exercise Bank", unit.operations.practice, "Specified"],
+    ["10", "Checkpoint & Review", unit.operations.assessment, "Ready"],
   ];
   return (
     <>
       <button className="back-button" onClick={() => go("learn")}>← Kembali ke peta kurikulum</button>
       <section className="unit-detail-hero">
-        <div><div className="detail-labels"><span>{levelDetails[unit.level].label}</span><b>BLUEPRINT READY</b></div><p className="eyebrow">UNIT {unit.code} · {unit.focus.toUpperCase()}</p><h1>{unit.title}</h1><p>{unit.subtitle}</p><div className="unit-tags hero-tags">{unit.skills.map((skill) => <span key={skill}>{skill}</span>)}</div></div>
-        <div className="unit-detail-score"><small>STRUCTURE</small><strong>{unit.lessons.length}</strong><span>lesson shells</span><i>Content preview included</i></div>
+        <div><div className="detail-labels"><span>{levelDetails[unit.level].label}</span><b>OPERATIONAL BLUEPRINT</b></div><p className="eyebrow">UNIT {unit.code} · {unit.focus.toUpperCase()}</p><h1>{unit.title}</h1><p>{unit.subtitle}</p><div className="unit-tags hero-tags">{unit.skills.map((skill) => <span key={skill}>{skill}</span>)}</div></div>
+        <div className="unit-detail-score"><small>LESSON FLOWS</small><strong>{unit.lessons.length}</strong><span>fully specified</span><i>Assets can be produced gradually</i></div>
       </section>
       <section className="unit-goals-grid">
         <article><span className="card-kicker dark">LEARNING OBJECTIVES</span>{unit.objectives.map((item) => <p key={item}><i>✓</i>{item}</p>)}</article>
         <article><span className="card-kicker dark">CAN-DO OUTCOMES</span>{unit.canDo.map((item) => <p key={item}><i>→</i>{item}</p>)}</article>
       </section>
+      <section className="operational-scope-section">
+        <div className="curriculum-section-heading"><div><span className="card-kicker dark">UNIT INVENTORY</span><h3>Semua aset belajar yang harus diproduksi</h3></div><p>Target khusus untuk unit {unit.code}.</p></div>
+        <div className="operational-scope-grid">{operationalScope.map(([icon, label, value]) => <article key={label}><span>{icon}</span><div><small>{label}</small><strong>{value}</strong></div></article>)}</div>
+      </section>
       <section className="curriculum-detail-layout">
         <div>
-          <div className="curriculum-section-heading"><div><span className="card-kicker dark">CONTENT ARCHITECTURE</span><h3>Bagian yang akan diisi bertahap</h3></div><p>Semua slot utama sudah tersedia.</p></div>
-          <div className="module-shell-grid">{modules.map(([number, title, copy, state]) => <button key={number} onClick={() => notify(`${title}: cangkang sudah siap dan konten lengkap akan ditambahkan bertahap.`)}><span>{number}</span><div><small>MODULE SHELL</small><h3>{title}</h3><p>{copy}</p></div><b className={state === "Ready" ? "ready" : ""}>{state}</b></button>)}</div>
+          <div className="curriculum-section-heading"><div><span className="card-kicker dark">CONTENT ARCHITECTURE</span><h3>Sepuluh jalur produksi konten</h3></div><p>Struktur sudah final; isi dibangun bertahap.</p></div>
+          <div className="module-shell-grid">{modules.map(([number, title, copy, state]) => <button key={number} onClick={() => notify(`${title}: spesifikasi sudah siap untuk tahap produksi konten.`)}><span>{number}</span><div><small>PRODUCTION MODULE</small><h3>{title}</h3><p>{copy}</p></div><b className="ready">{state}</b></button>)}</div>
         </div>
-        <aside className="unit-preview-card"><span className="card-kicker">CONTENT PREVIEW</span><div className="preview-symbol">{unit.previews[0].slice(0, 3)}</div><h3>Contoh isi unit</h3>{unit.previews.map((item, index) => <div className="preview-line" key={item}><span>0{index + 1}</span><p>{item}</p><button onClick={() => notify("Audio dan penilaian pengucapan akan dihubungkan pada tahap konten.")}>▷</button></div>)}<button className="preview-action" onClick={() => notify("Preview latihan interaktif akan dibangun saat isi pelajaran diperdalam.")}>Try preview exercise →</button></aside>
+        <aside className="unit-preview-card"><span className="card-kicker">CONTENT PREVIEW</span><div className="preview-symbol">{unit.previews[0].slice(0, 3)}</div><h3>Contoh isi unit</h3>{unit.previews.map((item, index) => <div className="preview-line" key={item}><span>0{index + 1}</span><p>{item}</p><button onClick={() => notify("Slot audio, model pelafalan, dan rubrik sudah masuk dalam blueprint lesson.")}>▷</button></div>)}<div className="preview-checkpoint"><small>UNIT ASSESSMENT</small><p>{unit.checkpoint}</p></div></aside>
       </section>
-      <section className="lesson-shell-section">
-        <div className="curriculum-section-heading"><div><span className="card-kicker dark">LESSON MAP</span><h3>{unit.lessons.length} pelajaran dalam unit ini</h3></div><p>Urutan final blueprint; isi materi masih bertahap.</p></div>
-        <div className="lesson-shell-list">{unit.lessons.map((lesson, index) => <article key={lesson}><span>{String(index + 1).padStart(2, "0")}</span><div><small>{index === 0 ? "PREVIEW AVAILABLE" : "CONTENT SHELL"}</small><h3>{lesson}</h3><p>{lessonTemplate.slice(0, index === 0 ? 6 : 4).join(" · ")}</p></div><b>{index === 0 ? "Preview" : "Planned"}</b><button onClick={() => notify(`${lesson}: struktur pelajaran sudah siap.`)}>→</button></article>)}</div>
+      <section className="lesson-blueprint-section">
+        <div className="curriculum-section-heading"><div><span className="card-kicker dark">LESSON BLUEPRINTS</span><h3>Buka setiap lesson untuk melihat rancangan lengkap</h3></div><p>{unit.lessons.length} lesson · practice flow · asset plan · mastery gate</p></div>
+        <div className="lesson-blueprint-layout">
+          <aside className="lesson-blueprint-rail" aria-label={`Daftar lesson ${unit.title}`}>
+            <div><small>UNIT {unit.code}</small><strong>{unit.lessons.length} operational lessons</strong></div>
+            {unit.lessons.map((lesson, index) => <button className={activeLessonIndex === index ? "active" : ""} aria-pressed={activeLessonIndex === index} onClick={() => setActiveLessonIndex(index)} key={lesson}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{lesson}</strong><small>{getLessonBlueprint(unit, index).phase}</small></div><b>→</b></button>)}
+          </aside>
+          <article className="lesson-blueprint-canvas">
+            <header><div><span className="blueprint-badge">LESSON {String(activeLessonIndex + 1).padStart(2, "0")} · SPECIFICATION READY</span><p className="eyebrow">{activeLesson.phase} · {activeLesson.duration}</p><h2>{activeLesson.title}</h2></div><div className="lesson-sequence">{activeLessonIndex + 1}<small>/ {unit.lessons.length}</small></div></header>
+            <section className="lesson-objective"><span>OBJECTIVE</span><p>{activeLesson.objective}</p></section>
+            <div className="lesson-target-grid">{activeLesson.contentTargets.map((target) => <article key={target.label}><small>{target.label}</small><strong>{target.target}</strong><p>Unit scope: {target.scope}</p></article>)}</div>
+            <section className="practice-flow"><div className="lesson-plan-heading"><span className="card-kicker dark">PRACTICE FLOW</span><h3>Enam tahap dalam lesson ini</h3></div><div>{activeLesson.practiceFlow.map((step) => <article key={step.step}><span>{step.step}</span><div><strong>{step.label}</strong><p>{step.detail}</p></div></article>)}</div></section>
+            <section className="skill-task-section"><div className="lesson-plan-heading"><span className="card-kicker dark">SKILL TASKS</span><h3>Input dan output yang terhubung</h3></div><div className="skill-task-grid">{activeLesson.skillTasks.map((task) => <article key={task.skill}><span>{task.skill.slice(0, 1)}</span><div><strong>{task.skill}</strong><p>{task.task}</p></div></article>)}</div></section>
+            <div className="lesson-support-grid">
+              <section><span className="card-kicker dark">ASSETS REQUIRED</span><div>{activeLesson.assets.map((asset) => <span key={asset}>✓ {asset}</span>)}</div></section>
+              <section><span className="card-kicker dark">EXAMPLE BANK</span>{activeLesson.examples.map((example, index) => <p key={example}><b>0{index + 1}</b>{example}</p>)}</section>
+            </div>
+            <footer className="lesson-mastery-gate"><div><small>MASTERY GATE</small><strong>{activeLesson.masteryGate}</strong></div><button onClick={() => notify(`${activeLesson.title}: siap masuk tahap penulisan konten dan soal.`)}>Mark for content production →</button></footer>
+          </article>
+        </div>
       </section>
       <section className="mastery-roadmap"><div><span className="card-kicker">MASTERY SYSTEM</span><h3>Setiap item bergerak dari baru hingga dikuasai</h3><p>Review akan dijadwalkan berdasarkan performa di setiap tahap.</p></div><div>{masteryStages.map((stage, index) => <span key={stage}><b>{index + 1}</b>{stage}</span>)}</div></section>
     </>
