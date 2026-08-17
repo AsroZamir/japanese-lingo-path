@@ -219,11 +219,22 @@ export const userKanaAttempts = pgTable(
     isCorrect: boolean("is_correct").notNull(),
     selectedOptionId: integer("selected_option_id").references(() => kanaCharacters.id),
     correctOptionId: integer("correct_option_id").references(() => kanaCharacters.id),
+    // Free-form record of a non-multiple-choice mistake: what the user
+    // typed (typing/dictation), or a compact order/direction/shape
+    // summary (writing, from WritingCanvas — there's no "option" to
+    // select there either). Added in Fase 5 once ExerciseRunner's
+    // typing types and WritingCanvas were actually wired up and hit the
+    // CHECK constraint below, which Fase 2 only designed around
+    // multiple-choice mistakes.
+    typedValue: text("typed_value"),
     responseTimeMs: integer("response_time_ms"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    check("user_kana_attempts_wrong_needs_selection", sql`${table.isCorrect} = true OR ${table.selectedOptionId} IS NOT NULL`),
+    check(
+      "user_kana_attempts_wrong_needs_selection",
+      sql`${table.isCorrect} = true OR ${table.selectedOptionId} IS NOT NULL OR ${table.typedValue} IS NOT NULL`,
+    ),
     index("user_kana_attempts_user_kana_idx").on(table.userId, table.kanaId),
     index("user_kana_attempts_user_created_idx").on(table.userId, table.createdAt),
     pgPolicy("user_kana_attempts_select_own", { for: "select", to: authenticatedRole, using: sql`${table.userId} = auth.uid()` }),

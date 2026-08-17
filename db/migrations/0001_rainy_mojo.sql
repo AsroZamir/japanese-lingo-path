@@ -1,0 +1,3 @@
+ALTER TABLE "user_kana_attempts" DROP CONSTRAINT "user_kana_attempts_wrong_needs_selection";--> statement-breakpoint
+ALTER TABLE "user_kana_attempts" ADD COLUMN "typed_value" text;--> statement-breakpoint
+ALTER TABLE "user_kana_attempts" ADD CONSTRAINT "user_kana_attempts_wrong_needs_selection" CHECK ("user_kana_attempts"."is_correct" = true OR "user_kana_attempts"."selected_option_id" IS NOT NULL OR "user_kana_attempts"."typed_value" IS NOT NULL);
