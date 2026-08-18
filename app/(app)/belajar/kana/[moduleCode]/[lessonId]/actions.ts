@@ -143,3 +143,54 @@ export async function completeLesson(lessonId: number, outcomes: SkillOutcome[])
   revalidatePath("/belajar", "layout");
   return { ok: true };
 }
+
+// M01 (lesson_exercises) — soal konsep, bukan soal kana. Tidak ada
+// selected_option_id (kolom itu FK ke kana_characters, tidak berlaku
+// untuk pilihan jawaban konsep) dan tidak ada nilai kelulusan, jadi
+// tidak ada write ke user_kana_mastery di sini sama sekali — hanya
+// dicatat untuk analitik seperti diminta.
+export async function recordConceptAttempt(input: {
+  lessonId: number;
+  exerciseType: "concept_mcq" | "typing";
+  isCorrect: boolean;
+  chosenOptionLabel: string;
+  responseTimeMs: number | null;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sesi berakhir. Silakan masuk kembali." };
+
+  const { error } = await supabase.from("user_kana_attempts").insert({
+    user_id: user.id,
+    kana_id: null,
+    word_id: null,
+    lesson_id: input.lessonId,
+    exercise_type: input.exerciseType,
+    is_correct: input.isCorrect,
+    selected_option_id: null,
+    correct_option_id: null,
+    typed_value: input.chosenOptionLabel,
+    response_time_ms: input.responseTimeMs,
+  });
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+// Menutup lesson M01 tanpa syarat — modul ini eksplisit "tidak ada
+// nilai kelulusan", jadi status selalu jadi completed begitu pembelajar
+// sampai ke ujung lesson, terlepas dari jawaban benar/salah.
+export async function completeM01Lesson(lessonId: number): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sesi berakhir. Silakan masuk kembali." };
+
+  const { error } = await supabase.from("user_kana_lesson_progress").upsert(
+    { user_id: user.id, lesson_id: lessonId, status: "completed", completed_at: new Date().toISOString() },
+    { onConflict: "user_id,lesson_id" },
+  );
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/belajar", "layout");
+  return { ok: true };
+}
