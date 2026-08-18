@@ -530,6 +530,11 @@ button.nav-item.active { background: rgba(255,255,255,.12); }
 .module-mini-flow span { padding: 5px 7px; border-radius: 7px; background: #f0f5fb; }
 .module-mini-flow i { color: #a7b4c3; font-style: normal; }
 .curriculum-unit > button.module-open-button { width: auto; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 11px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.curriculum-unit.is-unavailable { opacity: .58; }
+.curriculum-unit .status-pill { margin-top: 9px; }
+.curriculum-unit .status-pill--active { color: #1a7a4c; background: #e3f6ec; }
+.curriculum-unit > button.module-open-button:disabled { cursor: not-allowed; color: #93a1b2; background: #f3f5f8; border-color: #e3e8ee; box-shadow: none; }
+.lesson-next-nav { display: flex; justify-content: flex-end; margin-top: 28px; }
 .curriculum-footer-map h3 { font-size: 18px; }
 .curriculum-footer-map > div:last-child span { padding: 7px 10px; font-size: 10px; }
 
