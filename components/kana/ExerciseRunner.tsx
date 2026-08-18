@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AudioButton } from "./AudioButton";
 import { KanaTypingInput } from "./KanaTypingInput";
 
@@ -80,6 +80,17 @@ export type ExerciseRunnerProps = {
   /** Fires after every single answer, correct or wrong — for persisting each one as it happens rather than batching until the end. */
   onAttempt?: (attempt: ExerciseAttemptResult) => void;
   onComplete?: (result: ExerciseRunnerResult) => void;
+  /**
+   * Fires exactly once per graded question, at the moment it's graded —
+   * never on mere option selection. For the gated multiple-choice flow
+   * (see selectOption/handleCheck below) that means after the "Periksa"
+   * tap, not the option tap; for typing/timed_recognition, which grade
+   * instantly, it fires at that same instant. Intended for an outer
+   * progress indicator (e.g. LessonPlayer) — the outer caller owns
+   * whatever state it derives from this, ExerciseRunner doesn't read
+   * this value back.
+   */
+  onProgress?: (done: number, total: number) => void;
 };
 
 function shuffleArray<T>(input: T[]): T[] {
@@ -134,13 +145,18 @@ function ExercisePrompt({ item }: { item: ExerciseItem }) {
   );
 }
 
-export function ExerciseRunner({ items, config, onAttempt, onComplete }: ExerciseRunnerProps) {
+export function ExerciseRunner({ items, config, onAttempt, onComplete, onProgress }: ExerciseRunnerProps) {
   const orderedItems = useMemo(() => (config?.shuffle ? shuffleArray(items) : items), [items, config?.shuffle]);
 
   const [index, setIndex] = useState(0);
   const [attempts, setAttempts] = useState<ExerciseAttemptResult[]>([]);
   const [startedAt, setStartedAt] = useState(() => Date.now());
-  const [lastWrongOptionId, setLastWrongOptionId] = useState<number | null>(null);
+  // selected/checked only drive the gated multiple-choice flow (Moji
+  // "layar 5" spec: pick a card, tap Periksa to grade+reveal, tap
+  // Lanjutkan to move on). typing/dictation/timed_recognition never use
+  // these — they still grade instantly, exactly like before.
+  const [selected, setSelected] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
 
   const currentItem = orderedItems[index];
 
@@ -149,62 +165,59 @@ export function ExerciseRunner({ items, config, onAttempt, onComplete }: Exercis
     onComplete?.({ attempts: nextAttempts, correctCount, totalCount: nextAttempts.length });
   }
 
-  // now/nextStartedAt are always supplied by the actual event handler
-  // that calls recordAttempt (handleChoice/handleTypingResult/
-  // handleTimeout), never computed in here — react-hooks/purity flags
-  // Date.now() when it's textually inside a component's render scope
-  // regardless of the call depth, so the impure call has to live at the
-  // point closest to the real DOM event, not in a shared helper.
-  function recordAttempt(partial: Omit<ExerciseAttemptResult, "responseTimeMs">, now: number) {
+  function goNextOrFinish(nextAttempts: ExerciseAttemptResult[], now: number) {
+    setSelected(null);
+    setChecked(false);
+    if (index + 1 >= orderedItems.length) {
+      finish(nextAttempts);
+    } else {
+      setIndex((i) => i + 1);
+      setStartedAt(now);
+    }
+  }
+
+  // now is always supplied by the actual event handler, never computed
+  // in here — react-hooks/purity flags Date.now() textually inside a
+  // component's render scope regardless of call depth.
+  function recordInstant(partial: Omit<ExerciseAttemptResult, "responseTimeMs">, now: number) {
     const result: ExerciseAttemptResult = { ...partial, responseTimeMs: now - startedAt };
     const nextAttempts = [...attempts, result];
     setAttempts(nextAttempts);
     onAttempt?.(result);
+    onProgress?.(nextAttempts.length, orderedItems.length);
 
     if (result.isCorrect || !config?.allowRetry) {
-      setLastWrongOptionId(null);
-      if (index + 1 >= orderedItems.length) {
-        finish(nextAttempts);
-      } else {
-        setIndex((i) => i + 1);
-        setStartedAt(now);
-      }
-    } else {
-      // allowRetry: item stays active, but this wrong attempt is still
-      // logged (it's a real attempt, not a draft) before trying again.
-      setLastWrongOptionId(result.selectedOptionId);
+      goNextOrFinish(nextAttempts, now);
     }
+    // else: allowRetry + wrong — item stays active, nothing to reset
+    // (the instant paths don't use selected/checked in the first place).
   }
 
-  function handleChoice(optionId: number) {
+  // Timed multiple-choice bypasses the Periksa/Lanjutkan gate on
+  // purpose — a countdown is already the "decide now" pressure; a
+  // second confirm tap on top of it would fight the timer, and there's
+  // no reference screen for that combination in the Moji mockups.
+  function handleTimedChoice(optionId: number) {
     if (!currentItem) return;
-    recordAttempt(
+    recordInstant(
       {
-        itemId: currentItem.id,
-        exerciseType: currentItem.type,
-        kanaId: currentItem.kanaId,
-        wordId: currentItem.wordId,
+        itemId: currentItem.id, exerciseType: currentItem.type,
+        kanaId: currentItem.kanaId, wordId: currentItem.wordId,
         isCorrect: optionId === currentItem.correctOptionId,
-        selectedOptionId: optionId,
-        correctOptionId: currentItem.correctOptionId ?? null,
+        selectedOptionId: optionId, correctOptionId: currentItem.correctOptionId ?? null,
       },
-      // eslint-disable-next-line react-hooks/purity -- only ever invoked from onClick (see the options map below); the identical Date.now() call two functions down (handleTypingResult) doesn't trip this rule, so this looks like a linter inconsistency rather than a real render-purity issue.
+      // eslint-disable-next-line react-hooks/purity -- only ever invoked from onClick; the identical Date.now() call in handleCheck below doesn't trip this rule, same linter inconsistency noted elsewhere in this codebase.
       Date.now(),
     );
   }
 
   function handleTypingResult(typedValue: string, correct: boolean) {
     if (!currentItem) return;
-    recordAttempt(
+    recordInstant(
       {
-        itemId: currentItem.id,
-        exerciseType: currentItem.type,
-        kanaId: currentItem.kanaId,
-        wordId: currentItem.wordId,
-        isCorrect: correct,
-        selectedOptionId: null, // no discrete option in a typed answer
-        correctOptionId: null,
-        typedValue,
+        itemId: currentItem.id, exerciseType: currentItem.type,
+        kanaId: currentItem.kanaId, wordId: currentItem.wordId,
+        isCorrect: correct, selectedOptionId: null, correctOptionId: null, typedValue,
       },
       Date.now(),
     );
@@ -212,19 +225,50 @@ export function ExerciseRunner({ items, config, onAttempt, onComplete }: Exercis
 
   function handleTimeout() {
     if (!currentItem) return;
-    recordAttempt(
+    recordInstant(
       {
-        itemId: currentItem.id,
-        exerciseType: currentItem.type,
-        kanaId: currentItem.kanaId,
-        wordId: currentItem.wordId,
-        isCorrect: false,
-        selectedOptionId: null, // nothing was selected — see ExerciseAttemptResult's note on this
-        correctOptionId: currentItem.correctOptionId ?? null,
-        timedOut: true,
+        itemId: currentItem.id, exerciseType: currentItem.type,
+        kanaId: currentItem.kanaId, wordId: currentItem.wordId,
+        isCorrect: false, selectedOptionId: null, correctOptionId: currentItem.correctOptionId ?? null, timedOut: true,
       },
       Date.now(),
     );
+  }
+
+  // Gated multiple-choice path (everything except typing/dictation/timed_recognition).
+  function selectOption(optionId: number) {
+    if (checked) return;
+    setSelected(optionId);
+  }
+
+  function handleCheck() {
+    if (checked || selected == null || !currentItem) return;
+    const now = Date.now();
+    const isCorrect = selected === currentItem.correctOptionId;
+    const result: ExerciseAttemptResult = {
+      itemId: currentItem.id, exerciseType: currentItem.type,
+      kanaId: currentItem.kanaId, wordId: currentItem.wordId,
+      isCorrect, selectedOptionId: selected, correctOptionId: currentItem.correctOptionId ?? null,
+      responseTimeMs: now - startedAt,
+    };
+    const nextAttempts = [...attempts, result];
+    setAttempts(nextAttempts);
+    onAttempt?.(result);
+    setChecked(true);
+    // Fires here — after grading, never on the earlier selectOption tap.
+    onProgress?.(nextAttempts.length, orderedItems.length);
+  }
+
+  function handleContinue() {
+    if (!checked || !currentItem) return;
+    const now = Date.now();
+    const wasCorrect = selected === currentItem.correctOptionId;
+    if (!wasCorrect && config?.allowRetry) {
+      setSelected(null);
+      setChecked(false);
+      return;
+    }
+    goNextOrFinish(attempts, now);
   }
 
   if (!currentItem) {
@@ -237,13 +281,16 @@ export function ExerciseRunner({ items, config, onAttempt, onComplete }: Exercis
   }
 
   const isTyping = currentItem.type === "typing" || currentItem.type === "dictation";
+  const isTimed = currentItem.type === "timed_recognition";
+  const isGated = !isTyping && !isTimed;
+  const retryWrong = checked && isGated && config?.allowRetry && selected !== currentItem.correctOptionId;
 
   return (
     <div className="exercise-runner">
       <div className="exercise-runner__header">
         <span className="exercise-runner__progress">{index + 1}/{orderedItems.length}</span>
         <span className="exercise-runner__type">{currentItem.type}</span>
-        {currentItem.type === "timed_recognition" && currentItem.timeLimitSeconds && (
+        {isTimed && currentItem.timeLimitSeconds && (
           <Countdown key={currentItem.id} seconds={currentItem.timeLimitSeconds} onExpire={handleTimeout} />
         )}
       </div>
@@ -259,19 +306,67 @@ export function ExerciseRunner({ items, config, onAttempt, onComplete }: Exercis
             onResult={(result) => handleTypingResult(result.typed, result.correct)}
           />
         )
-      ) : (
+      ) : isTimed ? (
         <div className="exercise-runner__options">
           {currentItem.options?.map((option) => (
             <button
               key={option.id}
               type="button"
-              className={`exercise-runner__option ${lastWrongOptionId === option.id ? "exercise-runner__option--wrong" : ""}`}
-              onClick={() => handleChoice(option.id)}
+              className="exercise-runner__option"
+              onClick={() => handleTimedChoice(option.id)}
             >
               {option.label}
             </button>
           ))}
         </div>
+      ) : (
+        <>
+          <div className="exercise-runner__options exercise-runner__options--gated">
+            {currentItem.options?.map((option) => {
+              const isSelected = selected === option.id;
+              const isCorrectOpt = option.id === currentItem.correctOptionId;
+              const showCorrect = checked && isCorrectOpt;
+              const showWrong = checked && isSelected && !isCorrectOpt;
+              const dim = checked && !isCorrectOpt && !isSelected;
+              const stateClass = [
+                isSelected && !checked ? "is-selected" : "",
+                showCorrect && isSelected ? "is-correct-selected" : "",
+                showCorrect && !isSelected ? "is-correct-revealed" : "",
+                showWrong ? "is-wrong" : "",
+                dim ? "is-dim" : "",
+              ].filter(Boolean).join(" ");
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  disabled={checked}
+                  className={`exercise-runner__option exercise-runner__option--card ${stateClass}`}
+                  onClick={() => selectOption(option.id)}
+                >
+                  <span className="exercise-runner__option-label">{option.label}</span>
+                  {(showCorrect || showWrong) && (
+                    <span className={`exercise-runner__option-badge ${showCorrect ? "is-correct" : "is-wrong"}`}>
+                      {showCorrect ? "✓" : "✕"}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            className={`exercise-runner__check-btn ${checked ? "is-checked" : ""}`}
+            disabled={!checked && selected == null}
+            onClick={checked ? handleContinue : handleCheck}
+          >
+            <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--orange" />
+            <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--green" />
+            <span className="exercise-runner__check-btn-label exercise-runner__check-btn-label--periksa">Periksa ›</span>
+            <span className="exercise-runner__check-btn-label exercise-runner__check-btn-label--lanjut">
+              {retryWrong ? "Coba lagi ›" : "Lanjutkan ›"}
+            </span>
+          </button>
+        </>
       )}
     </div>
   );

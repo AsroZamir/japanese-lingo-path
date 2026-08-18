@@ -10,6 +10,63 @@
   --mist: #f4f7fb;
   --line: #e5ebf3;
   --muted: #708198;
+
+  /* ── Moji design tokens (docs/design-referencemoji) ──────────────────
+     Extracted from the .dc.html mockups, not guessed. Applied as a
+     visual layer on top of existing components/pages — see
+     docs/design-referencemoji for the source. Keep the legacy tokens
+     above untouched; components migrate to these one at a time. */
+  --moji-ink: #241e18;
+  --moji-muted: #6b645d;
+  --moji-faint: #9c948c;
+  --moji-line: #e7e1dc;
+  --moji-cream: #f6f6f0;
+  --moji-white: #ffffff;
+  --moji-accent: #cc5436;
+  --moji-accent-hover: #b5482e;
+  --moji-accent-soft-bg: #fbeae4;
+  --moji-success: #368a48;
+  --moji-success-bg: #dcf3e1;
+  --moji-error-soft: #d98f78;
+  --moji-error-bg: #f5e4de;
+  --moji-audio-blue: #5472ae;
+
+  /* Radius scale as actually used across the mockups (7/10/12/14/16/18/20/pill) */
+  --moji-radius-xs: 7px;
+  --moji-radius-sm: 10px;
+  --moji-radius-md: 12px;
+  --moji-radius-lg: 14px;
+  --moji-radius-xl: 16px;
+  --moji-radius-2xl: 18px;
+  --moji-radius-3xl: 20px;
+  --moji-radius-pill: 999px;
+
+  /* Fonts: Plus Jakarta Sans for UI text, Noto Sans JP only for kana/kanji glyphs */
+  --moji-font-sans: var(--font-moji-sans), "Plus Jakarta Sans", sans-serif;
+  --moji-font-jp: var(--font-moji-jp), "Noto Sans JP", sans-serif;
+
+  /* Motion (Component D/E from the .dc.html files) — verified identical
+     across all 8 mockup files for the shared tokens; D.entrance/stagger
+     vary slightly by screen (list length) and are applied per-component,
+     not centralized here. */
+  --moji-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --moji-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --moji-ease-gentle: cubic-bezier(0.33, 1, 0.68, 1);
+  --moji-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --moji-ease-press-in: cubic-bezier(0.4, 0, 1, 1);
+
+  --moji-d-press: 90ms;
+  --moji-d-spring: 200ms;
+  --moji-d-entrance: 300ms;
+  --moji-d-react-correct: 190ms;
+  --moji-d-react-correct-delay: 30ms;
+  --moji-d-react-wrong: 170ms;
+  --moji-d-react-wrong-delay: 30ms;
+  --moji-d-reveal-correct: 180ms;
+  --moji-d-reveal-correct-delay: 110ms;
+  --moji-d-dim: 180ms;
+  --moji-d-dim-delay: 120ms;
+  --moji-d-morph: 190ms;
 }
 
 * { box-sizing: border-box; }
@@ -735,6 +792,74 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .exercise-runner__option { padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: white; font-size: 18px; }
 .exercise-runner__option:hover { border-color: #bcd1ea; background: #edf4fc; }
 .exercise-runner__option--wrong { border-color: #c0392b; background: #fdecea; }
+
+/* ── Moji "layar 5" quiz-card spec — gated select→Periksa→Lanjutkan flow ── */
+.exercise-runner__options--gated { grid-template-columns: repeat(2, 1fr); }
+.exercise-runner__option--card {
+  position: relative; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
+  padding: 0; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-lg);
+  background: var(--moji-white); font-family: var(--moji-font-jp); font-weight: 700; font-size: 28px; color: var(--moji-ink);
+  outline: none; outline-offset: 2px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transform: scale(1); opacity: 1;
+  transition: transform var(--moji-d-spring) var(--moji-ease-spring), opacity 120ms linear, border-color 120ms linear, background-color 120ms linear;
+}
+.exercise-runner__option--card:active { transform: scale(0.96); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
+.exercise-runner__option--card.is-selected { outline: 2px solid var(--moji-accent); border-color: var(--moji-accent); }
+.exercise-runner__option--card.is-correct-selected {
+  transform: scale(1.045); border-color: var(--moji-success); background: var(--moji-success-bg);
+  transition: transform var(--moji-d-react-correct) var(--moji-ease-spring) var(--moji-d-react-correct-delay),
+              background-color var(--moji-d-react-correct) var(--moji-ease-spring) var(--moji-d-react-correct-delay),
+              border-color var(--moji-d-react-correct) var(--moji-ease-spring) var(--moji-d-react-correct-delay);
+}
+.exercise-runner__option--card.is-wrong {
+  transform: scale(1.02); border-color: var(--moji-error-soft); background: var(--moji-error-bg);
+  transition: transform var(--moji-d-react-wrong) var(--moji-ease-gentle) var(--moji-d-react-wrong-delay),
+              background-color var(--moji-d-react-wrong) var(--moji-ease-gentle) var(--moji-d-react-wrong-delay),
+              border-color var(--moji-d-react-wrong) var(--moji-ease-gentle) var(--moji-d-react-wrong-delay);
+}
+.exercise-runner__option--card.is-correct-revealed {
+  transform: scale(1.02); border-color: var(--moji-success); background: var(--moji-success-bg);
+  transition: transform var(--moji-d-reveal-correct) var(--moji-ease-gentle) var(--moji-d-reveal-correct-delay),
+              background-color var(--moji-d-reveal-correct) var(--moji-ease-gentle) var(--moji-d-reveal-correct-delay),
+              border-color var(--moji-d-reveal-correct) var(--moji-ease-gentle) var(--moji-d-reveal-correct-delay);
+}
+.exercise-runner__option--card.is-dim {
+  opacity: 0.45;
+  transition: opacity var(--moji-d-dim) var(--moji-ease-gentle) var(--moji-d-dim-delay);
+}
+.exercise-runner__option--card:disabled { cursor: default; }
+.exercise-runner__option-label { position: relative; z-index: 2; user-select: none; }
+.exercise-runner__option-badge {
+  position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; border-radius: var(--moji-radius-pill);
+  display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; z-index: 3;
+  transform: scale(1); opacity: 1; transition: transform 160ms var(--moji-ease-out) 100ms, opacity 160ms var(--moji-ease-out) 100ms;
+}
+.exercise-runner__option-badge.is-correct { background: var(--moji-success); }
+.exercise-runner__option-badge.is-wrong { background: var(--moji-error-soft); }
+
+.exercise-runner__check-btn {
+  position: relative; width: 100%; height: 50px; border: none; border-radius: var(--moji-radius-pill);
+  padding: 0; cursor: pointer; overflow: hidden; -webkit-tap-highlight-color: transparent;
+}
+.exercise-runner__check-btn:disabled { opacity: 0.4; cursor: default; }
+.exercise-runner__check-btn:not(:disabled):active { transform: scale(0.97); }
+.exercise-runner__check-btn-layer {
+  position: absolute; inset: 0; border-radius: var(--moji-radius-pill);
+  transition: opacity var(--moji-d-morph) var(--moji-ease-standard);
+}
+.exercise-runner__check-btn-layer--orange { background: var(--moji-accent); opacity: 1; }
+.exercise-runner__check-btn-layer--green { background: var(--moji-success); opacity: 0; }
+.exercise-runner__check-btn.is-checked .exercise-runner__check-btn-layer--orange { opacity: 0; }
+.exercise-runner__check-btn.is-checked .exercise-runner__check-btn-layer--green { opacity: 1; }
+.exercise-runner__check-btn-label {
+  position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
+  color: #fff; font-weight: 700; font-size: 15px;
+  transition: opacity var(--moji-d-morph) var(--moji-ease-standard), transform var(--moji-d-morph) var(--moji-ease-standard);
+}
+.exercise-runner__check-btn-label--periksa { opacity: 1; transform: translateY(0); }
+.exercise-runner__check-btn.is-checked .exercise-runner__check-btn-label--periksa { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+.exercise-runner__check-btn-label--lanjut { opacity: 0; transform: translateY(8px); }
+.exercise-runner__check-btn.is-checked .exercise-runner__check-btn-label--lanjut { opacity: 1; transform: translateY(0); }
 
 /* ── M01 orientasi (lesson_content_blocks / lesson_exercises) ────────── */
 .m01-block { margin: 28px 0; }

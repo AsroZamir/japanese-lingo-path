@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Plus_Jakarta_Sans, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -11,6 +11,21 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Moji visual refresh (docs/design-referencemoji): Plus Jakarta Sans for
+// UI text, Noto Sans JP specifically for kana/kanji glyphs — the two are
+// deliberately kept separate everywhere in the reference design.
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-moji-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const notoSansJP = Noto_Sans_JP({
+  variable: "--font-moji-jp",
+  subsets: ["latin"],
+  weight: ["500", "700"],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,7 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} ${notoSansJP.variable} antialiased`}>
         {children}
       </body>
     </html>
