@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { PageHeader } from "./PageHeader";
 import { dailyGoal, reviewSummary, reviewBreakdown } from "@/app/lib/mock-data";
+import type { ContinueLearningTarget } from "@/app/lib/continue-learning";
 
 const lessons = [
   { no: "01", title: "How Japanese Writing Works", meta: "Preview · Orientation", state: "done" },
@@ -10,8 +11,21 @@ const lessons = [
   { no: "03", title: "Japanese Sentence Basics", meta: "Shell · Grammar awareness", state: "next" },
 ] as const;
 
-export function DashboardView({ userName }: { userName: string }) {
+export function DashboardView({
+  userName,
+  continueLearning,
+}: {
+  userName: string;
+  continueLearning: ContinueLearningTarget | null;
+}) {
   const router = useRouter();
+  const continueHref = continueLearning
+    ? `/belajar/kana/${continueLearning.moduleCode}/${continueLearning.lessonCode}`
+    : "/belajar/P0";
+  const continueSubtitle = continueLearning
+    ? `${continueLearning.moduleTitleId} · ${continueLearning.phaseTitleId} · ${continueLearning.lessonTitleId}`
+    : "Pre-N5 · Unit P0 · Japanese Orientation";
+  const continueLabel = continueLearning ? "Lanjutkan pelajaran" : "Open orientation";
 
   return (
     <>
@@ -27,8 +41,8 @@ export function DashboardView({ userName }: { userName: string }) {
         <div className="hero-copy">
           <span className="card-kicker">CONTINUE YOUR PATH</span>
           <h2>Your Japanese journey<br />starts with <em>あ・ア・日</em></h2>
-          <p>Pre-N5 · Unit P0 · Japanese Orientation</p>
-          <button className="primary-button" onClick={() => router.push("/belajar/P0")}>Open orientation <span>→</span></button>
+          <p>{continueSubtitle}</p>
+          <button className="primary-button" onClick={() => router.push(continueHref)}>{continueLabel} <span>→</span></button>
         </div>
         <div className="path-art" aria-hidden="true">
           <div className="sun"></div><div className="mountain mountain-back"></div><div className="mountain mountain-front"></div>
