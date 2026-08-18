@@ -30,6 +30,9 @@ export const lessonItemRoleEnum = pgEnum("lesson_item_role", ["new", "review"]);
 export const kanaSkillEnum = pgEnum("kana_skill", [
   "visual", "audio", "recall", "writing", "reading", "typing",
 ]);
+export const lessonContentBlockTypeEnum = pgEnum("lesson_content_block_type", [
+  "text", "chart", "table", "audio_list", "dialogue", "callout",
+]);
 
 const readByAuthenticated = (tableName: string) =>
   pgPolicy(`${tableName}_select_authenticated`, {
@@ -178,6 +181,52 @@ export const kanaLessonItems = pgTable(
     uniqueIndex("kana_lesson_items_lesson_kana_key").on(table.lessonId, table.kanaId),
     uniqueIndex("kana_lesson_items_lesson_word_key").on(table.lessonId, table.wordId),
     readByAuthenticated("kana_lesson_items"),
+  ],
+);
+
+export const lessonContentBlocks = pgTable(
+  "lesson_content_blocks",
+  {
+    id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
+    lessonId: integer("lesson_id").notNull().references(() => kanaLessons.id, { onDelete: "cascade" }),
+    orderIndex: integer("order_index").notNull(),
+    blockType: lessonContentBlockTypeEnum("block_type").notNull(),
+    // Shape depends on block_type — see app/lib/lesson-content-types.ts
+    // for the discriminated-union contract seed scripts and the M01
+    // renderer both follow. Kept as jsonb (not per-field columns)
+    // because narrative content genuinely varies in shape by type
+    // (a table's rows vs. a dialogue's turns vs. a callout's note).
+    content: jsonb("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("lesson_content_blocks_lesson_order_key").on(table.lessonId, table.orderIndex),
+    readByAuthenticated("lesson_content_blocks"),
+  ],
+);
+
+export const lessonExercises = pgTable(
+  "lesson_exercises",
+  {
+    id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
+    lessonId: integer("lesson_id").notNull().references(() => kanaLessons.id, { onDelete: "cascade" }),
+    orderIndex: integer("order_index").notNull(),
+    // Free text, not an enum — unlike the kana ExerciseRunner's fixed
+    // ExerciseType union, lesson content authors introduce new question
+    // shapes per module (e.g. M01's concept_mcq) that have nothing to
+    // do with kana characters. "typing" questions store the single
+    // expected answer as options[0] with correct_option_id pointing at
+    // it, rather than adding a separate expected-answer column.
+    exerciseType: text("exercise_type").notNull(),
+    prompt: text("prompt").notNull(),
+    options: jsonb("options"),
+    correctOptionId: integer("correct_option_id"),
+    explanation: text("explanation"),
+    audioUrl: text("audio_url"),
+  },
+  (table) => [
+    uniqueIndex("lesson_exercises_lesson_order_key").on(table.lessonId, table.orderIndex),
+    readByAuthenticated("lesson_exercises"),
   ],
 );
 

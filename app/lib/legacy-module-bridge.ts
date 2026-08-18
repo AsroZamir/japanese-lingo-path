@@ -7,5 +7,6 @@
 // code actually exists in kana_modules before treating it as available
 // (see getExistingKanaModuleCodes).
 export const LEGACY_UNIT_TO_KANA_MODULE: Record<string, string> = {
+  P0: "M01", // Orientasi Bahasa Jepang → Orientasi Bahasa Jepang
   P1: "M02", // Hiragana Foundation → Hiragana Dasar
 };

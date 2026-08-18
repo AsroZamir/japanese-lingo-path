@@ -76,19 +76,27 @@ export const getLessonBundle = cache(
       .maybeSingle();
     if (!moduleRow) return null;
 
+    // lesson_code is only unique WITHIN a phase (kana_lessons_phase_code_key),
+    // not globally — now that more than one module seeds L01..L04, a bare
+    // .eq("code", lessonCode) can match rows from other modules too, which
+    // makes .maybeSingle() error out. Scope to this module's phases first.
+    const { data: modulePhaseRows } = await supabase
+      .from("kana_phases")
+      .select("id, code, title_id, module_id")
+      .eq("module_id", moduleRow.id);
+    if (!modulePhaseRows?.length) return null;
+    const modulePhaseIds = modulePhaseRows.map((p) => p.id);
+
     const { data: lessonRow } = await supabase
       .from("kana_lessons")
       .select("id, code, title_id, lesson_type, romaji_policy, target_thresholds, group_code, phase_id")
       .eq("code", lessonCode)
+      .in("phase_id", modulePhaseIds)
       .maybeSingle();
     if (!lessonRow) return null;
 
-    const { data: phaseRow } = await supabase
-      .from("kana_phases")
-      .select("id, code, title_id, module_id")
-      .eq("id", lessonRow.phase_id)
-      .maybeSingle();
-    if (!phaseRow || phaseRow.module_id !== moduleRow.id) return null; // lesson doesn't belong to this module
+    const phaseRow = modulePhaseRows.find((p) => p.id === lessonRow.phase_id);
+    if (!phaseRow) return null;
 
     const { data: itemRows } = await supabase
       .from("kana_lesson_items")
