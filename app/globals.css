@@ -727,10 +727,24 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .romaji-text__romaji { color: var(--muted); font-size: .72em; font-weight: 700; letter-spacing: .02em; line-height: 1; }
 .romaji-text__romaji--hidden { visibility: hidden; }
 
-.audio-button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--navy); transition: .15s ease; }
-.audio-button:hover:not(:disabled) { background: #edf4fc; border-color: #bcd1ea; }
-.audio-button:disabled { opacity: .4; cursor: not-allowed; }
-.audio-button--playing { background: var(--red); border-color: var(--red); color: white; }
+/* Moji reskin — useAudioPlayer.ts (loading/ready/error/unavailable
+   state machine, playback logic) is untouched; only the button's look
+   per state changes here. Size stays 34px: AudioButton renders inline
+   in dense contexts (KanaChart cells, word-list rows, table cells)
+   where the mockup's 52px s1PlayBtn size would break layout — the
+   brief asked for the color/state treatment, not a size change. */
+.audio-button {
+  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+  border: none; border-radius: var(--moji-radius-pill); background: var(--moji-audio-blue); color: #fff;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transform: scale(1);
+  transition: transform var(--moji-d-spring) var(--moji-ease-spring), background-color 150ms var(--moji-ease-out), opacity 150ms var(--moji-ease-out);
+}
+.audio-button:hover:not(:disabled) { background: #4a63a0; }
+.audio-button:active:not(:disabled) { transform: scale(0.9); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
+.audio-button:disabled { background: var(--moji-line); color: var(--moji-faint); opacity: 1; cursor: not-allowed; }
+.audio-button--playing { background: var(--moji-accent); }
+.audio-button--playing:hover:not(:disabled) { background: var(--moji-accent-hover); }
 .audio-button__icon { font-size: 12px; line-height: 1; }
 
 .stroke-animation { display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
