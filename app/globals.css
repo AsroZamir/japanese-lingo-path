@@ -1222,3 +1222,50 @@ a.login-card__brand { display: block; text-align: center; font-weight: 800; font
   color: var(--moji-ink); background: var(--moji-cream); font: 13px var(--moji-font-sans);
 }
 .profil-account .primary-button { margin-top: 16px; }
+
+/* ── /belajar module list (Moji Daftar-Modul.dc.html) — CSS-only,
+   LearnPageClient.tsx untouched. Keeps the existing tabs/overview/
+   flow-guide structure (real curriculum-data.ts content, not
+   fabricated) rather than trimming to the mockup's plainer grid;
+   these rules also reach the legacy per-unit detail page
+   ([unitId]/page.tsx), which shares the same class names and is no
+   longer linked from anywhere but still technically routable —
+   inheriting the same tokens there is a improvement, not a problem. */
+.curriculum-tabs button { border-color: var(--moji-line); color: var(--moji-muted); background: var(--moji-white); font-family: var(--moji-font-sans); }
+.curriculum-tabs button strong { color: var(--moji-muted); }
+.curriculum-tabs button.active { border-color: var(--moji-accent); color: var(--moji-accent); background: var(--moji-accent-soft-bg); box-shadow: none; }
+.curriculum-tabs button.active strong { color: var(--moji-accent); }
+.curriculum-overview {
+  background: linear-gradient(122deg, var(--moji-ink), #33291f); box-shadow: none; border-radius: var(--moji-radius-3xl);
+}
+.curriculum-overview::after { color: rgba(255, 255, 255, .04); }
+.blueprint-badge { border-color: rgba(255, 255, 255, .16); color: #ffd9c9; background: rgba(204, 84, 54, .28); font-family: var(--moji-font-sans); }
+.curriculum-overview .eyebrow { color: #d9a68f; font-family: var(--moji-font-sans); }
+.curriculum-overview h2 { font-family: var(--moji-font-sans); }
+.curriculum-overview-copy > p:last-of-type { color: #d8cfc4; }
+.curriculum-meta span { color: #f0e6dc; font-family: var(--moji-font-sans); }
+.curriculum-target { border-left-color: rgba(255, 255, 255, .13); }
+.curriculum-target > small { color: var(--moji-accent); font-family: var(--moji-font-sans); }
+.curriculum-target > p { color: #f0e6dc; }
+.curriculum-target span { color: #d8cfc4; font-family: var(--moji-font-sans); }
+.curriculum-target span::before { color: var(--moji-accent); }
+.curriculum-section-heading h3 { color: var(--moji-ink); font-family: var(--moji-font-sans); }
+.curriculum-section-heading > p { color: var(--moji-faint); }
+.unit-card.curriculum-unit { border-color: var(--moji-line); border-radius: var(--moji-radius-2xl); box-shadow: none; background: var(--moji-white); }
+.unit-card.curriculum-unit:hover { border-color: var(--moji-accent); box-shadow: 0 13px 28px rgba(36, 30, 24, .06); }
+.curriculum-unit .unit-number { color: var(--moji-accent); font-family: var(--moji-font-sans); }
+.unit-info small { color: var(--moji-accent); font-family: var(--moji-font-sans); }
+.unit-info h3 { color: var(--moji-ink); font-family: var(--moji-font-sans); }
+.unit-info p { color: var(--moji-muted); }
+.unit-tags span { color: var(--moji-muted); background: var(--moji-cream); font-family: var(--moji-font-sans); }
+.module-card-path { border-left-color: var(--moji-line); }
+.module-card-summary small { color: var(--moji-faint); }
+.module-card-summary b { color: var(--moji-ink); font-family: var(--moji-font-sans); }
+.module-mini-flow { color: var(--moji-muted); }
+.module-mini-flow span { background: var(--moji-cream); }
+.module-mini-flow i { color: var(--moji-faint); }
+.curriculum-unit > button.module-open-button { border: none; border-radius: var(--moji-radius-pill); background: var(--moji-accent); color: #fff; font-family: var(--moji-font-sans); }
+.curriculum-unit > button.module-open-button:hover { background: var(--moji-accent-hover); }
+.curriculum-footer-map { border-color: var(--moji-line); border-radius: var(--moji-radius-2xl); }
+.curriculum-footer-map h3 { color: var(--moji-ink); font-family: var(--moji-font-sans); }
+.curriculum-footer-map > div:last-child span { color: var(--moji-muted); background: var(--moji-cream); font-family: var(--moji-font-sans); }
