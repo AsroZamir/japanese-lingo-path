@@ -74,7 +74,7 @@
 
 * { box-sizing: border-box; }
 html { background: var(--mist); }
-body { margin: 0; background: var(--mist); color: var(--ink); font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif; }
+body { margin: 0; background: var(--mist); color: var(--ink); font-family: var(--moji-font-sans); }
 button, a { font: inherit; }
 button { cursor: pointer; }
 a { color: inherit; text-decoration: none; }
@@ -1289,3 +1289,27 @@ a.login-card__brand { display: block; text-align: center; font-weight: 800; font
 .exercise-runner.m01-exercise .exercise-runner__option:hover:not(:disabled) { border-color: var(--moji-accent); background: var(--moji-accent-soft-bg); }
 .exercise-runner.m01-exercise .exercise-runner__option:active:not(:disabled) { transform: scale(0.97); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
 .exercise-runner.m01-exercise .exercise-runner__option:disabled { cursor: default; }
+
+/* ── Legacy token repoint (Bagian 3a) ─────────────────────────────────
+   /latihan, /ulangi, /ai-tutor, /percakapan, /jlpt, /progres,
+   /pengaturan, and /belajar/kana/[moduleCode] are still-empty
+   placeholder pages (not reskinned page-by-page — no feature to build,
+   per instruction) that reference these old custom properties directly
+   (.primary-button, .card-kicker, .table-card, .mode-card,
+   .scenario-card, PageHeader, EmptySlot, etc). Repointing the
+   properties themselves — rather than rewriting every consuming class —
+   pulls all of them onto the Moji palette in one small, low-risk diff.
+   Safe for every page already reskinned above: each of those rules
+   sets its own color/background/border-color explicitly with
+   var(--moji-*), so it doesn't depend on what these resolve to. */
+:root {
+  --navy: var(--moji-ink);
+  --deep-navy: var(--moji-ink);
+  --ink: var(--moji-ink);
+  --blue: var(--moji-accent);
+  --red: var(--moji-accent);
+  --pink: var(--moji-error-soft);
+  --mist: var(--moji-cream);
+  --line: var(--moji-line);
+  --muted: var(--moji-muted);
+}
