@@ -5,6 +5,7 @@ import { getOrientationLessonContent } from "@/app/lib/lesson-content-query";
 import { getModuleLessons } from "@/app/lib/module-query";
 import { getWordPool } from "@/app/lib/word-pool-query";
 import { getKanaPool, getConfusionPairs } from "@/app/lib/kana-pool-query";
+import { getWeakestKana, getDueForReview } from "@/app/lib/mastery-query";
 import { LessonL01 } from "./LessonL01";
 import { LessonL02 } from "./LessonL02";
 import { LessonL03 } from "./LessonL03";
@@ -14,6 +15,7 @@ import { LessonActiveRecall } from "./LessonActiveRecall";
 import { LessonActiveRecallWriting } from "./LessonActiveRecallWriting";
 import { LessonWritingLab } from "./LessonWritingLab";
 import { LessonConsolidation } from "./LessonConsolidation";
+import { LessonMasteryGate } from "./LessonMasteryGate";
 import { M01LessonView } from "./M01LessonView";
 import { LessonPlayer } from "./LessonPlayer";
 
@@ -53,6 +55,12 @@ const WRITING_LAB_LESSON_TYPE = "writing_lab";
 // Fase 7 (Consolidation) — same pool-bundle shape again, plus
 // kana_confusion_pairs for L01 (seed-kana-confusion-pairs.ts).
 const CONSOLIDATION_LESSON_TYPE = "consolidation";
+
+// Fase 8 (Mastery + Retention) — same pool-bundle shape plus two
+// personalized queries: weakest kana by this user's own accuracy (L02)
+// and whatever's due per the SRS schedule (L03). L01/L04 write a real
+// pass/fail to user_kana_gate_results (see actions.ts recordGateResult).
+const MASTERY_LESSON_TYPE = "mastery";
 
 function NextLessonNav({
   nextLessonHref,
@@ -252,6 +260,53 @@ export default async function LessonPage({
         nextLessonTitle={nextLesson?.titleId ?? null}
       >
         <LessonConsolidation bundle={consolidationBundle} />
+      </LessonPlayer>
+    );
+  }
+
+  if (currentSummary.lessonType === MASTERY_LESSON_TYPE) {
+    const script = MODULE_SCRIPT[moduleCode] ?? "hiragana";
+    const [kana, words, weakestKana, dueKana] = await Promise.all([
+      getKanaPool(script),
+      getWordPool(script, 1, 99),
+      lessonCode === "L02" ? getWeakestKana(script, 15) : Promise.resolve([]),
+      lessonCode === "L03" ? getDueForReview(script, 30) : Promise.resolve([]),
+    ]);
+    const confusionPairs = await getConfusionPairs(kana);
+
+    const groupLessons = moduleLessons.lessons
+      .filter((l) => l.phaseCode === phaseCode)
+      .map((l) => ({ code: l.code, titleId: l.titleId }));
+    const exerciseTotals = {
+      [lessonCode]:
+        lessonCode === "L02" ? Math.max(weakestKana.length, 1) * 2
+          : lessonCode === "L03" ? Math.max(dueKana.length, 1) * 2
+            : 60,
+    };
+
+    const masteryBundle = {
+      lesson: { id: currentSummary.id, code: lessonCode, titleId: currentSummary.titleId, lessonType: currentSummary.lessonType },
+      phaseId: currentSummary.phaseId,
+      kana,
+      words,
+      confusionPairs,
+      weakestKana,
+      dueKana,
+    };
+
+    return (
+      <LessonPlayer
+        moduleCode={moduleCode}
+        groupCode={phaseCode}
+        groupLessons={groupLessons}
+        currentLessonCode={lessonCode}
+        lessonTitle={currentSummary.titleId}
+        phaseTitle={`${moduleLessons.module.titleId} · ${currentSummary.phaseTitleId}`}
+        exerciseTotals={exerciseTotals}
+        nextLessonHref={nextLesson ? `/belajar/kana/${moduleCode}/${nextLesson.routeId}` : null}
+        nextLessonTitle={nextLesson?.titleId ?? null}
+      >
+        <LessonMasteryGate bundle={masteryBundle} />
       </LessonPlayer>
     );
   }

@@ -10,6 +10,7 @@ export type ModuleLessonSummary = {
   routeId: string;
   titleId: string;
   lessonType: string;
+  phaseId: number;
   phaseCode: string;
   phaseTitleId: string;
   groupCode: string | null;
@@ -76,6 +77,7 @@ export const getModuleLessons = cache(async (moduleCode: string): Promise<Module
         routeId: `${phase.code}-${l.code}`,
         titleId: l.title_id,
         lessonType: l.lesson_type,
+        phaseId: phase.id,
         phaseCode: phase.code,
         phaseTitleId: phase.title_id,
         groupCode: l.group_code,

@@ -194,3 +194,32 @@ export async function completeM01Lesson(lessonId: number): Promise<ActionResult>
   revalidatePath("/belajar", "layout");
   return { ok: true };
 }
+
+// Fase 8 (Mastery + Retention) — user_kana_gate_results existed in the
+// schema since Fase 3 but nothing ever wrote to it until this lesson.
+// groupCode stays null: a gate result here covers the WHOLE module's
+// basic+modified hiragana, not one A-J group (those already pass/fail
+// per-lesson via completeLesson/targetThresholds, which is a different
+// concept — a single lesson's own pass bar, not "is the module mastered
+// enough to unlock the next one").
+export async function recordGateResult(input: {
+  phaseId: number;
+  passed: boolean;
+  scoresJson: Record<string, unknown>;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sesi berakhir. Silakan masuk kembali." };
+
+  const { error } = await supabase.from("user_kana_gate_results").insert({
+    user_id: user.id,
+    phase_id: input.phaseId,
+    group_code: null,
+    passed: input.passed,
+    scores_json: input.scoresJson,
+  });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/belajar", "layout");
+  return { ok: true };
+}
