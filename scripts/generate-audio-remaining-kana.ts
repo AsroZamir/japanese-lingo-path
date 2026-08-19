@@ -1,5 +1,5 @@
 import * as wanakana from "wanakana";
-import { eq, isNull, and } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { createClient as createSupabaseAdminClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createSeedClient } from "../db/seed-client";
 import { kanaCharacters, kanaExampleWords } from "../db/schema/kana";
@@ -10,6 +10,13 @@ import { kanaCharacters, kanaExampleWords } from "../db/schema/kana";
 // karena hardcode ~90 item satu-satu tidak praktis dan rawan salah ketik. Untuk
 // M01's 10 item non-kana (frasa/kalimat/kanji), tetap pakai generate-audio-voicevox.ts
 // aslinya karena item itu tidak punya baris kana_characters/kana_example_words.
+//
+// Script-agnostic sejak M03: hiragana dan katakana punya romaji yang
+// sering identik (あい/アイ keduanya "ai", か/カ keduanya "ka") — slug
+// filename SAJA akan bertabrakan across scripts. Path hiragana yang
+// sudah ada (kana/${slug}.wav, words/${slug}.wav, dari sebelum M03)
+// dibiarkan tidak berprefix supaya tidak perlu upload ulang/redirect
+// referensi lama; katakana baru dapat prefix "katakana-" di nama file.
 
 const VOICEVOX_BASE_URL = process.env.VOICEVOX_BASE_URL ?? "http://localhost:50021";
 const BUCKET = "audio";
@@ -44,15 +51,15 @@ async function synthesize(text: string, speakerId: number): Promise<Buffer> {
   return Buffer.from(await synthRes.arrayBuffer());
 }
 
-function toSlug(text: string): string {
-  // っ sendirian tidak punya romaji (glottal stop, bukan mora yang bisa
-  // dibaca lepas) — wanakana.toRomaji mengembalikan "", yang akan
+function toSlug(text: string, script: "hiragana" | "katakana"): string {
+  // っ/ッ sendirian tidak punya romaji (glottal stop, bukan mora yang
+  // bisa dibaca lepas) — wanakana.toRomaji mengembalikan "", yang akan
   // menghasilkan nama file kosong ("kana/.wav"). Fallback manual untuk
   // kasus ini saja; karakter lain semuanya diturunkan lewat wanakana.
-  if (text === "っ") return "sokuon";
+  if (text === "っ" || text === "ッ") return script === "katakana" ? "katakana-sokuon" : "sokuon";
   const slug = wanakana.toRomaji(text).toLowerCase().replace(/[^a-z]/g, "");
   if (!slug) throw new Error(`toSlug("${text}") menghasilkan slug kosong — perlu fallback manual seperti "っ".`);
-  return slug;
+  return script === "katakana" ? `katakana-${slug}` : slug;
 }
 
 async function ensureBucket(supabaseAdmin: SupabaseClient) {
@@ -86,11 +93,8 @@ async function main() {
     await ensureBucket(supabaseAdmin);
 
     const kanaRows = FORCE
-      ? await db.select().from(kanaCharacters).where(eq(kanaCharacters.script, "hiragana"))
-      : await db
-          .select()
-          .from(kanaCharacters)
-          .where(and(eq(kanaCharacters.script, "hiragana"), isNull(kanaCharacters.audioUrl)));
+      ? await db.select().from(kanaCharacters)
+      : await db.select().from(kanaCharacters).where(isNull(kanaCharacters.audioUrl));
 
     const wordRows = FORCE
       ? await db.select().from(kanaExampleWords)
@@ -101,7 +105,7 @@ async function main() {
     let generated = 0;
 
     for (const row of kanaRows) {
-      const storagePath = `kana/${toSlug(row.character)}.wav`;
+      const storagePath = `kana/${toSlug(row.character, row.script)}.wav`;
       console.log(`🎙  Sintesis karakter "${row.character}" (${row.romaji})...`);
       const wav = await synthesize(row.character, speakerId);
 
@@ -118,7 +122,7 @@ async function main() {
     }
 
     for (const row of wordRows) {
-      const storagePath = `words/${toSlug(row.wordKana)}.wav`;
+      const storagePath = `words/${toSlug(row.wordKana, row.script)}.wav`;
       console.log(`🎙  Sintesis kata "${row.wordKana}" (${row.meaningId})...`);
       const wav = await synthesize(row.wordKana, speakerId);
 
