@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getLessonBundle } from "@/app/lib/lesson-query";
 import { getOrientationLessonContent } from "@/app/lib/lesson-content-query";
 import { getModuleLessons } from "@/app/lib/module-query";
-import { getWordPool } from "@/app/lib/word-pool-query";
+import { getWordPool, getWordsByKana } from "@/app/lib/word-pool-query";
 import { getKanaPool, getConfusionPairs } from "@/app/lib/kana-pool-query";
 import { getWeakestKana, getDueForReview } from "@/app/lib/mastery-query";
 import { LessonL01 } from "./LessonL01";
@@ -37,6 +37,16 @@ const READING_LENGTH_BY_CODE: Record<string, [number, number]> = {
   L02: [4, 99],
 };
 const MODULE_SCRIPT: Record<string, "hiragana" | "katakana"> = { M02: "hiragana", M03: "katakana" };
+
+// M03's Reading Lab (docs/curriculum/M03.md "Fase 4") is themed, not
+// length-based — each lesson names an explicit small vocabulary set
+// (scripts/seed-katakana-loanwords.ts) instead. Only M03 uses this map;
+// M02 keeps using READING_LENGTH_BY_CODE above.
+const READING_THEME_BY_CODE: Record<string, string[]> = {
+  L01: ["バス", "ホテル", "テレビ", "パン", "コーヒー", "タクシー"],
+  L02: ["ケーキ", "ジュース", "アイスクリーム", "カレー", "サンドイッチ"],
+  L03: ["テレビ", "スマホ", "コンピューター", "インターネット", "メール"],
+};
 
 // Fase 5 (Active Recall) — same "no kana_lesson_items of its own" shape
 // as Reading Lab, but drills the FULL taught-so-far kana pool (not just
@@ -129,9 +139,13 @@ export default async function LessonPage({
   }
 
   if (currentSummary.lessonType === READING_LESSON_TYPE) {
-    const [minLen, maxLen] = READING_LENGTH_BY_CODE[lessonCode] ?? [2, 99];
     const script = MODULE_SCRIPT[moduleCode] ?? "hiragana";
-    const words = await getWordPool(script, minLen, maxLen);
+    // Only M03's Reading Lab is themed (docs/curriculum/M03.md) — M02's
+    // own L01/L02 codes would otherwise collide with this same map.
+    const theme = moduleCode === "M03" ? READING_THEME_BY_CODE[lessonCode] : undefined;
+    const words = theme
+      ? await getWordsByKana(script, theme)
+      : await getWordPool(script, ...(READING_LENGTH_BY_CODE[lessonCode] ?? [2, 99]));
 
     const groupLessons = moduleLessons.lessons
       .filter((l) => l.phaseCode === phaseCode)
