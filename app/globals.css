@@ -745,15 +745,38 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .stroke-animation__count { margin-left: 4px; color: var(--muted); font-size: 10px; font-weight: 700; }
 .stroke-animation--compact .stroke-animation__svg { width: 96px; height: 96px; border-radius: 10px; }
 
-.writing-canvas { display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
-.writing-canvas__svg { width: 280px; height: 280px; max-width: 100%; background: white; border: 1px solid var(--line); border-radius: 16px; touch-action: none; cursor: crosshair; }
-.writing-canvas__reference { width: 80px; height: 80px; background: #fafcfe; border: 1px solid var(--line); border-radius: 10px; }
-.writing-canvas--empty { align-items: center; justify-content: center; width: 280px; height: 280px; border: 1px dashed #ccd7e5; border-radius: 16px; text-align: center; color: #8b99aa; font-size: 11px; padding: 16px; }
-.writing-canvas__placeholder-char { font-size: 40px; color: #c3ccd8; }
+/* Moji reskin — frame + controls only; stroke validation/feedback logic
+   in WritingCanvas.tsx (evaluateStroke, onResult timing) is untouched. */
+.writing-canvas { display: inline-flex; flex-direction: column; align-items: center; gap: 12px; }
+.writing-canvas__svg {
+  width: 280px; height: 280px; max-width: 100%; background: var(--moji-white);
+  border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-xl);
+  touch-action: none; cursor: crosshair;
+  transition: border-color 150ms var(--moji-ease-out);
+}
+.writing-canvas__reference {
+  width: 80px; height: 80px; background: var(--moji-cream);
+  border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-sm);
+}
+.writing-canvas--empty {
+  align-items: center; justify-content: center; width: 280px; height: 280px;
+  border: 1.5px dashed var(--moji-line); border-radius: var(--moji-radius-xl);
+  text-align: center; color: var(--moji-faint); font-size: 11px; padding: 16px; background: var(--moji-cream);
+}
+.writing-canvas__placeholder-char { font-family: var(--moji-font-jp); font-size: 40px; color: var(--moji-faint); }
 .writing-canvas__controls { display: flex; align-items: center; gap: 10px; }
-.writing-canvas__controls button { height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--navy); font-size: 11px; cursor: pointer; }
-.writing-canvas__controls button:hover { background: #edf4fc; }
-.writing-canvas__count { color: var(--muted); font-size: 10px; font-weight: 700; }
+.writing-canvas__controls button {
+  height: 40px; padding: 0 18px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-pill);
+  background: var(--moji-white); color: var(--moji-muted); font-family: var(--moji-font-sans); font-weight: 700; font-size: 12.5px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transform: scale(1); transition: transform var(--moji-d-spring) var(--moji-ease-spring), background-color 150ms var(--moji-ease-out), border-color 150ms var(--moji-ease-out);
+}
+.writing-canvas__controls button:hover { background: var(--moji-cream); border-color: var(--moji-faint); }
+.writing-canvas__controls button:active { transform: scale(0.96); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
+.writing-canvas__count {
+  padding: 6px 12px; border-radius: var(--moji-radius-pill); background: var(--moji-cream);
+  color: var(--moji-muted); font-family: var(--moji-font-sans); font-size: 11px; font-weight: 700;
+}
 
 .kana-typing-input { display: inline-flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: white; }
 .kana-typing-input__target { min-width: 32px; color: var(--ink); font-size: 22px; text-align: center; }
