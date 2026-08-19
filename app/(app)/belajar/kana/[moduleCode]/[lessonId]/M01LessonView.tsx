@@ -108,28 +108,45 @@ async function textBlockSlides(content: TextBlockContent, keyBase: string): Prom
   return slides;
 }
 
+// A one-line caption fits as a subtitle on the chart slide itself
+// (matches the Moji reference); anything longer is real intro prose
+// and gets its own slide(s) via the normal word-budget grouping below.
+const SUBTITLE_MAX_WORDS = 25;
+
 // Cacat A/E fix: the chart itself is dense (fills the slide, computed
-// cell size, no scroll — see .kana-chart--dense) and the block's last
-// paragraph group becomes a one-line subtitle ON the chart slide,
-// matching the Moji reference's title+subtitle+grid pattern, instead of
-// floating alone as its own near-empty slide. Earlier paragraph groups
-// (if the intro runs long) still get their own slide(s) first.
+// cell size, no scroll — see .kana-chart--dense). Only the block's
+// LAST paragraph, and only if it's actually short, becomes a one-line
+// subtitle ON the chart slide, matching the Moji reference's
+// title+subtitle+grid pattern — checked against that paragraph's own
+// word count, not the post-grouping group it happens to land in (with
+// the 90-word budget, a short block's paragraphs can all pack into one
+// group, which would otherwise dump the whole thing into the
+// "subtitle" — including unrendered **markdown**, since this path
+// bypasses <Bold>). Earlier paragraphs, if any, still get their own
+// intro slide(s) with full paragraph rendering (Bold included).
 async function chartBlockSlides(content: ChartBlockContent, keyBase: string): Promise<ReactNode[]> {
   const slides: ReactNode[] = [];
+  const paragraphs = content.paragraphs ?? [];
   let subtitle: string | null = null;
-  if (content.paragraphs?.length) {
-    const groups = groupParagraphs(content.paragraphs);
-    const introGroups = groups.slice(0, -1);
-    introGroups.forEach((paras, gi) => {
+  let introParagraphs = paragraphs;
+  if (paragraphs.length) {
+    const last = paragraphs[paragraphs.length - 1];
+    const lastWordCount = last.trim().split(/\s+/).filter(Boolean).length;
+    if (lastWordCount <= SUBTITLE_MAX_WORDS) {
+      subtitle = last;
+      introParagraphs = paragraphs.slice(0, -1);
+    }
+  }
+  if (introParagraphs.length) {
+    groupParagraphs(introParagraphs).forEach((paras, gi) => {
       slides.push(<ParagraphSlide key={`${keyBase}-intro-${gi}`} paragraphs={paras} />);
     });
-    subtitle = groups[groups.length - 1]?.join(" ") ?? null;
   }
   const characters = await getFullScriptChartPreview(content.script);
   slides.push(
     <div className="m01-slide__body m01-slide__body--fullchart" key={`${keyBase}-chart`}>
       {content.heading && <h2 className="m01-slide__title">{content.heading}</h2>}
-      {subtitle && <p className="m01-slide__subtitle">{subtitle}</p>}
+      {subtitle && <p className="m01-slide__subtitle"><Bold text={subtitle} /></p>}
       <KanaChart script={content.script} phase={content.heading ?? "Pratinjau"} characters={characters} dense />
     </div>,
   );

@@ -93,13 +93,20 @@ export const getM01LessonContent = cache(async (lessonCode: string): Promise<M01
 
 // Dipakai khusus untuk blok block_type='chart' (pratinjau seluruh
 // Hiragana) — semua karakter ditandai taught:false karena M01 memang
-// murni pengenalan, belum ada yang "diajarkan".
+// murni pengenalan, belum ada yang "diajarkan". group_code IS NOT NULL
+// on purpose — this is the base 46-character gojuon table only (the
+// M01 seed copy itself says "10 kelompok, masing-masing 5 huruf").
+// Dakuten/handakuten rows have no A-J group_code and would otherwise
+// land in KanaChart's "Lainnya" bucket as an 11th, oversized row that
+// both overflows the dense preview slide and contradicts what the
+// slide's own text promises.
 export const getFullScriptChartPreview = cache(async (script: "hiragana" | "katakana"): Promise<KanaChartCharacter[]> => {
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from("kana_characters")
     .select("id, character, romaji, group_code, order_in_group, audio_url, stroke_data_key")
     .eq("script", script)
+    .not("group_code", "is", null)
     .order("order_in_group");
 
   return Promise.all(
