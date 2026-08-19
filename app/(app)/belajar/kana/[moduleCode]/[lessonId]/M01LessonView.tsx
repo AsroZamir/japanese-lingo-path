@@ -4,6 +4,7 @@ import { KanaChart } from "@/components/kana/KanaChart";
 import { AudioButton } from "@/components/kana/AudioButton";
 import { NumberBuilder } from "@/components/numbers/NumberBuilder";
 import { ClockDemo } from "@/components/numbers/ClockDemo";
+import { CalendarGrid } from "@/components/numbers/CalendarGrid";
 import { getCurrentUser } from "@/app/lib/current-user";
 import { getFullScriptChartPreview, type OrientationLessonBundle } from "@/app/lib/lesson-content-query";
 import { nameToKatakanaOrFallback } from "@/app/lib/name-to-katakana";
@@ -95,6 +96,22 @@ async function textBlockSlides(content: TextBlockContent, keyBase: string): Prom
           mode={content.mode}
           readingKanji={content.readingKanji}
           readingRomaji={content.readingRomaji}
+        />
+      </div>,
+    ];
+  }
+
+  if (content.kind === "calendar-demo") {
+    return [
+      <div className="m01-slide__body m01-slide__body--chart" key={keyBase}>
+        {content.heading && <h2 className="m01-slide__title">{content.heading}</h2>}
+        {content.instruction && <p className="number-builder__instruction">{content.instruction}</p>}
+        <CalendarGrid
+          startWeekday={content.startWeekday}
+          daysInMonth={content.daysInMonth}
+          monthLabel={content.monthLabel}
+          mode={content.mode}
+          highlightDay={content.highlightDay}
         />
       </div>,
     ];

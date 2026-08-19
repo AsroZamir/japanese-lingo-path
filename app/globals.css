@@ -934,6 +934,26 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .clock-demo__reading-kanji { font-size: 28px; font-weight: 700; }
 .clock-demo__reading-romaji { font-size: 15px; color: var(--muted); }
 
+/* ── M04 Calendar Grid (Fase 5) ── */
+.calendar-grid { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 340px; margin: 0 auto; }
+.calendar-grid__month { margin: 0; font-weight: 700; font-size: 17px; }
+.calendar-grid__weekdays, .calendar-grid__cells { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; width: 100%; }
+.calendar-grid__weekdays span { text-align: center; font-size: 13px; color: var(--muted); }
+.calendar-grid__cell {
+  aspect-ratio: 1 / 1; border: 1px solid var(--line); border-radius: 8px; background: white;
+  font-size: 14px; display: flex; align-items: center; justify-content: center;
+}
+.calendar-grid__cell--empty { border: none; background: transparent; }
+.calendar-grid__cell:not(:disabled):hover { border-color: #bcd1ea; background: #edf4fc; }
+.calendar-grid__cell.is-selected { border-color: var(--moji-accent); background: #edf4fc; outline: 2px solid var(--moji-accent); font-weight: 700; }
+.calendar-grid__cell:disabled { cursor: default; }
+.calendar-grid__reading {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%;
+  padding: 14px 20px; border-radius: var(--moji-radius-2xl); background: var(--moji-success-bg, #f0f9f4);
+}
+.calendar-grid__reading-kanji { font-size: 20px; font-weight: 700; }
+.calendar-grid__reading-romaji { font-size: 14px; color: var(--muted); }
+
 /* ── Moji "layar 5" quiz-card spec — gated select→Periksa→Lanjutkan flow ── */
 .exercise-runner__options--gated { grid-template-columns: repeat(2, 1fr); }
 .exercise-runner__option--card {

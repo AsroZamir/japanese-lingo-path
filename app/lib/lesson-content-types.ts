@@ -50,6 +50,20 @@ export type TextBlockContent =
       mode: "display" | "interactive";
       readingKanji?: string; // e.g. "三時半" — shown for "display" mode
       readingRomaji?: string; // e.g. "sanji-han"
+    }
+  | {
+      // M04 Fase 5 — a representative month grid (not a real
+      // current-date calendar) for teaching weekday + day-of-month
+      // readings. "interactive" lets the learner click any date and
+      // read the live result; "display" highlights one fixed date.
+      kind: "calendar-demo";
+      heading?: string;
+      instruction?: string;
+      startWeekday: number; // 0=Sunday — which weekday this demo month's 1st falls on
+      daysInMonth?: number;
+      monthLabel?: string;
+      mode: "display" | "interactive";
+      highlightDay?: number;
     };
 
 export type ChartBlockContent = {
