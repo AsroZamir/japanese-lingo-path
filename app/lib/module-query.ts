@@ -18,7 +18,7 @@ export type ModuleLessonSummary = {
 };
 
 export type ModuleWithLessons = {
-  module: { id: number; code: string; titleId: string };
+  module: { id: number; code: string; titleId: string; descriptionId: string | null };
   lessons: ModuleLessonSummary[];
 };
 
@@ -32,7 +32,7 @@ export const getModuleLessons = cache(async (moduleCode: string): Promise<Module
 
   const { data: moduleRow } = await supabase
     .from("kana_modules")
-    .select("id, code, title_id")
+    .select("id, code, title_id, description_id")
     .eq("code", moduleCode)
     .maybeSingle();
   if (!moduleRow) return null;
@@ -90,5 +90,8 @@ export const getModuleLessons = cache(async (moduleCode: string): Promise<Module
   withOrder.sort((a, b) => a.phaseOrder - b.phaseOrder || a.lessonOrder - b.lessonOrder);
   const lessons: ModuleLessonSummary[] = withOrder.map((x) => x.summary);
 
-  return { module: { id: moduleRow.id, code: moduleRow.code, titleId: moduleRow.title_id }, lessons };
+  return {
+    module: { id: moduleRow.id, code: moduleRow.code, titleId: moduleRow.title_id, descriptionId: moduleRow.description_id },
+    lessons,
+  };
 });

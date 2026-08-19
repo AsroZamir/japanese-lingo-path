@@ -34,6 +34,7 @@ export const getLearnerStats = cache(async (): Promise<LearnerStats> => {
 export type ModuleSummary = {
   code: string;
   titleId: string;
+  descriptionId: string | null;
   icon: string;
   statusLabel: string;
   percentComplete: number | null;
@@ -51,37 +52,50 @@ export type ModuleSummary = {
 // beats slicing the first letter of the title, which would show a
 // Latin letter instead of a kana glyph. Falls back gracefully for any
 // future module code not listed here yet.
-const MODULE_ICON: Record<string, string> = { M01: "日", M02: "あ" };
+const MODULE_ICON: Record<string, string> = { M01: "日", M02: "あ", M03: "ア", M04: "数", M05: "話" };
 
 export const getModuleSummaries = cache(async (): Promise<ModuleSummary[]> => {
   const existingCodes = await getExistingKanaModuleCodes();
-  const summaries = await Promise.all(
-    [...existingCodes].map(async (code): Promise<ModuleSummary | null> => {
+  const unsorted = await Promise.all(
+    [...existingCodes].map(async (code) => {
       const data = await getModuleLessons(code);
       if (!data) return null;
       const total = data.lessons.length;
       const completed = data.lessons.filter((l) => l.status === "completed").length;
       const percentComplete = total > 0 ? Math.round((completed / total) * 100) : null;
-      const statusLabel =
-        percentComplete == null
-          ? "Belum ada pelajaran"
-          : percentComplete >= 100
-            ? "Selesai"
-            : percentComplete > 0
-              ? `Sedang berjalan — ${percentComplete}%`
-              : "Belum dimulai";
       const resumeLessonRouteId =
         data.lessons.find((l) => l.status !== "completed")?.routeId ?? data.lessons[data.lessons.length - 1]?.routeId ?? null;
       return {
         code: data.module.code,
         titleId: data.module.titleId,
+        descriptionId: data.module.descriptionId,
         icon: MODULE_ICON[data.module.code] ?? data.module.titleId.slice(0, 1),
-        statusLabel,
         percentComplete,
-        locked: false,
         resumeLessonRouteId,
       };
     }),
   );
-  return summaries.filter((s): s is ModuleSummary => s != null).sort((a, b) => a.code.localeCompare(b.code));
+  const modules = unsorted.filter((s): s is NonNullable<typeof s> => s != null).sort((a, b) => a.code.localeCompare(b.code));
+
+  // Sequential unlock: the first module is always open; every later module
+  // needs its immediate predecessor at 100% completion. No per-module
+  // unlock_requirement rows exist yet (kana_modules.unlock_requirement is
+  // still unused across the app) — order-based sequencing is the only
+  // unlock rule defined so far, matching the mockup's "Selesaikan modul
+  // sebelumnya" copy.
+  let previousComplete = true;
+  return modules.map((m): ModuleSummary => {
+    const locked = !previousComplete;
+    previousComplete = m.percentComplete === 100;
+    const statusLabel = locked
+      ? "Terkunci"
+      : m.percentComplete == null
+        ? "Belum ada pelajaran"
+        : m.percentComplete >= 100
+          ? "Selesai"
+          : m.percentComplete > 0
+            ? `Sedang berjalan — ${m.percentComplete}%`
+            : "Belum dimulai";
+    return { ...m, statusLabel, locked };
+  });
 });

@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { levelDetails } from "@/app/curriculum-data";
 
 const roadmap = [
-  { code: "Pre-N5", title: levelDetails.PRE_N5.name, status: "Sedang dibangun", detail: levelDetails.PRE_N5.unitCount },
-  { code: "N5", title: levelDetails.N5.name, status: "Direncanakan", detail: levelDetails.N5.unitCount },
+  { code: "Pre-N5", title: "Fondasi Bahasa Jepang untuk Pemula", status: "Sedang dibangun", detail: "5 modul" },
+  { code: "N5", title: "Bahasa Jepang Dasar Lengkap", status: "Direncanakan", detail: "Belum tersedia" },
   { code: "N4", title: "Bahasa Jepang tingkat dasar-menengah", status: "Direncanakan", detail: "Belum tersedia" },
   { code: "N3", title: "Bahasa Jepang tingkat menengah", status: "Direncanakan", detail: "Belum tersedia" },
   { code: "N2", title: "Bahasa Jepang tingkat menengah-atas", status: "Direncanakan", detail: "Belum tersedia" },
