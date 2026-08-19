@@ -1007,3 +1007,93 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .lesson-player__summary-stats > div { display: flex; flex-direction: column; gap: 4px; padding: 14px 8px; border-radius: var(--moji-radius-lg); background: var(--moji-cream); }
 .lesson-player__summary-stats strong { color: var(--moji-ink); font-family: var(--moji-font-sans); font-size: 17px; font-weight: 800; }
 .lesson-player__summary-stats span { color: var(--moji-muted); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+
+/* ── Public landing page (Moji Landing.dc.html) ──────────────────────
+   New .landing- prefixed classes, not reusing .hero-card/.path-art/
+   .operational-scope-grid/.blueprint-badge — those stay owned by
+   /beranda's dashboard hero, which needs different sizing/content. */
+@keyframes landing-fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.landing { font-family: var(--moji-font-sans); background: var(--moji-white); color: var(--moji-ink); }
+.landing a { color: var(--moji-accent); }
+.landing a:hover { color: var(--moji-accent-hover); }
+
+.landing-nav { display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 20px 24px; }
+.landing-nav__brand { font-weight: 800; font-size: 18px; color: var(--moji-ink); }
+.landing-nav__links { display: flex; align-items: center; gap: 24px; }
+.landing-nav__links a { color: var(--moji-muted); text-decoration: none; font-size: 13px; font-weight: 600; transition: color 150ms var(--moji-ease-out); }
+.landing-nav__links a:hover { color: var(--moji-ink); }
+.landing-nav__cta { background: var(--moji-accent); color: #fff !important; padding: 9px 16px; border-radius: var(--moji-radius-pill); font-weight: 700 !important; }
+.landing-nav__cta:hover { background: var(--moji-accent-hover); }
+
+.landing-eyebrow { display: inline-block; color: var(--moji-accent); font-weight: 700; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 14px; }
+
+.landing-hero { max-width: 1200px; margin: 0 auto; padding: 40px 24px 72px; display: flex; align-items: center; gap: 48px; animation: landing-fade-up 500ms var(--moji-ease-out) both; }
+.landing-hero__copy { flex: 1; max-width: 520px; }
+.landing-hero__copy h1 { font-size: 38px; line-height: 1.18; font-weight: 800; color: var(--moji-ink); margin: 0 0 16px; letter-spacing: -.01em; }
+.landing-hero__copy h1 em { color: var(--moji-accent); font-style: normal; }
+.landing-hero__copy p { font-size: 15px; line-height: 1.65; color: var(--moji-muted); margin: 0 0 26px; }
+.landing-hero__ctas { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+a.landing-hero__secondary-link { color: var(--moji-ink); text-decoration: none; font-size: 13.5px; font-weight: 700; border-bottom: 1.5px solid var(--moji-ink); padding-bottom: 2px; }
+a.landing-cta-btn {
+  display: inline-flex; align-items: center; gap: 10px; text-decoration: none; background: var(--moji-accent); color: #fff;
+  padding: 13px 24px; border-radius: var(--moji-radius-pill); font-weight: 700; font-size: 14px;
+  transform: scale(1); transition: transform var(--moji-d-spring) var(--moji-ease-spring), background-color 150ms var(--moji-ease-out);
+}
+a.landing-cta-btn:hover { background: var(--moji-accent-hover); color: #fff; }
+.landing-cta-btn:active { transform: scale(0.96); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
+
+.landing-hero__card {
+  flex: 1; max-width: 240px; margin: 0 auto; background: var(--moji-white); border: 1.5px solid var(--moji-line);
+  border-radius: var(--moji-radius-3xl); padding: 22px; box-shadow: 0 30px 60px -24px rgba(36, 30, 24, .22); transform: rotate(-3deg);
+}
+.landing-hero__card-bar { display: flex; gap: 4px; margin-bottom: 18px; }
+.landing-hero__card-bar span { flex: 1; height: 5px; border-radius: var(--moji-radius-pill); background: var(--moji-accent); }
+.landing-hero__card-bar span.is-empty { background: var(--moji-line); }
+.landing-hero__card-glyph {
+  width: 110px; height: 110px; margin: 0 auto 16px; background: var(--moji-cream); border: 1px solid var(--moji-line);
+  border-radius: var(--moji-radius-xl); display: flex; align-items: center; justify-content: center;
+  font-family: var(--moji-font-jp); font-weight: 700; font-size: 48px; color: var(--moji-ink);
+}
+.landing-hero__card-audio { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; color: var(--moji-muted); font-size: 12px; }
+.landing-hero__card-play { width: 32px; height: 32px; border-radius: var(--moji-radius-pill); background: var(--moji-audio-blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.landing-hero__card-btn { height: 36px; border-radius: var(--moji-radius-pill); background: var(--moji-accent); color: #fff; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+.landing-section { max-width: 1200px; margin: 0 auto; padding: 64px 24px; }
+.landing-section--tinted { max-width: none; background: var(--moji-cream); }
+.landing-section--tinted > .landing-section__heading, .landing-section--tinted > .landing-feature-grid { max-width: 1200px; margin: 0 auto; }
+.landing-section__heading { text-align: center; margin-bottom: 40px; }
+.landing-section__heading h2 { font-size: 26px; font-weight: 800; color: var(--moji-ink); margin: 0 0 8px; }
+.landing-section__heading p { color: var(--moji-muted); font-size: 14px; margin: 0; }
+
+.landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.landing-card { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-lg); background: var(--moji-white); }
+.landing-card__badge { flex: 0 0 auto; padding: 6px 10px; border-radius: var(--moji-radius-sm); background: var(--moji-accent-soft-bg); color: var(--moji-accent); font-weight: 800; font-size: 12px; }
+.landing-card small { display: block; color: var(--moji-faint); font-size: 10px; font-weight: 800; letter-spacing: .08em; margin-bottom: 4px; }
+.landing-card strong { color: var(--moji-ink); font-size: 13px; line-height: 1.5; font-weight: 700; }
+
+.landing-feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.landing-feature-card { background: var(--moji-white); border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-2xl); padding: 24px; }
+.landing-feature-card__icon {
+  width: 44px; height: 44px; border-radius: var(--moji-radius-md); background: var(--moji-accent-soft-bg); color: var(--moji-accent);
+  display: flex; align-items: center; justify-content: center; font-family: var(--moji-font-jp); font-weight: 700; font-size: 18px; margin-bottom: 16px;
+}
+.landing-feature-card__title { font-size: 12px; font-weight: 800; letter-spacing: .04em; color: var(--moji-ink); margin-bottom: 8px; }
+.landing-feature-card__desc { font-size: 13px; color: var(--moji-muted); line-height: 1.6; }
+
+.landing-cta-dark { background: var(--moji-ink); padding: 64px 24px; text-align: center; }
+.landing-cta-dark h2 { color: #fff; font-size: 24px; font-weight: 800; margin: 0 0 10px; }
+.landing-cta-dark p { color: #b8b0a6; font-size: 14px; margin: 0 0 26px; }
+
+.landing-footer { max-width: 1200px; margin: 0 auto; padding: 28px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.landing-footer__brand { font-weight: 800; color: var(--moji-ink); font-size: 13px; }
+.landing-footer nav { display: flex; gap: 18px; }
+.landing-footer nav a { color: var(--moji-faint); text-decoration: none; font-size: 12.5px; }
+.landing-footer__copyright { color: var(--moji-faint); font-size: 11.5px; }
+
+@media (max-width: 720px) {
+  .landing-hero { flex-direction: column; padding-top: 24px; }
+  .landing-hero__copy { max-width: none; text-align: center; }
+  .landing-hero__ctas { justify-content: center; }
+  .landing-hero__card { margin-top: 16px; }
+  .landing-nav__links a:not(.landing-nav__cta):not(:last-of-type) { display: none; }
+}
