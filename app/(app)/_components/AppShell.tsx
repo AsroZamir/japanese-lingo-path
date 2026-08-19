@@ -1,17 +1,21 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { learnerLevel, reviewSummary, streak } from "@/app/lib/mock-data";
+import { learnerLevel } from "@/app/lib/mock-data";
 import type { CurrentUser } from "@/app/lib/current-user";
 import { ToastProvider, useToast } from "./toast-provider";
 
-type NavItem = { id: string; icon: string; label: string; path: string; badge?: string };
+type NavItem = { id: string; icon: string; label: string; path: string };
 
+// No "due for review" badge here — that needs a real SRS due-count
+// query (user_kana_mastery.due_at exists but nothing queries it into a
+// count yet); showing a number would be exactly the kind of guess this
+// reskin was told not to make.
 const navItems: NavItem[] = [
   { id: "dashboard", icon: "⌂", label: "Beranda", path: "/beranda" },
   { id: "learn", icon: "道", label: "Belajar", path: "/belajar" },
   { id: "practice", icon: "練", label: "Latihan", path: "/latihan" },
-  { id: "review", icon: "↻", label: "Ulangi", path: "/ulangi", badge: String(reviewSummary.dueNow) },
+  { id: "review", icon: "↻", label: "Ulangi", path: "/ulangi" },
   { id: "tutor", icon: "✦", label: "AI Tutor", path: "/ai-tutor" },
   { id: "conversation", icon: "話", label: "Percakapan", path: "/percakapan" },
   { id: "jlpt", icon: "的", label: "JLPT", path: "/jlpt" },
@@ -58,12 +62,11 @@ function AppShellContent({ user, children }: { user: CurrentUser; children: Reac
           <p className="nav-label">PERJALANAN ANDA</p>
           {navItems.map((item) => (
             <button className={`nav-item ${isNavItemActive(pathname, item) ? "active" : ""}`} onClick={() => go(item.path)} key={item.id}>
-              <span className="nav-icon">{item.icon}</span><span>{item.label}</span>{item.badge && <span className="nav-badge">{item.badge}</span>}
+              <span className="nav-icon">{item.icon}</span><span>{item.label}</span>
             </button>
           ))}
         </nav>
         <div className="sidebar-footer">
-          <div className="streak-card"><span className="streak-flame">火</span><div><strong>{streak.days} hari beruntun</strong><small>Pertahankan ritme belajar!</small></div></div>
           <button className="profile-row" onClick={() => go("/pengaturan")}>
             <div className="avatar"><Avatar user={user} /></div>
             <div><strong>{user.name}</strong><small>{learnerLevel}</small></div>

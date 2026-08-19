@@ -1120,3 +1120,79 @@ a.login-card__brand { display: block; text-align: center; font-weight: 800; font
 .login-card__submit:hover:not(:disabled) { background: var(--moji-accent-hover); }
 .login-card__submit:active:not(:disabled) { transform: scale(0.97); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
 .login-card__submit:disabled { opacity: .6; cursor: default; }
+
+/* ── App shell (sidebar + topbar) — shown identically across Dashboard/
+   Daftar-Modul/Profil mockups, wraps every authenticated page, so
+   reskinned once here rather than three separate times. Appended last
+   on purpose: overrides the base rules above (including their
+   responsive duplicates) at equal selector specificity by winning on
+   source order — layout/structure (position, width, flex) untouched,
+   only color/border/radius. */
+.sidebar { color: var(--moji-ink); background: var(--moji-white); border-right: 1px solid var(--moji-line); box-shadow: none; }
+.brand { padding-bottom: 28px; }
+.brand-mark { background: var(--moji-accent-soft-bg); box-shadow: none; border-radius: var(--moji-radius-md); }
+.brand-mark::after { content: none; }
+.brand-mark span { font: 700 22px/1 var(--moji-font-jp); color: var(--moji-accent); text-shadow: none; }
+.brand-name small { color: var(--moji-faint); }
+.brand-name strong { color: var(--moji-ink); font-family: var(--moji-font-sans); }
+.brand-name em { color: var(--moji-accent); }
+.nav-label { color: var(--moji-faint); }
+.nav-item { color: var(--moji-muted); font-family: var(--moji-font-sans); transition: background-color 150ms var(--moji-ease-out), color 150ms var(--moji-ease-out); }
+.nav-item:hover { color: var(--moji-ink); background: var(--moji-cream); }
+.nav-item.active { color: var(--moji-accent); background: var(--moji-accent-soft-bg); box-shadow: none; font-weight: 700; }
+.nav-icon { color: var(--moji-faint); font-family: var(--moji-font-jp); }
+.nav-item.active .nav-icon { color: var(--moji-accent); }
+.nav-badge { background: var(--moji-accent); }
+.profile-row { border-top: 1px solid var(--moji-line); }
+.profile-row strong { color: var(--moji-ink); font-family: var(--moji-font-sans); }
+.profile-row small { color: var(--moji-faint); }
+.profile-row button, .profile-row > span { color: var(--moji-faint); }
+.avatar { color: var(--moji-accent); background: var(--moji-accent-soft-bg); font-family: var(--moji-font-sans); }
+.topbar { background: rgba(255, 255, 255, .9); border-bottom: 1px solid var(--moji-line); }
+.mobile-brand { color: var(--moji-ink); font-family: var(--moji-font-sans); }
+.prototype-pill { border-color: var(--moji-line); background: var(--moji-cream); color: var(--moji-muted); }
+.icon-button { border-color: var(--moji-line); color: var(--moji-muted); background: var(--moji-white); }
+.level-pill { border-color: var(--moji-line); background: var(--moji-white); color: var(--moji-muted); font-family: var(--moji-font-sans); }
+.level-pill span { background: var(--moji-accent); font-family: var(--moji-font-sans); }
+.mobile-nav button.active { color: var(--moji-accent); }
+.text-button { color: var(--moji-accent); font-family: var(--moji-font-sans); }
+
+/* ── /beranda (Moji Dashboard.dc.html) ───────────────────────────────
+   No daily-goal ring, no streak badge, no fabricated lesson-progress
+   list — "Modulmu" reflects real per-module completion instead. */
+.dash-greet { margin-bottom: 24px; }
+.dash-greet h1 { margin: 0; color: var(--moji-ink); font-family: var(--moji-font-sans); font-size: 24px; font-weight: 800; }
+
+.dash-continue {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 28px;
+  padding: 24px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-2xl); background: var(--moji-white);
+}
+.dash-continue__glyph {
+  width: 56px; height: 56px; flex: 0 0 auto; border-radius: var(--moji-radius-lg); background: var(--moji-accent-soft-bg);
+  display: flex; align-items: center; justify-content: center; font-family: var(--moji-font-jp); font-weight: 700; font-size: 26px; color: var(--moji-accent);
+}
+.dash-continue__body { flex: 1; min-width: 200px; }
+.dash-continue__eyebrow { display: block; margin-bottom: 4px; color: var(--moji-faint); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.dash-continue__title { color: var(--moji-ink); font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+.dash-continue__subtitle { margin: 0; color: var(--moji-muted); font-size: 12.5px; }
+.dash-continue__btn {
+  border: none; border-radius: var(--moji-radius-pill); background: var(--moji-accent); color: #fff;
+  padding: 13px 22px; font-family: var(--moji-font-sans); font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  transform: scale(1); transition: transform var(--moji-d-spring) var(--moji-ease-spring), background-color 150ms var(--moji-ease-out);
+}
+.dash-continue__btn:hover { background: var(--moji-accent-hover); }
+.dash-continue__btn:active { transform: scale(0.96); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
+
+.dash-modules__heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.dash-modules__heading h3 { margin: 0; color: var(--moji-ink); font-family: var(--moji-font-sans); font-size: 15px; font-weight: 800; }
+.dash-modules__list { display: flex; flex-direction: column; gap: 10px; }
+.dash-module-row {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1.5px solid var(--moji-line);
+  border-radius: var(--moji-radius-lg); background: var(--moji-white);
+}
+.dash-module-row__icon {
+  width: 38px; height: 38px; flex: 0 0 auto; border-radius: var(--moji-radius-sm); background: var(--moji-cream);
+  display: flex; align-items: center; justify-content: center; font-family: var(--moji-font-jp); font-weight: 700; font-size: 16px; color: var(--moji-muted);
+}
+.dash-module-row__body strong { display: block; color: var(--moji-ink); font-size: 13.5px; font-weight: 700; }
+.dash-module-row__body small { color: var(--moji-faint); font-size: 11.5px; }

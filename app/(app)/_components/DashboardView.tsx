@@ -1,87 +1,69 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PageHeader } from "./PageHeader";
-import { dailyGoal, reviewSummary, reviewBreakdown } from "@/app/lib/mock-data";
 import type { ContinueLearningTarget } from "@/app/lib/continue-learning";
+import type { ModuleSummary } from "@/app/lib/learner-stats";
 
-const lessons = [
-  { no: "01", title: "How Japanese Writing Works", meta: "Preview · Orientation", state: "done" },
-  { no: "02", title: "Japanese Sounds", meta: "Shell · Pronunciation", state: "active" },
-  { no: "03", title: "Japanese Sentence Basics", meta: "Shell · Grammar awareness", state: "next" },
-] as const;
-
+// Removed vs. the pre-Moji version: the daily-goal ring (18/30 min —
+// no session-duration tracking exists), the streak badge (no streak
+// column anywhere), and the hardcoded 3-item "First Steps" lesson list
+// (fake progress state). "Modulmu" below replaces that list with the
+// real per-module completion from getModuleSummaries.
 export function DashboardView({
   userName,
   continueLearning,
+  moduleSummaries,
 }: {
   userName: string;
   continueLearning: ContinueLearningTarget | null;
+  moduleSummaries: ModuleSummary[];
 }) {
   const router = useRouter();
   const continueHref = continueLearning
     ? `/belajar/kana/${continueLearning.moduleCode}/${continueLearning.lessonCode}`
-    : "/belajar/P0";
+    : "/belajar";
   const continueSubtitle = continueLearning
-    ? `${continueLearning.moduleTitleId} · ${continueLearning.phaseTitleId} · ${continueLearning.lessonTitleId}`
-    : "Pre-N5 · Unit P0 · Japanese Orientation";
-  const continueLabel = continueLearning ? "Lanjutkan pelajaran" : "Open orientation";
+    ? `${continueLearning.moduleTitleId} · ${continueLearning.phaseTitleId}`
+    : "Pilih modul pertama Anda untuk mulai belajar.";
+  const continueTitle = continueLearning ? continueLearning.lessonTitleId : "Belum ada pelajaran aktif";
+  const continueLabel = continueLearning ? "Lanjutkan" : "Lihat modul";
 
   return (
     <>
-      <section className="welcome-row">
-        <PageHeader eyebrow="MONDAY, 17 AUGUST" title={`おはよう, ${userName}!`} copy="A little progress every day becomes fluency." />
-        <div className="daily-goal">
-          <div className="goal-ring"><span>{dailyGoal.minutesCompleted}</span><small>/ {dailyGoal.minutesTarget} min</small></div>
-          <div><small>DAILY GOAL</small><strong>{dailyGoal.minutesTarget - dailyGoal.minutesCompleted} minutes to go</strong></div>
-        </div>
+      <section className="dash-greet">
+        <h1>おはよう, {userName}!</h1>
       </section>
 
-      <section className="hero-card">
-        <div className="hero-copy">
-          <span className="card-kicker">CONTINUE YOUR PATH</span>
-          <h2>Your Japanese journey<br />starts with <em>あ・ア・日</em></h2>
-          <p>{continueSubtitle}</p>
-          <button className="primary-button" onClick={() => router.push(continueHref)}>{continueLabel} <span>→</span></button>
+      <div className="dash-continue">
+        <div className="dash-continue__glyph">日</div>
+        <div className="dash-continue__body">
+          <span className="dash-continue__eyebrow">Lanjutkan belajar</span>
+          <div className="dash-continue__title">{continueTitle}</div>
+          <p className="dash-continue__subtitle">{continueSubtitle}</p>
         </div>
-        <div className="path-art" aria-hidden="true">
-          <div className="sun"></div><div className="mountain mountain-back"></div><div className="mountain mountain-front"></div>
-          <div className="path-line"></div><div className="torii"><i></i><b></b><span></span></div>
-          <div className="petal p1">◆</div><div className="petal p2">◆</div><div className="petal p3">◆</div>
-        </div>
-      </section>
+        <button className="dash-continue__btn" onClick={() => router.push(continueHref)}>
+          {continueLabel} <span>›</span>
+        </button>
+      </div>
 
-      <section className="grid-section">
-        <div className="section-main">
-          <div className="section-heading">
-            <div><span className="card-kicker dark">YOUR CURRENT UNIT</span><h3>First Steps in Japanese</h3></div>
-            <button className="text-button" onClick={() => router.push("/belajar")}>View learning path →</button>
-          </div>
-          <div className="lesson-list">
-            {lessons.map((lesson) => (
-              <article className={`lesson-row ${lesson.state}`} key={lesson.no}>
-                <span className="lesson-no">{lesson.state === "done" ? "✓" : lesson.no}</span>
-                <div><strong>{lesson.title}</strong><small>{lesson.meta}</small></div>
-                <button className="lesson-action" onClick={() => lesson.state === "active" && router.push("/belajar/P0")}>
-                  {lesson.state === "done" ? "Completed" : lesson.state === "active" ? "Continue →" : "○"}
-                </button>
-              </article>
-            ))}
-          </div>
+      <div className="dash-modules">
+        <div className="dash-modules__heading">
+          <h3>Modulmu</h3>
+          <button className="text-button" onClick={() => router.push("/belajar")}>Lihat semua →</button>
         </div>
-
-        <aside className="review-panel">
-          <span className="card-kicker dark">REVIEW TODAY</span>
-          <div className="review-count"><strong>{reviewSummary.dueNow}</strong><span>items waiting</span></div>
-          <div className="review-types">
-            {reviewBreakdown.map((item) => (
-              <div key={item.type}><span className={`dot ${item.dot}`}></span><strong>{item.count}</strong><small>{item.type}</small></div>
-            ))}
-          </div>
-          <button className="secondary-button" onClick={() => router.push("/ulangi")}>Start 5-min review</button>
-          <p>Next review refreshes in 4 hours</p>
-        </aside>
-      </section>
+        <div className="dash-modules__list">
+          {moduleSummaries.length === 0 && <p className="welcome-copy">Belum ada modul yang tersedia.</p>}
+          {moduleSummaries.map((m) => (
+            <div className="dash-module-row" key={m.code}>
+              <div className="dash-module-row__icon">{m.icon}</div>
+              <div className="dash-module-row__body">
+                <strong>{m.titleId}</strong>
+                <small>{m.statusLabel}</small>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </>
   );
 }
