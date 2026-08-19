@@ -5,9 +5,15 @@
 // count already exceeds the budget becomes a solo slide — there is no
 // wholesome way to cut a sentence in half, so this is reported rather
 // than forced.
+//
+// Target range is 40-90 words/slide (Cacat E) — the old 40-word ceiling
+// with no floor produced sparse, mostly-empty trailing slides (a lesson
+// that should be 6-10 slides came out as 17). MIN_WORDS_PER_SLIDE is
+// enforced by a merge pass below, not by the greedy packer itself.
 
-export const MAX_WORDS_PER_SLIDE = 40;
-export const MAX_TABLE_ROWS_PER_SLIDE = 3;
+export const MAX_WORDS_PER_SLIDE = 90;
+export const MIN_WORDS_PER_SLIDE = 25;
+export const MAX_TABLE_ROWS_PER_SLIDE = 5;
 
 function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -15,23 +21,52 @@ function wordCount(text: string): number {
 
 export type TextUnit<T> = { text: string; payload: T };
 
-/** Greedily groups units into slide-sized chunks, respecting a word budget. Never splits a unit. */
-export function groupByWordBudget<T>(units: TextUnit<T>[], budget: number = MAX_WORDS_PER_SLIDE): T[][] {
-  const groups: T[][] = [];
+/**
+ * Greedily packs units up to `budget` words per group (never splitting a
+ * unit), then merges any resulting group under `minBudget` words into a
+ * neighboring group — a trailing single short paragraph no longer ends
+ * up alone on its own near-empty slide.
+ */
+export function groupByWordBudget<T>(
+  units: TextUnit<T>[],
+  budget: number = MAX_WORDS_PER_SLIDE,
+  minBudget: number = MIN_WORDS_PER_SLIDE,
+): T[][] {
+  const packed: { payloads: T[]; words: number }[] = [];
   let current: T[] = [];
   let currentWords = 0;
   for (const unit of units) {
     const w = wordCount(unit.text);
     if (current.length > 0 && currentWords + w > budget) {
-      groups.push(current);
+      packed.push({ payloads: current, words: currentWords });
       current = [];
       currentWords = 0;
     }
     current.push(unit.payload);
     currentWords += w;
   }
-  if (current.length > 0) groups.push(current);
-  return groups;
+  if (current.length > 0) packed.push({ payloads: current, words: currentWords });
+
+  // Merge undersized groups backward into the previous one (a trailing
+  // remainder is the common case); a too-small FIRST group has no
+  // previous, so it merges forward into the next one instead.
+  const merged: { payloads: T[]; words: number }[] = [];
+  for (const group of packed) {
+    const prev = merged[merged.length - 1];
+    if (group.words < minBudget && prev) {
+      prev.payloads.push(...group.payloads);
+      prev.words += group.words;
+    } else {
+      merged.push({ payloads: [...group.payloads], words: group.words });
+    }
+  }
+  if (merged.length > 1 && merged[0].words < minBudget) {
+    const first = merged.shift()!;
+    merged[0].payloads.unshift(...first.payloads);
+    merged[0].words += first.words;
+  }
+
+  return merged.map((g) => g.payloads);
 }
 
 export function groupParagraphs(paragraphs: string[], budget: number = MAX_WORDS_PER_SLIDE): string[][] {

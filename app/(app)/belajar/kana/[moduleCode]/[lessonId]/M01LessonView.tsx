@@ -108,18 +108,29 @@ async function textBlockSlides(content: TextBlockContent, keyBase: string): Prom
   return slides;
 }
 
+// Cacat A/E fix: the chart itself is dense (fills the slide, computed
+// cell size, no scroll — see .kana-chart--dense) and the block's last
+// paragraph group becomes a one-line subtitle ON the chart slide,
+// matching the Moji reference's title+subtitle+grid pattern, instead of
+// floating alone as its own near-empty slide. Earlier paragraph groups
+// (if the intro runs long) still get their own slide(s) first.
 async function chartBlockSlides(content: ChartBlockContent, keyBase: string): Promise<ReactNode[]> {
   const slides: ReactNode[] = [];
+  let subtitle: string | null = null;
   if (content.paragraphs?.length) {
-    groupParagraphs(content.paragraphs).forEach((paras, gi) => {
+    const groups = groupParagraphs(content.paragraphs);
+    const introGroups = groups.slice(0, -1);
+    introGroups.forEach((paras, gi) => {
       slides.push(<ParagraphSlide key={`${keyBase}-intro-${gi}`} paragraphs={paras} />);
     });
+    subtitle = groups[groups.length - 1]?.join(" ") ?? null;
   }
   const characters = await getFullScriptChartPreview(content.script);
   slides.push(
-    <div className="m01-slide__body m01-slide__body--chart" key={`${keyBase}-chart`}>
+    <div className="m01-slide__body m01-slide__body--fullchart" key={`${keyBase}-chart`}>
       {content.heading && <h2 className="m01-slide__title">{content.heading}</h2>}
-      <KanaChart script={content.script} phase={content.heading ?? "Pratinjau"} characters={characters} />
+      {subtitle && <p className="m01-slide__subtitle">{subtitle}</p>}
+      <KanaChart script={content.script} phase={content.heading ?? "Pratinjau"} characters={characters} dense />
     </div>,
   );
   return slides;
@@ -185,13 +196,19 @@ function tableBlockSlides(content: TableBlockContent, keyBase: string): ReactNod
   ));
 }
 
+// Cacat B fix: was a small kana + caption + tiny button all clumped in
+// the middle with dead space below. .m01-audio-slide fills the slide
+// height and spreads the three across it (justify-content: space-evenly)
+// instead of them collapsing to their natural content size.
 function audioListBlockSlides(content: AudioListBlockContent, keyBase: string): ReactNode[] {
   const slides: ReactNode[] = content.items.map((item, i) => (
-    <div className="m01-slide__body m01-slide__body--chart" key={`${keyBase}-item-${i}`}>
+    <div className="m01-slide__body m01-slide__body--fullchart" key={`${keyBase}-item-${i}`}>
       {i === 0 && content.heading && <h2 className="m01-slide__title">{content.heading}</h2>}
-      <p className="m01-slide__jp">{item.kana}</p>
-      <p className="m01-vocab-card__meaning">{item.romaji} · {item.meaning}</p>
-      <AudioButton url={item.audioUrl} />
+      <div className="m01-audio-slide">
+        <p className="m01-slide__jp">{item.kana}</p>
+        <p className="m01-vocab-card__meaning">{item.romaji} · {item.meaning}</p>
+        <AudioButton url={item.audioUrl} />
+      </div>
     </div>
   ));
   if (content.closingParagraphs?.length) {

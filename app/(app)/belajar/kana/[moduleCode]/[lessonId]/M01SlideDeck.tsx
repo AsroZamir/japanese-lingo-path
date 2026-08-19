@@ -156,14 +156,13 @@ export function M01SlideDeck({ lessonId, contentSlides, exercises }: M01SlideDec
       <div className="m01-slide-frame__stage">
         <div className="m01-slide-frame__stage-inner" style={stageStyle}>
           {stageContent}
+          {showGenericContinue && (
+            <button type="button" className="m01-slide-frame__continue" onClick={() => go(1)}>
+              Lanjutkan →
+            </button>
+          )}
         </div>
       </div>
-
-      {showGenericContinue && (
-        <button type="button" className="m01-slide-frame__continue" onClick={() => go(1)}>
-          Lanjutkan →
-        </button>
-      )}
     </div>
   );
 }

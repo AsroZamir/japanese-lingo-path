@@ -22,12 +22,22 @@ export type KanaChartProps = {
   script: "hiragana" | "katakana";
   phase: string;
   characters: KanaChartCharacter[];
+  /**
+   * Fits the whole chart (all ~11 rows) into a fixed-height container —
+   * used by M01's full-script preview slide, which has no scroll to
+   * fall back on. Drops the component's own header (the caller supplies
+   * its own slide title instead) and lets CSS flex divide the available
+   * height/width across rows and cells, rather than the normal fixed
+   * 56px cell size — a chart this tall can't use a fixed cell size
+   * without overflowing a fixed-height slide.
+   */
+  dense?: boolean;
 };
 
 const SCRIPT_LABEL: Record<string, string> = { hiragana: "Hiragana", katakana: "Katakana" };
 const LONG_PRESS_MS = 400;
 
-function KanaCell({ item }: { item: KanaChartCharacter }) {
+function KanaCell({ item, dense }: { item: KanaChartCharacter; dense?: boolean }) {
   const { playing, toggle } = useAudioPlayer(item.audioUrl);
   const [previewOpen, setPreviewOpen] = useState(false);
   const longPressTimer = useRef<number | null>(null);
@@ -84,13 +94,18 @@ function KanaCell({ item }: { item: KanaChartCharacter }) {
         type="button"
         className={[
           "kana-chart__cell",
+          dense && "kana-chart__cell--dense",
           !item.taught && "kana-chart__cell--untaught",
           playing && "kana-chart__cell--playing",
         ].filter(Boolean).join(" ")}
         onClick={handleClick}
         aria-label={`${item.character}, romaji ${item.romaji}${item.audioUrl ? "" : ", audio belum tersedia"}`}
       >
-        <RomajiText kana={item.character} romaji={item.romaji} policy="always" />
+        {/* Dense mode is a compact map overview (matches the Moji "Peta
+            Hiragana" reference) — kana glyph only, no romaji caption;
+            RomajiText's global on/off preference is for study surfaces,
+            not this overview moment. */}
+        {dense ? item.character : <RomajiText kana={item.character} romaji={item.romaji} policy="always" />}
       </button>
       {previewOpen && (
         <div className="kana-chart__preview">
@@ -101,7 +116,7 @@ function KanaCell({ item }: { item: KanaChartCharacter }) {
   );
 }
 
-export function KanaChart({ script, phase, characters }: KanaChartProps) {
+export function KanaChart({ script, phase, characters, dense }: KanaChartProps) {
   const groups = new Map<string, KanaChartCharacter[]>();
   for (const item of characters) {
     const key = item.groupCode ?? "Lainnya";
@@ -119,17 +134,19 @@ export function KanaChart({ script, phase, characters }: KanaChartProps) {
   }
 
   return (
-    <div className="kana-chart">
-      <div className="kana-chart__header">
-        <span className="kana-chart__eyebrow">{phase}</span>
-        <h3>Tabel {SCRIPT_LABEL[script] ?? script}</h3>
-      </div>
+    <div className={`kana-chart ${dense ? "kana-chart--dense" : ""}`}>
+      {!dense && (
+        <div className="kana-chart__header">
+          <span className="kana-chart__eyebrow">{phase}</span>
+          <h3>Tabel {SCRIPT_LABEL[script] ?? script}</h3>
+        </div>
+      )}
       <div className="kana-chart__groups">
         {orderedKeys.map((key) => (
           <div className="kana-chart__row" key={key}>
             <span className="kana-chart__row-label">{key}</span>
             <div className="kana-chart__row-cells">
-              {groups.get(key)!.map((item) => <KanaCell key={item.id} item={item} />)}
+              {groups.get(key)!.map((item) => <KanaCell key={item.id} item={item} dense={dense} />)}
             </div>
           </div>
         ))}

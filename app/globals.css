@@ -857,6 +857,30 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
   background: var(--moji-white); box-shadow: 0 14px 34px rgba(36, 30, 24, .16);
 }
 
+/* Dense mode (M01's full-script preview slide, Cacat A fix) — up to 10
+   groupCode rows (DB check constraint caps it at A-J) must fit a fixed
+   slide height with zero scroll. Cell size is computed by the browser
+   from available space, not hardcoded: each row gets an equal 1/10
+   share of the chart's own height (itself flex:1 of the slide, see
+   .m01-slide__body--fullchart), and each cell is a square sized off
+   that row's height — never off a fixed px value. Rows with fewer
+   cells (e.g. や/ゆ/よ) stay the same cell size as full rows; they're
+   just a shorter row, exactly like the Moji "Peta Hiragana" reference. */
+.kana-chart--dense { flex: 1; min-height: 0; gap: 0; }
+.kana-chart--dense .kana-chart__groups { flex: 1; min-height: 0; gap: 3px; }
+.kana-chart--dense .kana-chart__row { flex: 1; min-height: 0; gap: 8px; }
+.kana-chart--dense .kana-chart__row-label { width: 26px; font-size: 11px; }
+.kana-chart--dense .kana-chart__row-cells { height: 100%; flex-wrap: nowrap; gap: 6px; }
+.kana-chart--dense .kana-chart__cell-wrap { height: 100%; }
+.kana-chart--dense .kana-chart__cell {
+  width: auto; height: 100%; aspect-ratio: 1 / 1;
+  font-size: clamp(12px, 3.4vw, 24px); border-radius: var(--moji-radius-sm);
+}
+@media (min-width: 1024px) {
+  .kana-chart--dense .kana-chart__row-label { width: 34px; font-size: 13px; }
+  .kana-chart--dense .kana-chart__row-cells { gap: 10px; }
+}
+
 .exercise-runner { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: white; width: min(420px, 100%); }
 .exercise-runner--done { align-items: center; justify-content: center; min-height: 120px; color: var(--deep-navy); font-size: 15px; font-weight: 700; }
 .exercise-runner__header { display: flex; align-items: center; gap: 10px; width: 100%; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -950,7 +974,10 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
    slide, bukan 9 tetap). Transisi antar-slide memakai D.slideHalf
    (--moji-d-slide) + E.out, sesuai mekanisme asli di
    "Sistem Gerak - Kuis Hiragana.dc.html". */
-.m01-slide-frame { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; font-family: var(--moji-font-sans); }
+/* Two explicit tiers, not one layout that stretches — mobile values are
+   the base (< 1024px), desktop values override at 1024px+. Breakpoint
+   and every number below is the literal Bagian 1 / Cacat C spec. */
+.m01-slide-frame { width: 100%; max-width: 680px; margin: 0 auto; padding: 0 20px; display: flex; flex-direction: column; gap: 18px; font-family: var(--moji-font-sans); box-sizing: border-box; }
 .m01-slide-frame__head { display: flex; align-items: center; gap: 14px; }
 .m01-slide-frame__head .lesson-player__progress { flex: 1; margin-bottom: 0; }
 .m01-slide-frame__counter { flex: 0 0 auto; color: var(--moji-muted); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -962,20 +989,32 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 }
 .m01-slide-frame__close:hover { border-color: var(--moji-accent); color: var(--moji-accent); }
 
+/* Content is TOP-aligned with a flex:1 spacer pushing the button to the
+   bottom — matching screens 04/06/07 in the Moji reference exactly
+   (content flows from the top, `<div style="flex:1"></div>`, button).
+   NOT vertically centered — that was the actual root cause behind
+   Cacat B/C (content looked "clumped in the middle" because it was). */
 .m01-slide-frame__stage {
-  position: relative; height: clamp(420px, 62vh, 600px);
-  display: flex; flex-direction: column; justify-content: center; overflow: hidden;
+  position: relative; min-height: 460px; height: clamp(460px, 72vh, 620px);
+  display: flex; flex-direction: column; overflow: hidden;
 }
-.m01-slide-frame__stage-inner { width: 100%; will-change: transform, opacity; }
+.m01-slide-frame__stage-inner { width: 100%; height: 100%; display: flex; flex-direction: column; will-change: transform, opacity; }
 
+/* margin-top:auto on purpose instead of a spacer sibling — a spacer
+   div (also flex:1) competes with self-filling content like the dense
+   chart (also flex:1) and halves its space instead of only claiming
+   leftover room. auto-margin claims exactly the leftover and nothing
+   more, whether the content above is flex:1 (chart/audio) or natural
+   height (a short paragraph) — both cases pin the button to the
+   bottom correctly. */
 .m01-slide-frame__continue {
-  width: 100%; height: 48px; flex: 0 0 auto; border: none; border-radius: var(--moji-radius-pill);
+  width: 100%; height: 48px; flex: 0 0 auto; margin-top: auto; border: none; border-radius: var(--moji-radius-pill);
   background: var(--moji-accent); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
   transform: scale(1); transition: transform var(--moji-d-spring) var(--moji-ease-spring), background-color 150ms var(--moji-ease-out);
 }
 .m01-slide-frame__continue:active { transform: scale(0.97); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
 
-.m01-slide__title { margin: 0 0 14px; color: var(--moji-ink); font-size: 28px; font-weight: 700; line-height: 1.25; }
+.m01-slide__title { margin: 0 0 14px; color: var(--moji-ink); font-size: 26px; font-weight: 700; line-height: 1.25; }
 .m01-slide__body { text-align: left; }
 /* Direct-child combinator on purpose — plain prose paragraphs
    (ParagraphSlide) are direct children of .m01-slide__body, but
@@ -984,31 +1023,94 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
    classes. A descendant selector here would out-specificity those
    single-class rules (0,1,1 beats 0,1,0) and silently overwrite them —
    exactly what happened to the showcase caption before this fix. */
-.m01-slide__body > p { margin: 0 0 12px; color: var(--moji-ink); font-size: 18px; font-weight: 400; line-height: 1.6; }
+.m01-slide__body > p { margin: 0 0 12px; color: var(--moji-ink); font-size: 17px; font-weight: 400; line-height: 1.6; }
 .m01-slide__body > p:last-child { margin-bottom: 0; }
 /* align-items:center here centers the CARD/VISUAL as a block on the
    frame — it must not also force text-align:center on the prose inside
-   (vocab-card note, showcase caption, etc.), per Tugas 3's "teks isi
-   rata kiri, bukan rata tengah". Text defaults to left; only the chart
-   slide's own heading (a caption for the chart below it, not body
-   prose) is deliberately re-centered. */
+   (vocab-card note, showcase caption, etc.), per "teks isi rata kiri,
+   bukan rata tengah". Text defaults to left; only the chart slide's own
+   heading (a caption for the chart below it, not body prose) is
+   deliberately re-centered. */
 .m01-slide__body--chart, .m01-slide__body--callout { display: flex; flex-direction: column; align-items: center; }
 .m01-slide__body--chart .m01-slide__title { text-align: center; }
-/* Karakter Jepang tunggal/kata pendek (vocab-card, item audio_list) — rasio
-   min. 4:1 terhadap teks penjelasan di sekitarnya, per skala Tugas 3.
-   TIDAK dipakai untuk kalimat penuh (name-showcase) — lihat --sentence. */
-.m01-slide__jp { margin: 0; color: var(--moji-ink); font-family: var(--moji-font-jp); font-weight: 700; line-height: 1; font-size: clamp(88px, 20vw, 120px); }
-.m01-slide__jp--sentence { font-size: clamp(26px, 6vw, 38px); line-height: 1.4; }
+/* Karakter Jepang tunggal/kata pendek (vocab-card, item audio_list) —
+   96px mobile / 160px desktop, exact per Cacat C. Rasio min. 4:1
+   terhadap teks penjelasan di sekitarnya masih terpenuhi di kedua tier.
+   TIDAK dipakai untuk kalimat penuh (name-showcase) — lihat --sentence,
+   yang tetap fluid karena panjang kalimatnya bervariasi per nama user. */
+.m01-slide__jp { margin: 0; color: var(--moji-ink); font-family: var(--moji-font-jp); font-weight: 700; line-height: 1; font-size: 96px; }
+.m01-slide__jp--sentence { font-size: clamp(26px, 7vw, 38px); line-height: 1.4; }
 .m01-slide__jp.is-correct { color: var(--moji-success); }
 .m01-slide__jp.is-wrong { color: #a13a2f; }
 
-/* Tugas 3 gives one fixed number for title/body (28px/18px, no separate
-   mobile figure — unlike the Japanese-character rule, which explicitly
-   splits 120px desktop / 88px mobile) — so those stay constant here.
-   Only the stage's own height budget adjusts for shorter viewports. */
-@media (max-width: 640px) {
-  .m01-slide-frame__stage { height: clamp(380px, 68vh, 520px); }
+/* Full-script preview slide (Cacat A) — the dense KanaChart needs a
+   real height to divide across its rows; flex:1 here is what supplies
+   it (stage-inner is already height:100%, see above). */
+/* Staggered entrance (Cacat D) — title, then body/subtitle, then the
+   visual, then the button, 70ms apart, using the existing E.out
+   (--moji-ease-out) rather than a new easing system. Defined only
+   inside prefers-reduced-motion:no-preference; outside it these
+   elements simply render at their final opacity/position with no
+   animation at all. Applies per fresh mount, which is what happens
+   naturally on every slide change (only the active slide is mounted). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes m01-stagger-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .m01-slide__body > *,
+  .m01-slide__body--fullchart > *,
+  .m01-audio-slide > *,
+  .exercise-runner.m01-exercise > * {
+    animation: m01-stagger-in 320ms var(--moji-ease-out) both;
+  }
+  .m01-slide__body > *:nth-child(1), .m01-slide__body--fullchart > *:nth-child(1), .m01-audio-slide > *:nth-child(1), .exercise-runner.m01-exercise > *:nth-child(1) { animation-delay: 0ms; }
+  .m01-slide__body > *:nth-child(2), .m01-slide__body--fullchart > *:nth-child(2), .m01-audio-slide > *:nth-child(2), .exercise-runner.m01-exercise > *:nth-child(2) { animation-delay: 70ms; }
+  .m01-slide__body > *:nth-child(3), .m01-slide__body--fullchart > *:nth-child(3), .m01-audio-slide > *:nth-child(3), .exercise-runner.m01-exercise > *:nth-child(3) { animation-delay: 140ms; }
+  .m01-slide__body > *:nth-child(4), .m01-slide__body--fullchart > *:nth-child(4), .m01-audio-slide > *:nth-child(4), .exercise-runner.m01-exercise > *:nth-child(4) { animation-delay: 210ms; }
+  .m01-slide__body > *:nth-child(n+5), .m01-slide__body--fullchart > *:nth-child(n+5), .m01-audio-slide > *:nth-child(n+5), .exercise-runner.m01-exercise > *:nth-child(n+5) { animation-delay: 280ms; }
+  /* The button sits outside the content wrapper (a stage-inner sibling
+     for content slides) — fixed late delay so it lands after content.
+     .m01-slide-quiz-scoped and element-qualified (button.____) on
+     purpose: .exercise-runner__check-btn is shared with M02's own
+     (already-shipped, unrelated) quiz, so this stays M01-only; the
+     extra element-type selector also out-specifies the
+     ">*:nth-child(n+5)" rule above so this fixed delay always wins over
+     whatever position the button happens to land in. */
+  .m01-slide-frame__continue, .m01-slide-quiz button.exercise-runner__check-btn { animation: m01-stagger-in 320ms var(--moji-ease-out) 350ms both; }
 }
+
+.m01-slide__body--fullchart { flex: 1; min-height: 0; display: flex; flex-direction: column; width: 100%; }
+.m01-slide__body--fullchart .m01-slide__title { text-align: center; flex: 0 0 auto; margin-bottom: 4px; }
+.m01-slide__subtitle { flex: 0 0 auto; margin: 0 0 16px; color: var(--moji-muted); font-size: 14px; text-align: center; }
+@media (min-width: 1024px) {
+  .m01-slide__subtitle { font-size: 15px; }
+}
+
+/* Single audio_list item (Cacat B) — was a small character + label +
+   button all clumped in the middle with dead space below. Now spreads
+   the three across the full slide height instead of collapsing to
+   content size, and the character/button both use the bigger Cacat B
+   sizes rather than the general "hero word" default. */
+.m01-audio-slide { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; width: 100%; text-align: center; }
+.m01-audio-slide .audio-button { width: 56px; height: 56px; }
+.m01-audio-slide .audio-button__icon { font-size: 20px; }
+@media (min-width: 1024px) {
+  .m01-audio-slide .audio-button { width: 72px; height: 72px; }
+  .m01-audio-slide .audio-button__icon { font-size: 26px; }
+}
+
+@media (min-width: 1024px) {
+  .m01-slide-frame { max-width: 880px; padding: 0; }
+  .m01-slide-frame__stage { min-height: 560px; height: clamp(560px, 68vh, 680px); }
+  .m01-slide-frame__close { width: 56px; height: 56px; }
+  .m01-slide-frame__continue { height: 56px; font-size: 17px; }
+  .m01-slide__title { font-size: 34px; }
+  .m01-slide__body > p { font-size: 19px; }
+  .m01-slide__jp { font-size: 160px; }
+  .m01-slide__jp--sentence { font-size: clamp(32px, 4vw, 46px); }
+}
+
 
 .m01-option--correct { border-color: var(--moji-success); background: var(--moji-success-bg); }
 
@@ -1021,11 +1123,11 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .m01-showcase__meaning { margin: 6px 0 0; color: #f0e6dc; font-size: 14px; }
 
 .m01-steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.m01-steps li { display: flex; align-items: center; gap: 14px; min-height: 48px; padding: 12px 16px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-md); background: var(--moji-white); font-size: 18px; color: var(--moji-ink); }
+.m01-steps li { display: flex; align-items: center; gap: 14px; min-height: 48px; padding: 12px 16px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-md); background: var(--moji-white); font-size: 17px; color: var(--moji-ink); }
 .m01-steps__label { flex: 0 0 auto; padding: 4px 8px; border-radius: var(--moji-radius-xs); color: #fff; background: var(--moji-accent); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 
 .m01-table-wrap { overflow-x: auto; padding: 0; }
-.m01-table { width: 100%; border-collapse: collapse; font-size: 18px; }
+.m01-table { width: 100%; border-collapse: collapse; font-size: 17px; }
 .m01-table th, .m01-table td { padding: 12px 16px; border-bottom: 1px solid var(--moji-line); text-align: left; }
 .m01-table th { color: var(--moji-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
 .m01-table td { color: var(--moji-ink); font-family: var(--moji-font-jp); }
@@ -1035,12 +1137,12 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .m01-vocab-card__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .m01-vocab-card__romaji { margin: 6px 0 0; color: var(--moji-accent); font-size: 14px; font-style: italic; }
 .m01-vocab-card__meaning { margin: 4px 0 0; color: var(--moji-muted); font-size: 14px; }
-.m01-vocab-card__note { margin: 18px 0 0; color: var(--moji-ink); font-size: 18px; line-height: 1.6; text-align: left; }
+.m01-vocab-card__note { margin: 18px 0 0; color: var(--moji-ink); font-size: 17px; line-height: 1.6; text-align: left; }
 .m01-vocab-card__activity { margin: 14px 0 0; padding: 10px 14px; border-radius: var(--moji-radius-sm); color: var(--moji-muted); background: var(--moji-cream); font-size: 13px; text-align: left; }
 .m01-vocab-card__secondary { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--moji-line); color: var(--moji-muted); font-size: 14px; }
 .m01-vocab-card__secondary .m01-slide__jp { font-size: 24px; }
 
-.m01-callout { padding: 18px 22px; border-radius: var(--moji-radius-lg); font-size: 18px; line-height: 1.6; max-width: 520px; text-align: left; }
+.m01-callout { padding: 18px 22px; border-radius: var(--moji-radius-lg); font-size: 17px; line-height: 1.6; max-width: 520px; text-align: left; }
 .m01-callout--encouragement { color: #1a7a4c; background: var(--moji-success-bg); }
 .m01-callout--tip { color: #1c5d99; background: #e8f1fc; }
 .m01-callout--important { color: #8a5a12; background: #fff3de; }
@@ -1048,18 +1150,38 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .m01-dialogue { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .m01-dialogue__bubble { display: inline-block; padding: 12px 18px; border-radius: var(--moji-radius-lg); font-family: var(--moji-font-jp); font-size: 22px; }
 .m01-dialogue__bubble--npc { background: var(--moji-cream); color: var(--moji-ink); }
-.m01-dialogue__prompt { margin: 16px 0; color: var(--moji-ink); font-size: 18px; width: 100%; }
+.m01-dialogue__prompt { margin: 16px 0; color: var(--moji-ink); font-size: 17px; width: 100%; }
 .m01-dialogue__choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
 .m01-dialogue__choices button { min-height: 48px; }
 .m01-dialogue__hint { margin: 10px 0 0; color: var(--moji-muted); font-size: 14px; width: 100%; }
 .m01-dialogue__narrative { margin: 18px 0 6px; color: var(--moji-muted); font-size: 14px; width: 100%; }
 .m01-dialogue__closing { margin: 14px 0 0; color: var(--moji-success); font-size: 14px; font-weight: 600; width: 100%; }
 
-.m01-feedback-inline { margin: 12px 0 0; padding: 12px 16px; border-radius: var(--moji-radius-md); font-size: 18px; line-height: 1.5; text-align: left; width: 100%; }
+.m01-feedback-inline { margin: 12px 0 0; padding: 12px 16px; border-radius: var(--moji-radius-md); font-size: 17px; line-height: 1.5; text-align: left; width: 100%; }
 .m01-feedback-inline.is-correct { color: #1a7a4c; background: var(--moji-success-bg); }
 .m01-feedback-inline.is-wrong { color: #a13a2f; background: var(--moji-error-bg); }
 @media (max-width: 640px) {
   .m01-dialogue__choices { grid-template-columns: 1fr; }
+}
+
+/* Desktop tier (≥1024px) for the M01-only "teks isi"/button elements
+   defined above — 19px body text, 56px/17px buttons, per Cacat C.
+   Scoped to classes only ConceptExerciseRunner/M01LessonView use, so
+   M02's own (already-shipped, unrelated) quiz styling is untouched. */
+@media (min-width: 1024px) {
+  .m01-steps li,
+  .m01-table,
+  .m01-vocab-card__note,
+  .m01-callout,
+  .m01-dialogue__prompt,
+  .m01-feedback-inline,
+  .exercise-runner.m01-exercise .exercise-runner__prompt p {
+    font-size: 19px;
+  }
+  .exercise-runner__option--text { font-size: 17px; min-height: 56px; }
+  .m01-dialogue__choices button { min-height: 56px; }
+  .m01-slide-quiz .exercise-runner__check-btn { height: 56px; }
+  .m01-slide-quiz .exercise-runner__check-btn-label { font-size: 17px; }
 }
 
 /* ── LessonPlayer — 9-segment group progress bar + completion card ─── */
@@ -1353,9 +1475,13 @@ a.login-card__brand { display: block; text-align: center; font-weight: 800; font
      both render outside the card's own box; without this gutter they
      get clipped by .m01-slide-frame__stage's overflow:hidden right at
      the frame edge (border-box keeps the outer footprint at 100%). */
-  padding: 0 10px; gap: 20px; width: 100%;
+  padding: 0 10px; gap: 20px; width: 100%; height: 100%; box-sizing: border-box;
 }
-.exercise-runner.m01-exercise .exercise-runner__prompt p { color: var(--moji-ink); font-size: 18px; font-weight: 400; }
+.exercise-runner.m01-exercise .exercise-runner__prompt p { color: var(--moji-ink); font-size: 17px; font-weight: 400; }
+/* Same margin-top:auto pattern as .m01-slide-frame__continue — pins the
+   check-btn to the bottom regardless of how much content (options,
+   feedback) sits above it, no spacer sibling needed. */
+.m01-slide-quiz .exercise-runner__check-btn { margin-top: auto; }
 
 /* M01 MCQ options are Indonesian text labels, not glyphs — reuse the
    Moji "layar 5" card's select→Periksa→Lanjutkan state system
