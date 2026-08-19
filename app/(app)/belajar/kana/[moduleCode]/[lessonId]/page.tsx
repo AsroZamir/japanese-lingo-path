@@ -4,11 +4,14 @@ import { getLessonBundle } from "@/app/lib/lesson-query";
 import { getOrientationLessonContent } from "@/app/lib/lesson-content-query";
 import { getModuleLessons } from "@/app/lib/module-query";
 import { getWordPool } from "@/app/lib/word-pool-query";
+import { getKanaPool } from "@/app/lib/kana-pool-query";
 import { LessonL01 } from "./LessonL01";
 import { LessonL02 } from "./LessonL02";
 import { LessonL03 } from "./LessonL03";
 import { LessonL04 } from "./LessonL04";
 import { LessonReading } from "./LessonReading";
+import { LessonActiveRecall } from "./LessonActiveRecall";
+import { LessonActiveRecallWriting } from "./LessonActiveRecallWriting";
 import { M01LessonView } from "./M01LessonView";
 import { LessonPlayer } from "./LessonPlayer";
 
@@ -30,6 +33,13 @@ const READING_LENGTH_BY_CODE: Record<string, [number, number]> = {
   L02: [4, 99],
 };
 const MODULE_SCRIPT: Record<string, "hiragana" | "katakana"> = { M02: "hiragana", M03: "katakana" };
+
+// Fase 5 (Active Recall) — same "no kana_lesson_items of its own" shape
+// as Reading Lab, but drills the FULL taught-so-far kana pool (not just
+// vocabulary). L02 is dictation/writing (LessonActiveRecallWriting);
+// L01/L03 are multiple-choice (LessonActiveRecall) — branched by lesson
+// code, same convention LessonReading already uses for L01 vs L02.
+const ACTIVE_RECALL_LESSON_TYPE = "active_recall";
 
 function NextLessonNav({
   nextLessonHref,
@@ -127,6 +137,42 @@ export default async function LessonPage({
             words,
           }}
         />
+      </LessonPlayer>
+    );
+  }
+
+  if (currentSummary.lessonType === ACTIVE_RECALL_LESSON_TYPE) {
+    const script = MODULE_SCRIPT[moduleCode] ?? "hiragana";
+    const [kana, words] = await Promise.all([getKanaPool(script), getWordPool(script, 1, 99)]);
+
+    const groupLessons = moduleLessons.lessons
+      .filter((l) => l.phaseCode === phaseCode)
+      .map((l) => ({ code: l.code, titleId: l.titleId }));
+    // Real totals depend on the random sample size each component draws
+    // (see LessonActiveRecall/-Writing) — this is a stable upper-bound
+    // estimate for the progress bar, not a re-derivation of the exact item
+    // count, same spirit as the L03/L04 estimates below.
+    const exerciseTotals = { [lessonCode]: lessonCode === "L02" ? 8 + 4 * 3 : lessonCode === "L01" ? 30 : 36 };
+
+    const recallBundle = {
+      lesson: { id: currentSummary.id, code: lessonCode, titleId: currentSummary.titleId, lessonType: currentSummary.lessonType },
+      kana,
+      words,
+    };
+
+    return (
+      <LessonPlayer
+        moduleCode={moduleCode}
+        groupCode={phaseCode}
+        groupLessons={groupLessons}
+        currentLessonCode={lessonCode}
+        lessonTitle={currentSummary.titleId}
+        phaseTitle={`${moduleLessons.module.titleId} · ${currentSummary.phaseTitleId}`}
+        exerciseTotals={exerciseTotals}
+        nextLessonHref={nextLesson ? `/belajar/kana/${moduleCode}/${nextLesson.routeId}` : null}
+        nextLessonTitle={nextLesson?.titleId ?? null}
+      >
+        {lessonCode === "L02" ? <LessonActiveRecallWriting bundle={recallBundle} /> : <LessonActiveRecall bundle={recallBundle} />}
       </LessonPlayer>
     );
   }
