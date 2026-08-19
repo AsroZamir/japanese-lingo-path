@@ -57,6 +57,7 @@ function toSlug(text: string, script: "hiragana" | "katakana"): string {
   // menghasilkan nama file kosong ("kana/.wav"). Fallback manual untuk
   // kasus ini saja; karakter lain semuanya diturunkan lewat wanakana.
   if (text === "っ" || text === "ッ") return script === "katakana" ? "katakana-sokuon" : "sokuon";
+  if (text === "ー") return "katakana-chouonpu";
   const slug = wanakana.toRomaji(text).toLowerCase().replace(/[^a-z]/g, "");
   if (!slug) throw new Error(`toSlug("${text}") menghasilkan slug kosong — perlu fallback manual seperti "っ".`);
   return script === "katakana" ? `katakana-${slug}` : slug;
