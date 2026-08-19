@@ -8,6 +8,8 @@ export type CurrentUser = {
   initials: string;
   avatarUrl: string | null;
   nativeLanguage: string;
+  /** From Supabase Auth's own user.created_at — real signup timestamp, not a guess. */
+  joinedAt: string;
 };
 
 function initialsFrom(name: string) {
@@ -44,5 +46,6 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     initials: initialsFrom(name),
     avatarUrl: profile?.avatar_url ?? metaAvatar ?? null,
     nativeLanguage: profile?.native_language ?? "Indonesian",
+    joinedAt: user.created_at,
   };
 });

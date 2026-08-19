@@ -1196,3 +1196,29 @@ a.login-card__brand { display: block; text-align: center; font-weight: 800; font
 }
 .dash-module-row__body strong { display: block; color: var(--moji-ink); font-size: 13.5px; font-weight: 700; }
 .dash-module-row__body small { color: var(--moji-faint); font-size: 11.5px; }
+
+/* ── /profil (Moji Profil.dc.html) ───────────────────────────────────
+   No streak/XP/"huruf dikuasai" stat tiles (no real source for any of
+   the three — see the reskin report) and no badges/achievement grid
+   at all (no badge system exists; not inventing one here). The two
+   stat tiles here are directly counted from real rows instead. */
+.profil-header { display: flex; align-items: center; gap: 18px; margin-bottom: 28px; }
+.profil-header__avatar {
+  width: 64px; height: 64px; border-radius: var(--moji-radius-pill); background: var(--moji-accent);
+  color: #fff; font-family: var(--moji-font-sans); font-weight: 700; font-size: 22px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.profil-header__name { color: var(--moji-ink); font-family: var(--moji-font-sans); font-size: 19px; font-weight: 800; }
+.profil-header__joined { color: var(--moji-faint); font-size: 12.5px; margin-top: 2px; }
+
+.profil-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 28px; max-width: 420px; }
+.profil-stat { padding: 16px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-lg); background: var(--moji-white); text-align: center; }
+.profil-stat__value { color: var(--moji-ink); font-family: var(--moji-font-sans); font-size: 20px; font-weight: 800; }
+.profil-stat__label { color: var(--moji-faint); font-size: 11px; margin-top: 4px; }
+
+.profil-account { max-width: 420px; padding: 24px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-2xl); background: var(--moji-white); }
+.profil-account label { display: grid; gap: 6px; margin: 14px 0; color: var(--moji-muted); font-size: 11px; font-weight: 700; }
+.profil-account input {
+  padding: 11px 14px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-md);
+  color: var(--moji-ink); background: var(--moji-cream); font: 13px var(--moji-font-sans);
+}
+.profil-account .primary-button { margin-top: 16px; }
