@@ -747,17 +747,37 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .audio-button--playing:hover:not(:disabled) { background: var(--moji-accent-hover); }
 .audio-button__icon { font-size: 12px; line-height: 1; }
 
-.stroke-animation { display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
-.stroke-animation__svg { width: 220px; height: 220px; max-width: 100%; background: white; border: 1px solid var(--line); border-radius: 16px; }
-.stroke-animation--empty { align-items: center; justify-content: center; width: 220px; height: 220px; border: 1px dashed #ccd7e5; border-radius: 16px; text-align: center; color: #8b99aa; font-size: 11px; padding: 16px; }
-.stroke-animation__placeholder-char { font-size: 40px; color: #c3ccd8; }
+/* Moji reskin — playback/timing logic (rAF loop, mask reveal, speed
+   state) in StrokeAnimation.tsx is untouched; the mockup's s2 uses a
+   simple toggle switch, but that would drop real functionality
+   (play/pause/restart/slow-mo/step) our version already has, so the
+   full control bar stays — only its look changes. */
+.stroke-animation { display: inline-flex; flex-direction: column; align-items: center; gap: 12px; }
+.stroke-animation__svg {
+  width: 220px; height: 220px; max-width: 100%; background: var(--moji-white);
+  border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-xl);
+}
+.stroke-animation--empty {
+  align-items: center; justify-content: center; width: 220px; height: 220px;
+  border: 1.5px dashed var(--moji-line); border-radius: var(--moji-radius-xl);
+  text-align: center; color: var(--moji-faint); font-size: 11px; padding: 16px; background: var(--moji-cream);
+}
+.stroke-animation__placeholder-char { font-family: var(--moji-font-jp); font-size: 40px; color: var(--moji-faint); }
 .stroke-animation__controls { display: flex; align-items: center; gap: 6px; }
-.stroke-animation__controls button { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--navy); font-size: 13px; cursor: pointer; }
-.stroke-animation__controls button:hover:not(:disabled) { background: #edf4fc; }
+.stroke-animation__controls button {
+  min-width: 34px; height: 34px; padding: 0 9px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-pill);
+  background: var(--moji-white); color: var(--moji-muted); font-family: var(--moji-font-sans); font-size: 13px; font-weight: 700; cursor: pointer;
+  transform: scale(1); transition: transform var(--moji-d-spring) var(--moji-ease-spring), background-color 150ms var(--moji-ease-out), border-color 150ms var(--moji-ease-out);
+}
+.stroke-animation__controls button:hover:not(:disabled) { background: var(--moji-cream); border-color: var(--moji-faint); }
+.stroke-animation__controls button:active:not(:disabled) { transform: scale(0.94); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
 .stroke-animation__controls button:disabled { opacity: .4; cursor: not-allowed; }
-.stroke-animation__control--active { background: var(--red) !important; border-color: var(--red) !important; color: white !important; }
-.stroke-animation__count { margin-left: 4px; color: var(--muted); font-size: 10px; font-weight: 700; }
-.stroke-animation--compact .stroke-animation__svg { width: 96px; height: 96px; border-radius: 10px; }
+.stroke-animation__control--active { background: var(--moji-accent) !important; border-color: var(--moji-accent) !important; color: #fff !important; }
+.stroke-animation__count {
+  margin-left: 4px; padding: 6px 10px; border-radius: var(--moji-radius-pill); background: var(--moji-cream);
+  color: var(--moji-muted); font-size: 10px; font-weight: 700;
+}
+.stroke-animation--compact .stroke-animation__svg { width: 96px; height: 96px; border-radius: var(--moji-radius-sm); }
 
 /* Moji reskin — frame + controls only; stroke validation/feedback logic
    in WritingCanvas.tsx (evaluateStroke, onResult timing) is untouched. */
@@ -801,19 +821,33 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .kana-typing-input--incorrect .kana-typing-input__icon { color: #c0392b; }
 .kana-typing-input--incorrect .kana-typing-input__field { background: #fdecea; }
 
+/* Moji reskin — grouping/sorting, hover-preview, and long-press logic
+   in KanaChart.tsx untouched; matches the density/interactivity of
+   mapCell (s4 "Peta Hiragana") without shrinking to its 26px reference
+   size, since here the chart IS the primary interactive view. */
 .kana-chart { display: flex; flex-direction: column; gap: 16px; }
-.kana-chart__eyebrow { color: #8b9aae; font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
-.kana-chart__header h3 { margin: 4px 0 0; color: var(--deep-navy); font-size: 16px; }
+.kana-chart__eyebrow { color: var(--moji-faint); font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.kana-chart__header h3 { margin: 4px 0 0; color: var(--moji-ink); font-family: var(--moji-font-sans); font-size: 16px; font-weight: 800; }
 .kana-chart__groups { display: flex; flex-direction: column; gap: 10px; }
 .kana-chart__row { display: flex; align-items: center; gap: 12px; }
-.kana-chart__row-label { width: 20px; flex: 0 0 auto; color: var(--muted); font-size: 11px; font-weight: 800; text-align: center; }
+.kana-chart__row-label { width: 20px; flex: 0 0 auto; color: var(--moji-muted); font-size: 11px; font-weight: 800; text-align: center; }
 .kana-chart__row-cells { display: flex; flex-wrap: wrap; gap: 8px; }
 .kana-chart__cell-wrap { position: relative; }
-.kana-chart__cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 56px; height: 56px; border: 1px solid var(--line); border-radius: 12px; background: white; font-size: 22px; transition: .15s ease; }
-.kana-chart__cell:hover { border-color: #bcd1ea; box-shadow: 0 6px 16px rgba(17,47,82,.08); }
-.kana-chart__cell--untaught { opacity: .38; }
-.kana-chart__cell--playing { border-color: var(--red); background: #fff5f5; }
-.kana-chart__preview { position: absolute; z-index: 10; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: white; box-shadow: 0 14px 34px rgba(17,47,82,.16); }
+.kana-chart__cell {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  width: 56px; height: 56px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-lg);
+  background: var(--moji-white); font-family: var(--moji-font-jp); font-size: 22px; cursor: pointer;
+  transform: scale(1); transition: transform var(--moji-d-spring) var(--moji-ease-spring), border-color 150ms var(--moji-ease-out), background-color 150ms var(--moji-ease-out), opacity 150ms var(--moji-ease-out);
+}
+.kana-chart__cell:hover { border-color: var(--moji-accent); box-shadow: 0 6px 16px rgba(36, 30, 24, .08); }
+.kana-chart__cell:active { transform: scale(0.95); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
+.kana-chart__cell--untaught { opacity: .4; }
+.kana-chart__cell--playing { border-color: var(--moji-accent); background: var(--moji-accent-soft-bg); }
+.kana-chart__preview {
+  position: absolute; z-index: 10; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  padding: 8px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-lg);
+  background: var(--moji-white); box-shadow: 0 14px 34px rgba(36, 30, 24, .16);
+}
 
 .exercise-runner { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: white; width: min(420px, 100%); }
 .exercise-runner--done { align-items: center; justify-content: center; min-height: 120px; color: var(--deep-navy); font-size: 15px; font-weight: 700; }
