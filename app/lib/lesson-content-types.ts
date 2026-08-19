@@ -79,7 +79,14 @@ export type CalloutBlockContent = {
   body: string;
 };
 
-export type LessonContentBlockRow = { id: number; orderIndex: number } & (
+export type LessonContentBlockRow = {
+  id: number;
+  orderIndex: number;
+  /** Bagian 3 — explanatory Indonesian narration script, not a readout of the slide's own text. Null until authored. */
+  narrationText: string | null;
+  /** Filled by scripts/generate-narration.ts; null until generated even when narrationText exists. */
+  narrationUrl: string | null;
+} & (
   | { blockType: "text"; content: TextBlockContent }
   | { blockType: "chart"; content: ChartBlockContent }
   | { blockType: "table"; content: TableBlockContent }

@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { LessonExerciseRow } from "@/app/lib/lesson-content-types";
 import { ConceptExerciseRunner, type ConceptAnswerState } from "./ConceptExerciseRunner";
+import { NarrationButton } from "./NarrationButton";
+
+export type ContentSlide = { node: ReactNode; narrationUrl: string | null };
 
 // Mirrors D.slideHalf from "Sistem Gerak - Kuis Hiragana.dc.html" (also
 // --moji-d-slide in globals.css) — JS needs the literal number to drive
@@ -15,7 +18,7 @@ type Phase = "idle" | "out" | "preIn" | "in";
 
 export type M01SlideDeckProps = {
   lessonId: number;
-  contentSlides: ReactNode[];
+  contentSlides: ContentSlide[];
   exercises: LessonExerciseRow[];
 };
 
@@ -129,8 +132,10 @@ export function M01SlideDeck({ lessonId, contentSlides, exercises }: M01SlideDec
       />
     );
   } else {
-    stageContent = contentSlides[index];
+    stageContent = contentSlides[index].node;
   }
+
+  const activeNarrationUrl = !isQuizSlide && !quizFinished ? contentSlides[index]?.narrationUrl ?? null : null;
 
   // Hidden on the deck's truly last slide (a content slide with no quiz
   // tail after it) — nothing left to advance to inside the frame; the
@@ -154,6 +159,10 @@ export function M01SlideDeck({ lessonId, contentSlides, exercises }: M01SlideDec
       </div>
 
       <div className="m01-slide-frame__stage">
+        {/* Keyed off slide index, not narration URL — a fresh mount per
+            slide is what stops a previous slide's audio from bleeding
+            into the next one and resets the "auto" playback trigger. */}
+        <NarrationButton key={index} url={activeNarrationUrl} />
         <div className="m01-slide-frame__stage-inner" style={stageStyle}>
           {stageContent}
           {showGenericContinue && (

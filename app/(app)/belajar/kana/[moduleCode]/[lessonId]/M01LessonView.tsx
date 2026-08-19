@@ -14,7 +14,7 @@ import type {
   AudioListBlockContent,
 } from "@/app/lib/lesson-content-types";
 import { DialogueBlock } from "./DialogueBlock";
-import { M01SlideDeck } from "./M01SlideDeck";
+import { M01SlideDeck, type ContentSlide } from "./M01SlideDeck";
 
 // **bold** ala markdown ringan — satu-satunya inline markup yang dipakai
 // di docs/konten-M01-orientasi.md, jadi tidak perlu parser markdown penuh.
@@ -252,30 +252,39 @@ function calloutBlockSlide(block: LessonContentBlockRow & { blockType: "callout"
   ];
 }
 
-async function buildContentSlides(blocks: LessonContentBlockRow[]): Promise<ReactNode[]> {
-  const slides: ReactNode[] = [];
+// One lesson_content_blocks row can expand into several slides (word-
+// budget splitting) — narration is authored per BLOCK, not per split
+// fragment, so it's attached only to the first slide a block produces.
+// M01SlideDeck floats the narration button as a stage overlay keyed off
+// this, not embedded in the slide markup itself.
+async function buildContentSlides(blocks: LessonContentBlockRow[]): Promise<ContentSlide[]> {
+  const slides: ContentSlide[] = [];
   for (const block of blocks) {
     const keyBase = `block-${block.id}`;
+    let nodes: ReactNode[] = [];
     switch (block.blockType) {
       case "text":
-        slides.push(...(await textBlockSlides(block.content, keyBase)));
+        nodes = await textBlockSlides(block.content, keyBase);
         break;
       case "chart":
-        slides.push(...(await chartBlockSlides(block.content, keyBase)));
+        nodes = await chartBlockSlides(block.content, keyBase);
         break;
       case "table":
-        slides.push(...tableBlockSlides(block.content, keyBase));
+        nodes = tableBlockSlides(block.content, keyBase);
         break;
       case "audio_list":
-        slides.push(...audioListBlockSlides(block.content, keyBase));
+        nodes = audioListBlockSlides(block.content, keyBase);
         break;
       case "dialogue":
-        slides.push(...dialogueBlockSlide(block, keyBase));
+        nodes = dialogueBlockSlide(block, keyBase);
         break;
       case "callout":
-        slides.push(...calloutBlockSlide(block, keyBase));
+        nodes = calloutBlockSlide(block, keyBase);
         break;
     }
+    nodes.forEach((node, i) => {
+      slides.push({ node, narrationUrl: i === 0 ? block.narrationUrl : null });
+    });
   }
   return slides;
 }

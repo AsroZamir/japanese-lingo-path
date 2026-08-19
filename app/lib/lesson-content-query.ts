@@ -58,7 +58,7 @@ export const getM01LessonContent = cache(async (lessonCode: string): Promise<M01
 
   const { data: blockRows } = await supabase
     .from("lesson_content_blocks")
-    .select("id, order_index, block_type, content")
+    .select("id, order_index, block_type, content, narration_text, narration_url")
     .eq("lesson_id", lessonRow.id)
     .order("order_index");
 
@@ -77,6 +77,8 @@ export const getM01LessonContent = cache(async (lessonCode: string): Promise<M01
       orderIndex: b.order_index,
       blockType: b.block_type,
       content: b.content,
+      narrationText: b.narration_text,
+      narrationUrl: b.narration_url,
     })) as LessonContentBlockRow[],
     exercises: (exerciseRows ?? []).map((e) => ({
       id: e.id,

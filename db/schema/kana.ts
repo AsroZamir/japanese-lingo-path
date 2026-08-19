@@ -197,6 +197,14 @@ export const lessonContentBlocks = pgTable(
     // because narrative content genuinely varies in shape by type
     // (a table's rows vs. a dialogue's turns vs. a callout's note).
     content: jsonb("content").notNull(),
+    // Bagian 3 — spoken narration for the slide (Indonesian, explanatory,
+    // NOT a readout of the slide's own text — see docs/curriculum for the
+    // distinction). narrationText is the editable script, kept as a real
+    // column (not buried in `content`) so it can be reviewed/edited
+    // without touching the block's visual jsonb shape; narrationUrl is
+    // filled by scripts/generate-narration.ts and stays null until then.
+    narrationText: text("narration_text"),
+    narrationUrl: text("narration_url"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

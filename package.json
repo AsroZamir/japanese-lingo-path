@@ -15,7 +15,8 @@
     "seed:first-lesson": "tsx scripts/seed-first-lesson.ts",
     "generate:kana-audio": "tsx scripts/generate-kana-audio.ts",
     "generate:kana-audio-voicevox": "tsx scripts/generate-audio-voicevox.ts",
-    "seed:m01": "tsx scripts/seed-m01-content.ts"
+    "seed:m01": "tsx scripts/seed-m01-content.ts",
+    "generate:narration": "tsx scripts/generate-narration.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",

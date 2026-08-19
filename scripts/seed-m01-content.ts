@@ -43,13 +43,19 @@ const AUDIO = {
   aiuCombined: audioUrl("katakana/aiu-combined.wav"),
 };
 
+// narrationText — Bagian 3. Explanatory Indonesian commentary, NOT a
+// readout of the block's own text (see docs on this task for the
+// distinction). Left undefined on blocks where the slide's own text is
+// already the explanation (short callouts, vocab-cards already dense
+// with note/extra) — narrating those would just repeat what's already
+// readable, which is exactly what this feature isn't for.
 type BlockInput =
-  | { blockType: "text"; content: TextBlockContent }
-  | { blockType: "chart"; content: ChartBlockContent }
-  | { blockType: "table"; content: TableBlockContent }
-  | { blockType: "audio_list"; content: AudioListBlockContent }
-  | { blockType: "dialogue"; content: DialogueBlockContent }
-  | { blockType: "callout"; content: CalloutBlockContent };
+  | { blockType: "text"; content: TextBlockContent; narrationText?: string }
+  | { blockType: "chart"; content: ChartBlockContent; narrationText?: string }
+  | { blockType: "table"; content: TableBlockContent; narrationText?: string }
+  | { blockType: "audio_list"; content: AudioListBlockContent; narrationText?: string }
+  | { blockType: "dialogue"; content: DialogueBlockContent; narrationText?: string }
+  | { blockType: "callout"; content: CalloutBlockContent; narrationText?: string };
 
 type ExerciseInput = {
   exerciseType: "concept_mcq" | "typing";
@@ -154,7 +160,13 @@ async function main() {
     async function insertBlocks(lessonCode: string, blocks: BlockInput[]) {
       const lessonId = lessonIdByCode.get(lessonCode)!;
       await db.insert(lessonContentBlocks).values(
-        blocks.map((b, i) => ({ lessonId, orderIndex: i + 1, blockType: b.blockType, content: b.content })),
+        blocks.map((b, i) => ({
+          lessonId,
+          orderIndex: i + 1,
+          blockType: b.blockType,
+          content: b.content,
+          narrationText: b.narrationText ?? null,
+        })),
       );
     }
     async function insertExercises(lessonCode: string, exercises: ExerciseInput[]) {
@@ -168,6 +180,8 @@ async function main() {
     await insertBlocks("L01", [
       {
         blockType: "text",
+        narrationText:
+          "Sebelum mulai, ada kabar baik yang jarang disebutkan orang: kalau bahasa ibu Anda Indonesia, telinga Anda sudah punya keuntungan. Lima vokal Jepang nyaris identik dengan vokal kita — beda jauh dengan bahasa Inggris, yang satu huruf \"a\" saja bisa berbunyi macam-macam.",
         content: {
           kind: "paragraphs",
           heading: "Bahasa Jepang itu seperti apa?",
@@ -184,6 +198,7 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText: "Perhatikan baik-baik kalimat berikutnya. Itu nama Anda sendiri, ditulis dalam bahasa Jepang. Bentuk hurufnya sengaja tidak seragam — sebentar lagi kita bahas kenapa.",
         content: {
           kind: "name-showcase",
           prefixKana: "私の名前は",
@@ -196,6 +211,8 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText:
+          "Yang barusan Anda lihat bukan satu jenis tulisan, tapi tiga sistem berbeda dipakai sekaligus dalam satu kalimat pendek. Ini bukan hal aneh dalam bahasa Jepang — ini normal, dan kita akan bedah satu-satu.",
         content: {
           kind: "paragraphs",
           paragraphs: [
@@ -206,6 +223,8 @@ async function main() {
       },
       {
         blockType: "table",
+        narrationText:
+          "Lihat tabelnya baris demi baris. Kanji membawa arti inti, Hiragana jadi perekat tata bahasa, dan Katakana dipakai khusus untuk nama asing — termasuk nama Anda sendiri.",
         content: {
           kind: "comparison",
           heading: "Tiga sistem tulisan",
@@ -219,6 +238,8 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText:
+          "Tiga sistem ini punya peran yang sangat berbeda. Hiragana itu fondasinya, yang akan Anda kuasai lebih dulu. Katakana bentuknya lebih kaku, khusus untuk kata serapan. Kanji beda total — bukan mewakili bunyi, tapi mewakili arti.",
         content: {
           kind: "paragraphs",
           paragraphs: [
@@ -230,6 +251,8 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText:
+          "Ini gambaran besar perjalanan Anda, dari sekarang sampai target akhir. Jangan cemas melihat semua tahapan ini sekaligus — begitu Hiragana dikuasai, sisanya terasa jauh lebih ringan, karena Anda sudah punya alat untuk membaca.",
         content: {
           kind: "steps",
           heading: "Peta perjalanan Anda",
@@ -291,6 +314,8 @@ async function main() {
     await insertBlocks("L02", [
       {
         blockType: "text",
+        narrationText:
+          "Ini perbedaan penting dengan alfabet yang Anda kenal. Huruf Latin seperti \"k\" tidak berbunyi apa-apa sendirian — harus digabung dulu dengan vokal. Tapi di Hiragana, setiap huruf sudah jadi satu suku kata utuh, siap dibaca langsung.",
         content: {
           kind: "paragraphs",
           heading: "Apa itu Hiragana?",
@@ -310,6 +335,8 @@ async function main() {
       },
       {
         blockType: "chart",
+        narrationText:
+          "Terlihat banyak sekarang, dan itu wajar. Tapi kita tidak akan menghafal semuanya sekaligus — kita ambil lima huruf setiap kali, satu kelompok bisa selesai dalam sekali duduk.",
         content: {
           script: "hiragana",
           mode: "dimmed-preview",
@@ -323,6 +350,8 @@ async function main() {
       },
       {
         blockType: "audio_list",
+        narrationText:
+          "Dengarkan tiga kata ini baik-baik. Perhatikan iramanya: setiap suku kata dibaca dengan panjang yang sama rata, tidak ada yang ditekan lebih keras. Ini ritme khas bahasa Jepang, dan awalnya mungkin terasa asing di telinga.",
         content: {
           heading: "Dengarkan beberapa contoh",
           items: [
@@ -338,6 +367,8 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText:
+          "Begini polanya untuk setiap kelompok huruf baru: kenali dulu bentuknya, uji supaya tidak tertukar dengan huruf mirip, baru berlatih menulis, dan terakhir dipakai dalam kata sungguhan. Anda baru lanjut ke kelompok berikutnya setelah tahap ini benar-benar mantap.",
         content: {
           kind: "steps",
           heading: "Yang akan terjadi selanjutnya",
@@ -398,6 +429,7 @@ async function main() {
     await insertBlocks("L03", [
       {
         blockType: "text",
+        narrationText: "Kabar baik untuk Katakana: bunyinya sama persis dengan Hiragana yang sudah Anda kenal. Yang beda cuma bentuk hurufnya, dan kapan masing-masing dipakai.",
         content: {
           kind: "paragraphs",
           heading: "Katakana itu apa?",
@@ -422,6 +454,7 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText: "Perhatikan bentuknya: Hiragana melengkung dan mengalir, Katakana justru tajam dan bersudut. Dan Katakana ini punya tugas khusus — dipakai untuk kata-kata yang datang dari luar Jepang.",
         content: {
           kind: "paragraphs",
           paragraphs: [
@@ -452,6 +485,7 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText: "Di sinilah Kanji berbeda secara mendasar dari dua sistem sebelumnya. Hiragana dan Katakana sama-sama mewakili bunyi. Kanji tidak — Kanji mewakili arti.",
         content: {
           kind: "paragraphs",
           heading: "Kanji itu apa?",
@@ -473,6 +507,8 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText:
+          "Perhatikan yang terjadi di baris ketiga tabel sebelumnya: \"matahari\" digabung dengan \"asal\" menghasilkan \"asal matahari\" — itulah arti nama Jepang sendiri, negeri matahari terbit. Inilah kekuatan Kanji: sekali Anda kenal sebagiannya, arti kata baru sering bisa ditebak tanpa pernah dipelajari.",
         content: {
           kind: "paragraphs",
           paragraphs: [
@@ -484,6 +520,8 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText:
+          "Anda tidak perlu belajar ketiganya sekaligus. Katakana menyusul segera setelah Hiragana selesai — karena bunyinya sama, prosesnya jauh lebih cepat. Kanji baru dicicil belakangan, sedikit demi sedikit, digabung dengan kosakata yang Anda pelajari.",
         content: {
           kind: "paragraphs",
           heading: "Kapan mempelajarinya?",
@@ -594,6 +632,7 @@ async function main() {
       },
       {
         blockType: "dialogue",
+        narrationText: "Sekarang giliran Anda mencoba. Seseorang baru saja menyapa Anda dalam bahasa Jepang. Pikirkan sejenak — jawaban apa yang paling tepat?",
         content: {
           openingKana: "こんにちは！",
           prompt: "Apa yang Anda jawab?",
@@ -609,6 +648,8 @@ async function main() {
       },
       {
         blockType: "text",
+        narrationText:
+          "Anda baru saja menyelesaikan modul orientasi. Tiga sistem tulisan sudah Anda kenali, dan Anda bahkan sudah bisa mengucapkan beberapa hal dalam bahasa Jepang. Mulai modul berikutnya, kita masuk lebih serius — lima huruf pertama Hiragana.",
         content: {
           kind: "paragraphs",
           heading: "Anda baru saja menyelesaikan modul pertama.",
