@@ -45,3 +45,26 @@ export const getKanaPool = cache(async (script: "hiragana" | "katakana"): Promis
   items.sort((a, b) => a.character.localeCompare(b.character));
   return items;
 });
+
+export type ConfusionPair = { kanaA: LessonKanaItem; kanaB: LessonKanaItem; confusionType: "visual" | "audio" | "cross_script" };
+
+// Fase 7 (Consolidation) — kana_confusion_pairs was seeded once
+// (scripts/seed-kana-confusion-pairs.ts) with system-default pairs; this
+// resolves each pair's two rows against the given script's already-
+// loaded pool (avoids a second stroke-data read per character).
+export const getConfusionPairs = cache(async (kanaPool: LessonKanaItem[]): Promise<ConfusionPair[]> => {
+  const supabase = await createClient();
+  const { data: rows } = await supabase
+    .from("kana_confusion_pairs")
+    .select("kana_a_id, kana_b_id, confusion_type");
+
+  const kanaById = new Map(kanaPool.map((k) => [k.id, k]));
+  return (rows ?? [])
+    .map((row) => {
+      const kanaA = kanaById.get(row.kana_a_id);
+      const kanaB = kanaById.get(row.kana_b_id);
+      if (!kanaA || !kanaB) return null;
+      return { kanaA, kanaB, confusionType: row.confusion_type as ConfusionPair["confusionType"] };
+    })
+    .filter((p): p is ConfusionPair => p != null);
+});

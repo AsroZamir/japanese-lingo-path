@@ -4,7 +4,7 @@ import { getLessonBundle } from "@/app/lib/lesson-query";
 import { getOrientationLessonContent } from "@/app/lib/lesson-content-query";
 import { getModuleLessons } from "@/app/lib/module-query";
 import { getWordPool } from "@/app/lib/word-pool-query";
-import { getKanaPool } from "@/app/lib/kana-pool-query";
+import { getKanaPool, getConfusionPairs } from "@/app/lib/kana-pool-query";
 import { LessonL01 } from "./LessonL01";
 import { LessonL02 } from "./LessonL02";
 import { LessonL03 } from "./LessonL03";
@@ -13,6 +13,7 @@ import { LessonReading } from "./LessonReading";
 import { LessonActiveRecall } from "./LessonActiveRecall";
 import { LessonActiveRecallWriting } from "./LessonActiveRecallWriting";
 import { LessonWritingLab } from "./LessonWritingLab";
+import { LessonConsolidation } from "./LessonConsolidation";
 import { M01LessonView } from "./M01LessonView";
 import { LessonPlayer } from "./LessonPlayer";
 
@@ -48,6 +49,10 @@ const ACTIVE_RECALL_LESSON_TYPE = "active_recall";
 // branches its own item-building internally by code, same convention
 // LessonReading/LessonActiveRecall already use).
 const WRITING_LAB_LESSON_TYPE = "writing_lab";
+
+// Fase 7 (Consolidation) — same pool-bundle shape again, plus
+// kana_confusion_pairs for L01 (seed-kana-confusion-pairs.ts).
+const CONSOLIDATION_LESSON_TYPE = "consolidation";
 
 function NextLessonNav({
   nextLessonHref,
@@ -213,6 +218,40 @@ export default async function LessonPage({
         nextLessonTitle={nextLesson?.titleId ?? null}
       >
         <LessonWritingLab bundle={writingBundle} />
+      </LessonPlayer>
+    );
+  }
+
+  if (currentSummary.lessonType === CONSOLIDATION_LESSON_TYPE) {
+    const script = MODULE_SCRIPT[moduleCode] ?? "hiragana";
+    const [kana, words] = await Promise.all([getKanaPool(script), getWordPool(script, 1, 99)]);
+    const confusionPairs = await getConfusionPairs(kana);
+
+    const groupLessons = moduleLessons.lessons
+      .filter((l) => l.phaseCode === phaseCode)
+      .map((l) => ({ code: l.code, titleId: l.titleId }));
+    const exerciseTotals = { [lessonCode]: lessonCode === "L01" ? confusionPairs.length * 2 : 25 };
+
+    const consolidationBundle = {
+      lesson: { id: currentSummary.id, code: lessonCode, titleId: currentSummary.titleId, lessonType: currentSummary.lessonType },
+      kana,
+      words,
+      confusionPairs,
+    };
+
+    return (
+      <LessonPlayer
+        moduleCode={moduleCode}
+        groupCode={phaseCode}
+        groupLessons={groupLessons}
+        currentLessonCode={lessonCode}
+        lessonTitle={currentSummary.titleId}
+        phaseTitle={`${moduleLessons.module.titleId} · ${currentSummary.phaseTitleId}`}
+        exerciseTotals={exerciseTotals}
+        nextLessonHref={nextLesson ? `/belajar/kana/${moduleCode}/${nextLesson.routeId}` : null}
+        nextLessonTitle={nextLesson?.titleId ?? null}
+      >
+        <LessonConsolidation bundle={consolidationBundle} />
       </LessonPlayer>
     );
   }
