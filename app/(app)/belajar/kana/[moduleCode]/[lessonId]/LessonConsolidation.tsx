@@ -8,18 +8,21 @@ import { recordAttempt, completeLesson } from "./actions";
 import { skillForExerciseType, type SkillOutcome } from "./skill-mapping";
 import { useLessonProgress } from "./LessonPlayer";
 
-export type ConsolidationBundle = RecallBundle & { confusionPairs: ConfusionPair[] };
+export type ConsolidationBundle = RecallBundle & { moduleCode: string; confusionPairs: ConfusionPair[] };
 
 function sample<T>(arr: T[], n: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(n, arr.length));
 }
 
-// P20-L01 — Similar Kana: forced 2-way choice per pair, once per
-// direction (audio of A -> pick A vs B, then audio of B -> pick B vs A)
-// — a pair a learner keeps confusing needs testing both ways, not just
-// one, or a lucky 50/50 guess on the untested direction would hide it.
-function buildSimilarKanaItems(pairs: ConfusionPair[]): ExerciseItem[] {
+// P20-L01 (M02) / P22-L01 (M03) — Similar Kana: forced 2-way choice per
+// pair, once per direction (audio of A -> pick A vs B, then audio of B
+// -> pick B vs A) — a pair a learner keeps confusing needs testing both
+// ways, not just one, or a lucky 50/50 guess on the untested direction
+// would hide it. Scoped to "visual" pairs only — cross_script pairs
+// (M03's own L02) are a different lesson, see buildCrossScriptItems.
+function buildSimilarKanaItems(allPairs: ConfusionPair[]): ExerciseItem[] {
+  const pairs = allPairs.filter((p) => p.confusionType === "visual");
   return pairs.flatMap((pair) => {
     const options = [
       { id: pair.kanaA.id, label: pair.kanaA.character },
@@ -36,7 +39,30 @@ function buildSimilarKanaItems(pairs: ConfusionPair[]): ExerciseItem[] {
   });
 }
 
-// P20-L02 — No-Romaji Challenge: everything the learner has to answer
+// P22-L02 (M03 only) — Hiragana vs Katakana: same forced 2-way,
+// both-directions pattern as buildSimilarKanaItems, but scoped to
+// "cross_script" pairs (あ/ア, き/キ, dst.) instead of "visual" — the
+// confusion here is between SCRIPTS at the same sound, not between two
+// shapes in the same script.
+function buildCrossScriptItems(allPairs: ConfusionPair[]): ExerciseItem[] {
+  const pairs = allPairs.filter((p) => p.confusionType === "cross_script");
+  return pairs.flatMap((pair) => {
+    const options = [
+      { id: pair.kanaA.id, label: pair.kanaA.character },
+      { id: pair.kanaB.id, label: pair.kanaB.character },
+    ];
+    const items: ExerciseItem[] = [];
+    if (pair.kanaA.audioUrl) {
+      items.push({ id: `cs-${pair.kanaA.id}-${pair.kanaB.id}-a`, type: "similar_kana_discrimination", kanaId: pair.kanaA.id, promptAudioUrl: pair.kanaA.audioUrl, options, correctOptionId: pair.kanaA.id });
+    }
+    if (pair.kanaB.audioUrl) {
+      items.push({ id: `cs-${pair.kanaA.id}-${pair.kanaB.id}-b`, type: "similar_kana_discrimination", kanaId: pair.kanaB.id, promptAudioUrl: pair.kanaB.audioUrl, options, correctOptionId: pair.kanaB.id });
+    }
+    return items;
+  });
+}
+
+// P20-L02 (M02) / P22-L03 (M03) — No-Romaji Challenge: everything the learner has to answer
 // against a clock, with romaji nowhere in sight (romaji_policy on the
 // lesson itself is "hidden" too, at the RomajiText-preference level —
 // this is the exercise-level enforcement: prompts never show it, options
@@ -64,10 +90,14 @@ function buildNoRomajiChallengeItems(bundle: ConsolidationBundle): ExerciseItem[
 }
 
 export function LessonConsolidation({ bundle }: { bundle: ConsolidationBundle }) {
-  const items = useMemo(
-    () => (bundle.lesson.code === "L01" ? buildSimilarKanaItems(bundle.confusionPairs) : buildNoRomajiChallengeItems(bundle)),
-    [bundle],
-  );
+  const items = useMemo(() => {
+    if (bundle.moduleCode === "M03") {
+      if (bundle.lesson.code === "L01") return buildSimilarKanaItems(bundle.confusionPairs);
+      if (bundle.lesson.code === "L02") return buildCrossScriptItems(bundle.confusionPairs);
+      return buildNoRomajiChallengeItems(bundle);
+    }
+    return bundle.lesson.code === "L01" ? buildSimilarKanaItems(bundle.confusionPairs) : buildNoRomajiChallengeItems(bundle);
+  }, [bundle]);
   const wordById = useMemo(() => new Map(bundle.words.map((w) => [w.id, w])), [bundle.words]);
   const [result, setResult] = useState<ExerciseRunnerResult | null>(null);
   const { reportProgress, reportLessonResult } = useLessonProgress();

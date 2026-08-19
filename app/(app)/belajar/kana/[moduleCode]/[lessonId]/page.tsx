@@ -247,15 +247,22 @@ export default async function LessonPage({
   if (currentSummary.lessonType === CONSOLIDATION_LESSON_TYPE) {
     const script = MODULE_SCRIPT[moduleCode] ?? "hiragana";
     const [kana, words] = await Promise.all([getKanaPool(script), getWordPool(script, 1, 99)]);
-    const confusionPairs = await getConfusionPairs(kana);
+    // M03's own L02 (Hiragana vs Katakana) needs cross_script pairs
+    // resolved, which reference a hiragana character on one side — a
+    // katakana-only pool can't resolve those, so the confusion-pair
+    // lookup runs against BOTH scripts' pools merged for M03 specifically.
+    const confusionPoolKana = moduleCode === "M03" ? [...kana, ...(await getKanaPool("hiragana"))] : kana;
+    const confusionPairs = await getConfusionPairs(confusionPoolKana);
 
     const groupLessons = moduleLessons.lessons
       .filter((l) => l.phaseCode === phaseCode)
       .map((l) => ({ code: l.code, titleId: l.titleId }));
-    const exerciseTotals = { [lessonCode]: lessonCode === "L01" ? confusionPairs.length * 2 : 25 };
+    const isConfusionPairLesson = moduleCode === "M03" ? lessonCode === "L01" || lessonCode === "L02" : lessonCode === "L01";
+    const exerciseTotals = { [lessonCode]: isConfusionPairLesson ? confusionPairs.filter((p) => (moduleCode === "M03" && lessonCode === "L02" ? p.confusionType === "cross_script" : p.confusionType === "visual")).length * 2 : 25 };
 
     const consolidationBundle = {
       lesson: { id: currentSummary.id, code: lessonCode, titleId: currentSummary.titleId, lessonType: currentSummary.lessonType },
+      moduleCode,
       kana,
       words,
       confusionPairs,
