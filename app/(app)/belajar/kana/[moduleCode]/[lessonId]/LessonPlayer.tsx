@@ -42,7 +42,8 @@ export type LessonPlayerProps = {
   phaseTitle: string;
   /** Exercise item counts per lesson code, e.g. { L03: 10, L04: 15 } — derived from bundle.kana.length by the caller, not queried again here. */
   exerciseTotals: Partial<Record<string, number>>;
-  nextLessonCode: string | null;
+  /** Full href (routeId-based, `${phaseCode}-${lessonCode}`) — built by the caller, since bare lesson codes collide across phases. */
+  nextLessonHref: string | null;
   nextLessonTitle: string | null;
   children: ReactNode;
 };
@@ -74,7 +75,7 @@ export function LessonPlayer({
   lessonTitle,
   phaseTitle,
   exerciseTotals,
-  nextLessonCode,
+  nextLessonHref,
   nextLessonTitle,
   children,
 }: LessonPlayerProps) {
@@ -179,8 +180,8 @@ export function LessonPlayer({
       )}
 
       <div className="lesson-next-nav">
-        {nextLessonCode ? (
-          <Link href={`/belajar/kana/${moduleCode}/${nextLessonCode}`} className="primary-button">
+        {nextLessonHref ? (
+          <Link href={nextLessonHref} className="primary-button">
             Lesson berikutnya: {nextLessonTitle} <span>→</span>
           </Link>
         ) : (

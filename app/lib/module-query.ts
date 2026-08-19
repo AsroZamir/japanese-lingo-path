@@ -6,6 +6,8 @@ export type LessonProgressStatus = "not_started" | "in_progress" | "completed";
 export type ModuleLessonSummary = {
   id: number;
   code: string;
+  /** `${phaseCode}-${code}` — the URL segment for this lesson. `code` alone (e.g. "L01") repeats across every phase in a module (kana_lessons_phase_code_key is scoped per-phase, not per-module), so routing must carry the phase too. */
+  routeId: string;
   titleId: string;
   lessonType: string;
   phaseCode: string;
@@ -71,6 +73,7 @@ export const getModuleLessons = cache(async (moduleCode: string): Promise<Module
       summary: {
         id: l.id,
         code: l.code,
+        routeId: `${phase.code}-${l.code}`,
         titleId: l.title_id,
         lessonType: l.lesson_type,
         phaseCode: phase.code,

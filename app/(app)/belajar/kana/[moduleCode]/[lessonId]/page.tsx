@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLessonBundle } from "@/app/lib/lesson-query";
-import { getM01LessonContent } from "@/app/lib/lesson-content-query";
+import { getOrientationLessonContent } from "@/app/lib/lesson-content-query";
 import { getModuleLessons } from "@/app/lib/module-query";
 import { LessonL01 } from "./LessonL01";
 import { LessonL02 } from "./LessonL02";
@@ -10,19 +10,24 @@ import { LessonL04 } from "./LessonL04";
 import { M01LessonView } from "./M01LessonView";
 import { LessonPlayer } from "./LessonPlayer";
 
+// Lesson types that render as narrative slide decks (M01LessonView) rather
+// than the kana-drill LessonPlayer path — concept/orientation content has
+// no kana/kata to drill, it's pure lesson_content_blocks + lesson_exercises.
+// Matched by lesson_type, not module code, so any module's orientation
+// phase (not just M01) gets the same treatment — see M02 Phase 1.
+const ORIENTATION_LESSON_TYPES = new Set(["orientation", "orientation_practice"]);
+
 function NextLessonNav({
-  moduleCode,
-  nextLessonCode,
+  nextLessonHref,
   nextLessonTitle,
 }: {
-  moduleCode: string;
-  nextLessonCode: string | null;
+  nextLessonHref: string | null;
   nextLessonTitle: string | null;
 }) {
   return (
     <div className="lesson-next-nav">
-      {nextLessonCode ? (
-        <Link href={`/belajar/kana/${moduleCode}/${nextLessonCode}`} className="primary-button">
+      {nextLessonHref ? (
+        <Link href={nextLessonHref} className="primary-button">
           Lesson berikutnya: {nextLessonTitle} <span>→</span>
         </Link>
       ) : (
@@ -44,17 +49,23 @@ export default async function LessonPage({
 }) {
   const { moduleCode, lessonId } = await params;
 
+  // lessonId is a routeId, `${phaseCode}-${lessonCode}` (e.g. "P3-L01") —
+  // required because kana_lessons.code is only unique WITHIN a phase, and
+  // every group phase in a module reuses L01..L04 (see module-query.ts).
+  const [phaseCode, lessonCode] = lessonId.split("-");
+  if (!phaseCode || !lessonCode) redirect("/belajar");
+
   const moduleLessons = await getModuleLessons(moduleCode);
+  if (!moduleLessons) redirect("/belajar");
 
-  // M01 (orientasi) tidak punya kana/kata untuk digambar/diuji lewat
-  // ExerciseRunner kana — kontennya sepenuhnya naratif (lesson_content_blocks
-  // + lesson_exercises), jadi jalur render-nya bercabang total dari sini.
-  if (moduleCode === "M01") {
-    const bundle = await getM01LessonContent(lessonId);
+  const currentIndex = moduleLessons.lessons.findIndex((l) => l.routeId === lessonId);
+  if (currentIndex === -1) redirect("/belajar");
+  const currentSummary = moduleLessons.lessons[currentIndex];
+  const nextLesson = moduleLessons.lessons[currentIndex + 1] ?? null;
+
+  if (ORIENTATION_LESSON_TYPES.has(currentSummary.lessonType)) {
+    const bundle = await getOrientationLessonContent(moduleCode, phaseCode, lessonCode);
     if (!bundle) redirect("/belajar");
-
-    const lessonIndex = moduleLessons?.lessons.findIndex((l) => l.code === bundle.lesson.code) ?? -1;
-    const nextLesson = moduleLessons && lessonIndex >= 0 ? moduleLessons.lessons[lessonIndex + 1] ?? null : null;
 
     // M01LessonView owns its own header now (close button + progress +
     // counter, inside the fixed-height slide frame) — the old
@@ -64,23 +75,22 @@ export default async function LessonPage({
       <div className="content">
         <M01LessonView bundle={bundle} />
 
-        <NextLessonNav moduleCode={moduleCode} nextLessonCode={nextLesson?.code ?? null} nextLessonTitle={nextLesson?.titleId ?? null} />
+        <NextLessonNav
+          nextLessonHref={nextLesson ? `/belajar/kana/${moduleCode}/${nextLesson.routeId}` : null}
+          nextLessonTitle={nextLesson?.titleId ?? null}
+        />
       </div>
     );
   }
 
-  const bundle = await getLessonBundle(moduleCode, lessonId);
+  const bundle = await getLessonBundle(moduleCode, phaseCode, lessonCode);
   if (!bundle) redirect("/belajar");
-
-  const lessonIndex = moduleLessons?.lessons.findIndex((l) => l.code === bundle.lesson.code) ?? -1;
-  const nextLesson =
-    moduleLessons && lessonIndex >= 0 ? moduleLessons.lessons[lessonIndex + 1] ?? null : null;
 
   // "Kelompok" for the LessonPlayer progress bar = this lesson's phase
   // (kana_phases row), same thing seed-first-lesson.ts calls a
   // group (P2 = Kelompok A) — moduleLessons already spans every phase
   // in the module, so it's filtered down to just this one.
-  const groupLessons = (moduleLessons?.lessons ?? [])
+  const groupLessons = moduleLessons.lessons
     .filter((l) => l.phaseCode === bundle.phase.code)
     .map((l) => ({ code: l.code, titleId: l.titleId }));
 
@@ -99,7 +109,7 @@ export default async function LessonPage({
       lessonTitle={bundle.lesson.titleId}
       phaseTitle={`${bundle.module.titleId} · ${bundle.phase.titleId}`}
       exerciseTotals={exerciseTotals}
-      nextLessonCode={nextLesson?.code ?? null}
+      nextLessonHref={nextLesson ? `/belajar/kana/${moduleCode}/${nextLesson.routeId}` : null}
       nextLessonTitle={nextLesson?.titleId ?? null}
     >
       {bundle.lesson.code === "L01" && <LessonL01 bundle={bundle} />}

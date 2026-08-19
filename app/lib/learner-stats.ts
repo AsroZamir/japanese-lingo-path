@@ -38,8 +38,8 @@ export type ModuleSummary = {
   statusLabel: string;
   percentComplete: number | null;
   locked: boolean;
-  /** First not-completed lesson in module order, or the last lesson if everything's done — null only if the module has zero seeded lessons. Lets callers jump straight into the lesson (Tugas 2: the lesson-list page is a direct-URL fallback now, not a mandatory stop). */
-  resumeLessonCode: string | null;
+  /** First not-completed lesson's routeId (`${phaseCode}-${lessonCode}`) in module order, or the last lesson if everything's done — null only if the module has zero seeded lessons. Lets callers jump straight into the lesson (Tugas 2: the lesson-list page is a direct-URL fallback now, not a mandatory stop). */
+  resumeLessonRouteId: string | null;
 };
 
 // "Modulmu" list for /beranda — real per-module completion, derived
@@ -70,8 +70,8 @@ export const getModuleSummaries = cache(async (): Promise<ModuleSummary[]> => {
             : percentComplete > 0
               ? `Sedang berjalan — ${percentComplete}%`
               : "Belum dimulai";
-      const resumeLessonCode =
-        data.lessons.find((l) => l.status !== "completed")?.code ?? data.lessons[data.lessons.length - 1]?.code ?? null;
+      const resumeLessonRouteId =
+        data.lessons.find((l) => l.status !== "completed")?.routeId ?? data.lessons[data.lessons.length - 1]?.routeId ?? null;
       return {
         code: data.module.code,
         titleId: data.module.titleId,
@@ -79,7 +79,7 @@ export const getModuleSummaries = cache(async (): Promise<ModuleSummary[]> => {
         statusLabel,
         percentComplete,
         locked: false,
-        resumeLessonCode,
+        resumeLessonRouteId,
       };
     }),
   );

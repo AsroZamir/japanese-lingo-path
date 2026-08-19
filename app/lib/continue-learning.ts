@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 export type ContinueLearningTarget = {
   moduleCode: string;
   moduleTitleId: string;
-  lessonCode: string;
+  /** `${phaseCode}-${lessonCode}` — see module-query.ts's ModuleLessonSummary.routeId for why the bare lesson code alone isn't enough to route to. */
+  lessonRouteId: string;
   lessonTitleId: string;
   phaseTitleId: string;
   status: "not_started" | "in_progress" | "completed";
@@ -32,7 +33,7 @@ export const getContinueLearningTarget = cache(async (): Promise<ContinueLearnin
 
   const { data: phaseRows } = await supabase
     .from("kana_phases")
-    .select("id, module_id, title_id, order_index")
+    .select("id, code, module_id, title_id, order_index")
     .order("order_index");
   const phaseById = new Map((phaseRows ?? []).map((p) => [p.id, p]));
 
@@ -68,7 +69,7 @@ export const getContinueLearningTarget = cache(async (): Promise<ContinueLearnin
   return {
     moduleCode: target.module.code,
     moduleTitleId: target.module.title_id,
-    lessonCode: target.lesson.code,
+    lessonRouteId: `${target.phase.code}-${target.lesson.code}`,
     lessonTitleId: target.lesson.title_id,
     phaseTitleId: target.phase.title_id,
     status: (statusByLessonId.get(target.lesson.id) as ContinueLearningTarget["status"]) ?? "not_started",

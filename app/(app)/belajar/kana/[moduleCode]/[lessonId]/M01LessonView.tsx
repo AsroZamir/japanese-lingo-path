@@ -3,7 +3,7 @@ import * as wanakana from "wanakana";
 import { KanaChart } from "@/components/kana/KanaChart";
 import { AudioButton } from "@/components/kana/AudioButton";
 import { getCurrentUser } from "@/app/lib/current-user";
-import { getFullScriptChartPreview, type M01LessonBundle } from "@/app/lib/lesson-content-query";
+import { getFullScriptChartPreview, type OrientationLessonBundle } from "@/app/lib/lesson-content-query";
 import { nameToKatakanaOrFallback } from "@/app/lib/name-to-katakana";
 import { groupParagraphs, groupUnits, chunkRows } from "@/app/lib/slide-text-split";
 import type {
@@ -289,7 +289,7 @@ async function buildContentSlides(blocks: LessonContentBlockRow[]): Promise<Cont
   return slides;
 }
 
-export async function M01LessonView({ bundle }: { bundle: M01LessonBundle }) {
+export async function M01LessonView({ bundle }: { bundle: OrientationLessonBundle }) {
   const contentSlides = await buildContentSlides(bundle.blocks);
   return (
     <M01SlideDeck

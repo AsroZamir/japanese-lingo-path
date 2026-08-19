@@ -47,7 +47,7 @@ export default async function KanaModulePage({
               <article className={`lesson-row ${STATUS_ROW_CLASS[lesson.status]}`} key={lesson.id}>
                 <span className="lesson-no">{lesson.status === "completed" ? "✓" : String(index + 1).padStart(2, "0")}</span>
                 <div><strong>{lesson.titleId}</strong><small>{lesson.phaseTitleId} · {lesson.code}</small></div>
-                <Link href={`/belajar/kana/${moduleCode}/${lesson.code}`} className="lesson-action">
+                <Link href={`/belajar/kana/${moduleCode}/${lesson.routeId}`} className="lesson-action">
                   {STATUS_LABEL[lesson.status]}
                 </Link>
               </article>

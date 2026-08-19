@@ -44,8 +44,8 @@ export function LearnPageClient({ resumeByModuleCode }: { resumeByModuleCode: Re
       <section className="unit-list curriculum-unit-list">
         {units.map((unit) => {
           const kanaModuleCode = LEGACY_UNIT_TO_KANA_MODULE[unit.id];
-          const resumeLessonCode = kanaModuleCode != null ? resumeByModuleCode[kanaModuleCode] : undefined;
-          const isConnected = resumeLessonCode != null;
+          const resumeLessonRouteId = kanaModuleCode != null ? resumeByModuleCode[kanaModuleCode] : undefined;
+          const isConnected = resumeLessonRouteId != null;
 
           return (
             <article className={`unit-card curriculum-unit ${isConnected ? "" : "is-unavailable"}`} key={unit.id}>
@@ -65,7 +65,7 @@ export function LearnPageClient({ resumeByModuleCode }: { resumeByModuleCode: Re
                 className="module-open-button"
                 aria-label={isConnected ? `Buka modul ${unit.title}` : `${unit.title} belum tersedia`}
                 disabled={!isConnected}
-                onClick={() => isConnected && router.push(`/belajar/kana/${kanaModuleCode}/${resumeLessonCode}`)}
+                onClick={() => isConnected && router.push(`/belajar/kana/${kanaModuleCode}/${resumeLessonRouteId}`)}
               >
                 <span>{isConnected ? "Buka modul" : "Belum tersedia"}</span>{isConnected ? "→" : null}
               </button>

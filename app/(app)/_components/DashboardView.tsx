@@ -20,7 +20,7 @@ export function DashboardView({
 }) {
   const router = useRouter();
   const continueHref = continueLearning
-    ? `/belajar/kana/${continueLearning.moduleCode}/${continueLearning.lessonCode}`
+    ? `/belajar/kana/${continueLearning.moduleCode}/${continueLearning.lessonRouteId}`
     : "/belajar";
   const continueSubtitle = continueLearning
     ? `${continueLearning.moduleTitleId} · ${continueLearning.phaseTitleId}`

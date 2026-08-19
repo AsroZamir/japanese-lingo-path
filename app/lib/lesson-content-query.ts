@@ -6,7 +6,7 @@ import type { KanaStrokeData } from "@/components/kana/stroke-geometry";
 import type { KanaChartCharacter } from "@/components/kana/KanaChart";
 import type { LessonContentBlockRow, LessonExerciseRow } from "./lesson-content-types";
 
-export type M01LessonBundle = {
+export type OrientationLessonBundle = {
   module: { id: number; code: string; titleId: string };
   phase: { id: number; code: string; titleId: string };
   lesson: { id: number; code: string; titleId: string; lessonType: string };
@@ -25,36 +25,36 @@ async function loadStrokeData(strokeDataKey: string | null): Promise<KanaStrokeD
   }
 }
 
-export const getM01LessonContent = cache(async (lessonCode: string): Promise<M01LessonBundle | null> => {
+export const getOrientationLessonContent = cache(
+  async (moduleCode: string, phaseCode: string, lessonCode: string): Promise<OrientationLessonBundle | null> => {
   const supabase = await createClient();
 
   const { data: moduleRow } = await supabase
     .from("kana_modules")
     .select("id, code, title_id")
-    .eq("code", "M01")
+    .eq("code", moduleCode)
     .maybeSingle();
   if (!moduleRow) return null;
 
-  // lesson_code is only unique WITHIN a phase — scope to this module's
-  // phases before matching by code, or a code shared with another
-  // module (M02 also has L01..L04) makes .maybeSingle() error out.
-  const { data: modulePhaseRows } = await supabase
+  // lesson_code is only unique WITHIN a phase — the caller's routeId
+  // (`${phaseCode}-${lessonCode}`) is what makes this unambiguous once a
+  // module has more than one phase (every M02 group phase also has an
+  // L01/L02, colliding with this module's own P1 orientation lessons).
+  const { data: phaseRow } = await supabase
     .from("kana_phases")
     .select("id, code, title_id, module_id")
-    .eq("module_id", moduleRow.id);
-  if (!modulePhaseRows?.length) return null;
-  const modulePhaseIds = modulePhaseRows.map((p) => p.id);
+    .eq("module_id", moduleRow.id)
+    .eq("code", phaseCode)
+    .maybeSingle();
+  if (!phaseRow) return null;
 
   const { data: lessonRow } = await supabase
     .from("kana_lessons")
     .select("id, code, title_id, lesson_type, phase_id")
     .eq("code", lessonCode)
-    .in("phase_id", modulePhaseIds)
+    .eq("phase_id", phaseRow.id)
     .maybeSingle();
   if (!lessonRow) return null;
-
-  const phaseRow = modulePhaseRows.find((p) => p.id === lessonRow.phase_id);
-  if (!phaseRow) return null;
 
   const { data: blockRows } = await supabase
     .from("lesson_content_blocks")
@@ -91,7 +91,8 @@ export const getM01LessonContent = cache(async (lessonCode: string): Promise<M01
       audioUrl: e.audio_url,
     })) as LessonExerciseRow[],
   };
-});
+  },
+);
 
 // Dipakai khusus untuk blok block_type='chart' (pratinjau seluruh
 // Hiragana) — semua karakter ditandai taught:false karena M01 memang

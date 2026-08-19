@@ -1,18 +1,18 @@
 import { getLessonBundle } from "@/app/lib/lesson-query";
 
 // Temporary verification page for Bagian B (Fase 5) — dumps the raw
-// getLessonBundle("M02", "L01") result so it can be sanity-checked
+// getLessonBundle("M02", "P2", "L01") result so it can be sanity-checked
 // through a real authenticated session (RLS requires `authenticated`,
 // so this can't be verified from an anonymous script). Superseded by
 // the real lesson page in Bagian C.
 export const dynamic = "force-dynamic";
 
 export default async function DevLessonBundlePage() {
-  const bundle = await getLessonBundle("M02", "L01");
+  const bundle = await getLessonBundle("M02", "P2", "L01");
 
   return (
     <div style={{ padding: 24, fontFamily: "monospace", fontSize: 12 }}>
-      <h1 style={{ fontSize: 18 }}>/dev/lesson-bundle — getLessonBundle(&quot;M02&quot;, &quot;L01&quot;)</h1>
+      <h1 style={{ fontSize: 18 }}>/dev/lesson-bundle — getLessonBundle(&quot;M02&quot;, &quot;P2&quot;, &quot;L01&quot;)</h1>
       {!bundle ? (
         <p style={{ color: "#c00" }}>null — lesson tidak ditemukan.</p>
       ) : (
