@@ -135,7 +135,10 @@ export function LessonPlayer({
 
   return (
     <div className="content">
-      <Link href={`/belajar/kana/${moduleCode}`} className="back-button">← Kembali ke daftar modul</Link>
+      {/* Skips the intermediate lesson-list page on purpose (Tugas 2) — it's
+          no longer a mandatory stop in the normal flow, just a direct-URL
+          fallback, so exiting a lesson goes straight back to /belajar. */}
+      <Link href="/belajar" className="back-button">← Kembali ke daftar modul</Link>
 
       <div className="lesson-player__progress" role="progressbar" aria-valuenow={overallPercent} aria-valuemin={0} aria-valuemax={100}>
         {SEGMENT_TEMPLATE.map((seg, i) => (
@@ -181,7 +184,7 @@ export function LessonPlayer({
             Lesson berikutnya: {nextLessonTitle} <span>→</span>
           </Link>
         ) : (
-          <Link href={`/belajar/kana/${moduleCode}`} className="primary-button">
+          <Link href="/belajar" className="primary-button">
             Selesai — kembali ke daftar modul <span>→</span>
           </Link>
         )}

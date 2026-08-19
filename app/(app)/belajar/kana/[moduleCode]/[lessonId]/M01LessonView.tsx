@@ -250,7 +250,6 @@ export async function M01LessonView({ bundle }: { bundle: M01LessonBundle }) {
   const contentSlides = await buildContentSlides(bundle.blocks);
   return (
     <M01SlideDeck
-      moduleCode={bundle.module.code}
       lessonId={bundle.lesson.id}
       contentSlides={contentSlides}
       exercises={bundle.exercises}

@@ -14,7 +14,6 @@ const SLIDE_MS = 200;
 type Phase = "idle" | "out" | "preIn" | "in";
 
 export type M01SlideDeckProps = {
-  moduleCode: string;
   lessonId: number;
   contentSlides: ReactNode[];
   exercises: LessonExerciseRow[];
@@ -36,7 +35,7 @@ function QuizFinishedSummary({
   );
 }
 
-export function M01SlideDeck({ moduleCode, lessonId, contentSlides, exercises }: M01SlideDeckProps) {
+export function M01SlideDeck({ lessonId, contentSlides, exercises }: M01SlideDeckProps) {
   const totalSlides = contentSlides.length + exercises.length;
 
   const [index, setIndex] = useState(0);
@@ -149,7 +148,9 @@ export function M01SlideDeck({ moduleCode, lessonId, contentSlides, exercises }:
           ))}
         </div>
         <span className="m01-slide-frame__counter">{index + 1}/{totalSlides}</span>
-        <Link href={`/belajar/kana/${moduleCode}`} className="m01-slide-frame__close" aria-label="Tutup">✕</Link>
+        {/* /belajar/kana/[moduleCode] is no longer a mandatory stop
+            (Tugas 2) — closing a lesson goes straight back to /belajar. */}
+        <Link href="/belajar" className="m01-slide-frame__close" aria-label="Tutup">✕</Link>
       </div>
 
       <div className="m01-slide-frame__stage">

@@ -26,7 +26,10 @@ function NextLessonNav({
           Lesson berikutnya: {nextLessonTitle} <span>→</span>
         </Link>
       ) : (
-        <Link href={`/belajar/kana/${moduleCode}`} className="primary-button">
+        // Last lesson in the module — the intermediate lesson-list page
+        // (/belajar/kana/[moduleCode]) is no longer part of the normal
+        // flow (Tugas 2), so this returns straight to /belajar.
+        <Link href="/belajar" className="primary-button">
           Selesai — kembali ke daftar modul <span>→</span>
         </Link>
       )}

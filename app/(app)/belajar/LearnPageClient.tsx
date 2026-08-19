@@ -11,12 +11,11 @@ const skillLabels: Record<string, string> = {
   Reading: "Membaca", Listening: "Mendengar", Speaking: "Berbicara", Writing: "Menulis",
 };
 
-export function LearnPageClient({ connectedModuleCodes }: { connectedModuleCodes: string[] }) {
+export function LearnPageClient({ resumeByModuleCode }: { resumeByModuleCode: Record<string, string> }) {
   const router = useRouter();
   const [level, setLevel] = useState<CurriculumLevel>("PRE_N5");
   const units = curriculumUnits.filter((unit) => unit.level === level);
   const details = levelDetails[level];
-  const connectedSet = new Set(connectedModuleCodes);
   const moduleFlow = [
     ["1", "Pelajari", "Kenali materi baru lewat penjelasan dan contoh."],
     ["2", "Latihan", "Kerjakan soal singkat untuk menguatkan ingatan."],
@@ -45,7 +44,8 @@ export function LearnPageClient({ connectedModuleCodes }: { connectedModuleCodes
       <section className="unit-list curriculum-unit-list">
         {units.map((unit) => {
           const kanaModuleCode = LEGACY_UNIT_TO_KANA_MODULE[unit.id];
-          const isConnected = kanaModuleCode != null && connectedSet.has(kanaModuleCode);
+          const resumeLessonCode = kanaModuleCode != null ? resumeByModuleCode[kanaModuleCode] : undefined;
+          const isConnected = resumeLessonCode != null;
 
           return (
             <article className={`unit-card curriculum-unit ${isConnected ? "" : "is-unavailable"}`} key={unit.id}>
@@ -65,7 +65,7 @@ export function LearnPageClient({ connectedModuleCodes }: { connectedModuleCodes
                 className="module-open-button"
                 aria-label={isConnected ? `Buka modul ${unit.title}` : `${unit.title} belum tersedia`}
                 disabled={!isConnected}
-                onClick={() => isConnected && router.push(`/belajar/kana/${kanaModuleCode}`)}
+                onClick={() => isConnected && router.push(`/belajar/kana/${kanaModuleCode}/${resumeLessonCode}`)}
               >
                 <span>{isConnected ? "Buka modul" : "Belum tersedia"}</span>{isConnected ? "→" : null}
               </button>
