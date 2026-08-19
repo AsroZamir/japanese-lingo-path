@@ -102,15 +102,18 @@ async function main() {
     for (const row of rows) {
       let data: StrokeData;
       try {
-        if (row.type === "youon") {
+        if (row.type === "youon" || row.type === "foreign_combo") {
+          // foreign_combo (ティ/ファ/ウィ etc., M03 Phase 3 L05) is the
+          // same base+small-vowel assembly as youon — just a different
+          // small component (ァィゥェォ instead of ゃゅょ).
           const [base, small] = [...row.character];
           const [baseData, smallData] = await Promise.all([
             getSingle(row.script, base),
             getSingle(row.script, small),
           ]);
           data = combine(baseData, smallData);
-          // Youon's combined file is stored under its own two-character
-          // key so it doesn't collide with the base character's file.
+          // Combined file is stored under its own two-character key so
+          // it doesn't collide with the base character's file.
           const filePath = path.join(OUTPUT_DIR, row.script, `${row.character}.json`);
           await fs.mkdir(path.dirname(filePath), { recursive: true });
           await fs.writeFile(filePath, JSON.stringify(data));
