@@ -53,14 +53,12 @@ export default async function LessonPage({
     const lessonIndex = moduleLessons?.lessons.findIndex((l) => l.code === bundle.lesson.code) ?? -1;
     const nextLesson = moduleLessons && lessonIndex >= 0 ? moduleLessons.lessons[lessonIndex + 1] ?? null : null;
 
+    // M01LessonView owns its own header now (close button + progress +
+    // counter, inside the fixed-height slide frame) — the old
+    // breadcrumb/page-heading duplicated that and didn't fit the
+    // "satu bingkai, tanpa scroll" format, so it's gone for this branch.
     return (
       <div className="content">
-        <Link href={`/belajar/kana/${moduleCode}`} className="back-button">← Kembali ke daftar modul</Link>
-        <section className="page-heading">
-          <p className="eyebrow">{bundle.module.titleId} · {bundle.phase.titleId}</p>
-          <h1>{bundle.lesson.titleId}</h1>
-        </section>
-
         <M01LessonView bundle={bundle} />
 
         <NextLessonNav moduleCode={moduleCode} nextLessonCode={nextLesson?.code ?? null} nextLessonTitle={nextLesson?.titleId ?? null} />

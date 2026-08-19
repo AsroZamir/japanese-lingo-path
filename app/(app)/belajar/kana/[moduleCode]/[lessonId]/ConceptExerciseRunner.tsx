@@ -6,98 +6,144 @@ import { AudioButton } from "@/components/kana/AudioButton";
 import type { LessonExerciseRow } from "@/app/lib/lesson-content-types";
 import { recordConceptAttempt, completeM01Lesson } from "./actions";
 
+export type ConceptAnswerState = { selectedId: number | null; checked: boolean; isCorrect?: boolean };
+
+// Renders exactly ONE question — M01SlideDeck owns which exercise is
+// active and the answer state for all of them (so stepping back to an
+// already-graded question via the left arrow shows it read-only instead
+// of re-recording an attempt). This used to loop over every exercise
+// itself; that loop moved up to the deck when M01 became a slide format.
+//
 // M01's "tidak ada nilai kelulusan" rule lives here: completeM01Lesson
-// runs unconditionally once the last question is answered, regardless
-// of the score — this component never blocks moving on.
-export function ConceptExerciseRunner({ lessonId, exercises }: { lessonId: number; exercises: LessonExerciseRow[] }) {
-  const [index, setIndex] = useState(0);
-  const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string | null } | null>(null);
-  const [done, setDone] = useState(false);
-  const [startedAt, setStartedAt] = useState(() => Date.now());
-  const [score, setScore] = useState({ correct: 0, total: 0 });
+// runs unconditionally once the last question is checked and the
+// learner taps through, regardless of the score.
+export function ConceptExerciseRunner({
+  lessonId,
+  exercise,
+  isLast,
+  answer,
+  onSelect,
+  onChecked,
+  onAdvance,
+}: {
+  lessonId: number;
+  exercise: LessonExerciseRow;
+  isLast: boolean;
+  answer: ConceptAnswerState;
+  onSelect: (optionId: number) => void;
+  onChecked: (isCorrect: boolean) => void;
+  onAdvance: () => void;
+}) {
+  const [startedAt] = useState(() => Date.now());
 
-  if (exercises.length === 0) return null;
-  const current = exercises[index];
-
-  function advance(isCorrect: boolean, chosenLabel: string, now: number) {
-    void recordConceptAttempt({
-      lessonId,
-      exerciseType: current.exerciseType,
-      isCorrect,
-      chosenOptionLabel: chosenLabel,
-      responseTimeMs: now - startedAt,
-    });
-    setScore((s) => ({ correct: s.correct + (isCorrect ? 1 : 0), total: s.total + 1 }));
-    setFeedback({ correct: isCorrect, explanation: current.explanation });
+  function selectOption(optionId: number) {
+    if (answer.checked) return;
+    onSelect(optionId);
   }
 
-  function handleChoice(optionId: number, label: string) {
-    if (feedback) return;
-    // eslint-disable-next-line react-hooks/purity -- only ever invoked from onClick; the identical Date.now() call in handleTyping below doesn't trip this rule (same inconsistency noted in ExerciseRunner.tsx).
-    advance(optionId === current.correctOptionId, label, Date.now());
+  function handleCheck() {
+    if (answer.checked || answer.selectedId == null) return;
+    const isCorrect = answer.selectedId === exercise.correctOptionId;
+    const label = exercise.options?.find((o) => o.id === answer.selectedId)?.label ?? "";
+    const now = Date.now();
+    void recordConceptAttempt({
+      lessonId,
+      exerciseType: exercise.exerciseType,
+      isCorrect,
+      chosenOptionLabel: label,
+      responseTimeMs: now - startedAt,
+    });
+    onChecked(isCorrect);
   }
 
   function handleTyping(result: { typed: string; correct: boolean }) {
-    if (feedback) return;
-    advance(result.correct, result.typed, Date.now());
+    if (answer.checked) return;
+    const now = Date.now();
+    void recordConceptAttempt({
+      lessonId,
+      exerciseType: exercise.exerciseType,
+      isCorrect: result.correct,
+      chosenOptionLabel: result.typed,
+      responseTimeMs: now - startedAt,
+    });
+    onChecked(result.correct);
   }
 
-  async function handleNext() {
-    setFeedback(null);
-    if (index + 1 < exercises.length) {
-      setIndex((i) => i + 1);
-      setStartedAt(Date.now());
-    } else {
-      setDone(true);
-      await completeM01Lesson(lessonId);
-    }
+  async function handleAdvance() {
+    if (!answer.checked) return;
+    if (isLast) await completeM01Lesson(lessonId);
+    onAdvance();
   }
 
-  if (done) {
-    return (
-      <div className="exercise-runner exercise-runner--done">
-        Selesai — {score.correct}/{score.total} benar. Latihan ini tidak punya nilai kelulusan, jadi Anda tetap bisa lanjut ke pelajaran berikutnya.
-      </div>
-    );
-  }
+  const isTyping = exercise.exerciseType === "typing";
+  const expectedTyping = exercise.options?.[0]?.label ?? "";
 
   return (
-    <div className="exercise-runner m01-exercise">
-      <div className="exercise-runner__header">
-        <span className="exercise-runner__progress">{index + 1}/{exercises.length}</span>
-      </div>
-
+    <div className="exercise-runner m01-exercise m01-slide-quiz">
       <div className="exercise-runner__prompt">
-        <p>{current.prompt}</p>
-        {current.audioUrl && <AudioButton url={current.audioUrl} />}
+        <p>{exercise.prompt}</p>
+        {exercise.audioUrl && <AudioButton url={exercise.audioUrl} />}
       </div>
 
-      {current.exerciseType === "typing" ? (
-        !feedback && <KanaTypingInput key={current.id} expected={current.options?.[0]?.label ?? ""} onResult={handleTyping} />
+      {isTyping ? (
+        !answer.checked ? (
+          <KanaTypingInput key={exercise.id} expected={expectedTyping} onResult={handleTyping} />
+        ) : (
+          <p className={`m01-slide__jp m01-slide__jp--sentence ${answer.isCorrect ? "is-correct" : "is-wrong"}`}>{expectedTyping}</p>
+        )
       ) : (
-        <div className="exercise-runner__options">
-          {current.options?.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              className={`exercise-runner__option ${feedback && option.id === current.correctOptionId ? "m01-option--correct" : ""}`}
-              disabled={!!feedback}
-              onClick={() => handleChoice(option.id, option.label)}
-            >
-              {option.label}
-            </button>
-          ))}
+        <div className="exercise-runner__options exercise-runner__options--gated m01-slide-quiz__options">
+          {exercise.options?.map((option) => {
+            const isSelected = answer.selectedId === option.id;
+            const isCorrectOpt = option.id === exercise.correctOptionId;
+            const showCorrect = answer.checked && isCorrectOpt;
+            const showWrong = answer.checked && isSelected && !isCorrectOpt;
+            const dim = answer.checked && !isCorrectOpt && !isSelected;
+            const stateClass = [
+              isSelected && !answer.checked ? "is-selected" : "",
+              showCorrect && isSelected ? "is-correct-selected" : "",
+              showCorrect && !isSelected ? "is-correct-revealed" : "",
+              showWrong ? "is-wrong" : "",
+              dim ? "is-dim" : "",
+            ].filter(Boolean).join(" ");
+            return (
+              <button
+                key={option.id}
+                type="button"
+                disabled={answer.checked}
+                className={`exercise-runner__option exercise-runner__option--card exercise-runner__option--text ${stateClass}`}
+                onClick={() => selectOption(option.id)}
+              >
+                <span className="exercise-runner__option-label">{option.label}</span>
+                {(showCorrect || showWrong) && (
+                  <span className={`exercise-runner__option-badge ${showCorrect ? "is-correct" : "is-wrong"}`}>
+                    {showCorrect ? "✓" : "✕"}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {feedback && (
-        <div className={`m01-feedback ${feedback.correct ? "m01-feedback--correct" : "m01-feedback--incorrect"}`}>
-          <strong>{feedback.correct ? "Benar!" : "Belum tepat."}</strong>
-          {feedback.explanation && <p>{feedback.explanation}</p>}
-          <button className="primary-button" onClick={handleNext}>
-            {index + 1 < exercises.length ? "Lanjut →" : "Selesaikan lesson →"}
-          </button>
-        </div>
+      {answer.checked && exercise.explanation && (
+        <p className={`m01-feedback-inline ${answer.isCorrect ? "is-correct" : "is-wrong"}`}>{exercise.explanation}</p>
+      )}
+
+      {(!isTyping || answer.checked) && (
+        <button
+          type="button"
+          className={`exercise-runner__check-btn ${answer.checked ? "is-checked" : ""}`}
+          disabled={!answer.checked && answer.selectedId == null}
+          onClick={answer.checked ? handleAdvance : handleCheck}
+        >
+          <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--orange" />
+          <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--green" />
+          <span className="exercise-runner__check-btn-label exercise-runner__check-btn-label--periksa">Periksa ›</span>
+          <span className="exercise-runner__check-btn-label exercise-runner__check-btn-label--lanjut">
+            {isLast ? "Selesaikan lesson ›" : "Lanjutkan ›"}
+          </span>
+        </button>
       )}
     </div>
   );

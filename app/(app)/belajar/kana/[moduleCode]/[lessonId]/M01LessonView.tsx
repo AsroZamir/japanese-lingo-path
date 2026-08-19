@@ -1,9 +1,11 @@
+import type { ReactNode } from "react";
 import * as wanakana from "wanakana";
 import { KanaChart } from "@/components/kana/KanaChart";
 import { AudioButton } from "@/components/kana/AudioButton";
 import { getCurrentUser } from "@/app/lib/current-user";
 import { getFullScriptChartPreview, type M01LessonBundle } from "@/app/lib/lesson-content-query";
 import { nameToKatakanaOrFallback } from "@/app/lib/name-to-katakana";
+import { groupParagraphs, groupUnits, chunkRows } from "@/app/lib/slide-text-split";
 import type {
   LessonContentBlockRow,
   TextBlockContent,
@@ -12,7 +14,7 @@ import type {
   AudioListBlockContent,
 } from "@/app/lib/lesson-content-types";
 import { DialogueBlock } from "./DialogueBlock";
-import { ConceptExerciseRunner } from "./ConceptExerciseRunner";
+import { M01SlideDeck } from "./M01SlideDeck";
 
 // **bold** ala markdown ringan — satu-satunya inline markup yang dipakai
 // di docs/konten-M01-orientasi.md, jadi tidak perlu parser markdown penuh.
@@ -27,16 +29,26 @@ function Bold({ text }: { text: string }) {
   );
 }
 
-async function TextBlock({ content }: { content: TextBlockContent }) {
+function ParagraphSlide({ heading, paragraphs }: { heading?: string; paragraphs: string[] }) {
+  return (
+    <div className="m01-slide__body">
+      {heading && <h2 className="m01-slide__title">{heading}</h2>}
+      {paragraphs.map((p, i) => (
+        <p key={i}><Bold text={p} /></p>
+      ))}
+    </div>
+  );
+}
+
+// Each slide of a "text" block. Splitting rules: paragraphs/steps/
+// closingParagraphs are grouped under a ~40-word budget (never
+// splitting a single paragraph or step — see slide-text-split.ts);
+// name-showcase is short enough to always be one slide on its own.
+async function textBlockSlides(content: TextBlockContent, keyBase: string): Promise<ReactNode[]> {
   if (content.kind === "paragraphs") {
-    return (
-      <section className="m01-block">
-        {content.heading && <h3>{content.heading}</h3>}
-        {content.paragraphs.map((p, i) => (
-          <p key={i}><Bold text={p} /></p>
-        ))}
-      </section>
-    );
+    return groupParagraphs(content.paragraphs).map((paras, gi) => (
+      <ParagraphSlide key={`${keyBase}-${gi}`} heading={gi === 0 ? content.heading : undefined} paragraphs={paras} />
+    ));
   }
 
   if (content.kind === "name-showcase") {
@@ -46,86 +58,116 @@ async function TextBlock({ content }: { content: TextBlockContent }) {
     const sentenceKana = `${content.prefixKana}${nameKana}${content.suffixKana}`;
     const sentenceRomaji = `${content.prefixRomaji} ${nameRomaji} ${content.suffixRomaji}`;
     const meaning = content.meaningTemplate.replace("{name}", user?.name?.split(/\s+/)[0] ?? "Anda");
-    return (
-      <section className="m01-showcase">
-        <p className="m01-showcase__kana">{sentenceKana}</p>
-        <p className="m01-showcase__romaji">{sentenceRomaji}</p>
-        <p className="m01-showcase__meaning">{meaning}</p>
-      </section>
-    );
+    return [
+      <div className="m01-slide__body m01-slide__body--chart" key={keyBase}>
+        <div className="m01-showcase">
+          <p className="m01-slide__jp m01-slide__jp--sentence">{sentenceKana}</p>
+          <p className="m01-showcase__romaji">{sentenceRomaji}</p>
+          <p className="m01-showcase__meaning">{meaning}</p>
+        </div>
+      </div>,
+    ];
   }
 
   // kind === "steps"
-  return (
-    <section className="m01-block">
-      {content.heading && <h3>{content.heading}</h3>}
-      {content.leadParagraphs?.map((p, i) => <p key={`lead-${i}`}><Bold text={p} /></p>)}
-      <ol className="m01-steps">
-        {content.steps.map((step, i) => (
-          <li key={i}>
-            {step.label && <span className="m01-steps__label">{step.label}</span>}
-            <span>{step.title}</span>
-          </li>
-        ))}
-      </ol>
-      {content.closingParagraphs?.map((p, i) => <p key={`close-${i}`}><Bold text={p} /></p>)}
-    </section>
-  );
-}
+  const slides: ReactNode[] = [];
+  let headingUsed = false;
 
-async function ChartBlockView({ content }: { content: ChartBlockContent }) {
-  const characters = await getFullScriptChartPreview(content.script);
-  return (
-    <section className="m01-block">
-      {content.heading && <h3>{content.heading}</h3>}
-      {content.paragraphs?.map((p, i) => <p key={i}><Bold text={p} /></p>)}
-      <KanaChart script={content.script} phase={content.heading ?? "Pratinjau"} characters={characters} />
-    </section>
-  );
-}
-
-function TableBlockView({ content }: { content: TableBlockContent }) {
-  if (content.kind === "vocab-card") {
-    return (
-      <div className="table-card m01-vocab-card">
-        <div className="m01-vocab-card__head">
-          <div>
-            <p className="m01-vocab-card__kana">{content.kana}</p>
-            <p className="m01-vocab-card__romaji">{content.romaji}</p>
-            <p className="m01-vocab-card__meaning">{content.meaning}</p>
-          </div>
-          <AudioButton url={content.audioUrl ?? null} />
-        </div>
-        {content.note && <p className="m01-vocab-card__note"><Bold text={content.note} /></p>}
-        {content.extra && <p className="m01-vocab-card__note"><Bold text={content.extra} /></p>}
-        {content.activity && <p className="m01-vocab-card__activity">{content.activity}</p>}
-        {content.secondaryLabel && content.secondaryAudioUrl && (
-          <div className="m01-vocab-card__secondary">
-            <span>{content.secondaryLabel}</span>
-            <AudioButton url={content.secondaryAudioUrl} />
-          </div>
-        )}
-      </div>
-    );
+  if (content.leadParagraphs?.length) {
+    groupParagraphs(content.leadParagraphs).forEach((paras, gi) => {
+      slides.push(<ParagraphSlide key={`${keyBase}-lead-${gi}`} heading={gi === 0 ? content.heading : undefined} paragraphs={paras} />);
+    });
+    headingUsed = true;
   }
 
-  return (
-    <section className="m01-block">
-      {content.heading && <h3>{content.heading}</h3>}
+  const stepUnits = content.steps.map((s) => ({ text: `${s.label ?? ""} ${s.title}`, payload: s }));
+  const groupedSteps = groupUnits(stepUnits);
+
+  groupedSteps.forEach((steps, gi) => {
+    slides.push(
+      <div className="m01-slide__body" key={`${keyBase}-steps-${gi}`}>
+        {gi === 0 && !headingUsed && content.heading && <h2 className="m01-slide__title">{content.heading}</h2>}
+        <ol className="m01-steps">
+          {steps.map((step, i) => (
+            <li key={i}>
+              {step.label && <span className="m01-steps__label">{step.label}</span>}
+              <span>{step.title}</span>
+            </li>
+          ))}
+        </ol>
+      </div>,
+    );
+  });
+
+  if (content.closingParagraphs?.length) {
+    groupParagraphs(content.closingParagraphs).forEach((paras, gi) => {
+      slides.push(<ParagraphSlide key={`${keyBase}-close-${gi}`} paragraphs={paras} />);
+    });
+  }
+
+  return slides;
+}
+
+async function chartBlockSlides(content: ChartBlockContent, keyBase: string): Promise<ReactNode[]> {
+  const slides: ReactNode[] = [];
+  if (content.paragraphs?.length) {
+    groupParagraphs(content.paragraphs).forEach((paras, gi) => {
+      slides.push(<ParagraphSlide key={`${keyBase}-intro-${gi}`} paragraphs={paras} />);
+    });
+  }
+  const characters = await getFullScriptChartPreview(content.script);
+  slides.push(
+    <div className="m01-slide__body m01-slide__body--chart" key={`${keyBase}-chart`}>
+      {content.heading && <h2 className="m01-slide__title">{content.heading}</h2>}
+      <KanaChart script={content.script} phase={content.heading ?? "Pratinjau"} characters={characters} />
+    </div>,
+  );
+  return slides;
+}
+
+function tableBlockSlides(content: TableBlockContent, keyBase: string): ReactNode[] {
+  if (content.kind === "vocab-card") {
+    return [
+      <div className="m01-slide__body m01-slide__body--chart" key={keyBase}>
+        <div className="table-card m01-vocab-card">
+          <div className="m01-vocab-card__head">
+            <div>
+              <p className="m01-slide__jp">{content.kana}</p>
+              <p className="m01-vocab-card__romaji">{content.romaji}</p>
+              <p className="m01-vocab-card__meaning">{content.meaning}</p>
+            </div>
+            <AudioButton url={content.audioUrl ?? null} />
+          </div>
+          {content.note && <p className="m01-vocab-card__note"><Bold text={content.note} /></p>}
+          {content.extra && <p className="m01-vocab-card__note"><Bold text={content.extra} /></p>}
+          {content.activity && <p className="m01-vocab-card__activity">{content.activity}</p>}
+          {content.secondaryLabel && content.secondaryAudioUrl && (
+            <div className="m01-vocab-card__secondary">
+              <span className="m01-slide__jp">{content.secondaryLabel}</span>
+              <AudioButton url={content.secondaryAudioUrl} />
+            </div>
+          )}
+        </div>
+      </div>,
+    ];
+  }
+
+  const rowChunks = chunkRows(content.rows.map((row, i) => ({ row, idx: i })));
+  return rowChunks.map((chunk, ci) => (
+    <div className="m01-slide__body" key={`${keyBase}-${ci}`}>
+      {ci === 0 && content.heading && <h2 className="m01-slide__title">{content.heading}</h2>}
       <div className="table-card m01-table-wrap">
         <table className="m01-table">
           <thead>
             <tr>{content.columns.map((col) => <th key={col}>{col}</th>)}</tr>
           </thead>
           <tbody>
-            {content.rows.map((row, i) => (
-              <tr key={i}>
+            {chunk.map(({ row, idx }) => (
+              <tr key={idx}>
                 {row.map((cell, j) => (
                   <td key={j}>
                     <Bold text={cell} />
-                    {j === row.length - 1 && content.rowAudioUrls?.[i] && (
-                      <AudioButton url={content.rowAudioUrls[i]} />
-                    )}
+                    {j === row.length - 1 && content.rowAudioUrls?.[idx] && <AudioButton url={content.rowAudioUrls[idx]} />}
                   </td>
                 ))}
               </tr>
@@ -133,70 +175,85 @@ function TableBlockView({ content }: { content: TableBlockContent }) {
           </tbody>
         </table>
       </div>
-      {content.audioUrl && (
+      {ci === rowChunks.length - 1 && content.audioUrl && (
         <div className="m01-table-audio">
           <AudioButton url={content.audioUrl} />
           <span>Dengarkan ketiganya</span>
         </div>
       )}
-    </section>
-  );
-}
-
-function AudioListBlockView({ content }: { content: AudioListBlockContent }) {
-  return (
-    <section className="m01-block">
-      {content.heading && <h3>{content.heading}</h3>}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-        {content.items.map((item) => (
-          <div key={item.kana} className="table-card" style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 14 }}>
-            <div>
-              <p className="m01-vocab-card__kana" style={{ fontSize: 20 }}>{item.kana}</p>
-              <span style={{ color: "var(--muted)", fontSize: 11 }}>{item.romaji} · {item.meaning}</span>
-            </div>
-            <AudioButton url={item.audioUrl} />
-          </div>
-        ))}
-      </div>
-      {content.closingParagraphs?.map((p, i) => <p key={i}><Bold text={p} /></p>)}
-    </section>
-  );
-}
-
-async function ContentBlock({ block }: { block: LessonContentBlockRow }) {
-  switch (block.blockType) {
-    case "text":
-      return <TextBlock content={block.content} />;
-    case "chart":
-      return <ChartBlockView content={block.content} />;
-    case "table":
-      return <TableBlockView content={block.content} />;
-    case "audio_list":
-      return <AudioListBlockView content={block.content} />;
-    case "dialogue":
-      return <DialogueBlock content={block.content} />;
-    case "callout":
-      return (
-        <div className={`m01-callout m01-callout--${block.content.kind}`}>
-          <Bold text={block.content.body} />
-        </div>
-      );
-  }
-}
-
-export function M01LessonView({ bundle }: { bundle: M01LessonBundle }) {
-  return (
-    <div>
-      {bundle.blocks.map((block) => (
-        <ContentBlock key={block.id} block={block} />
-      ))}
-
-      {bundle.exercises.length > 0 && (
-        <section className="m01-block">
-          <h3>Latihan</h3>
-          <ConceptExerciseRunner lessonId={bundle.lesson.id} exercises={bundle.exercises} />
-        </section>
-      )}
     </div>
+  ));
+}
+
+function audioListBlockSlides(content: AudioListBlockContent, keyBase: string): ReactNode[] {
+  const slides: ReactNode[] = content.items.map((item, i) => (
+    <div className="m01-slide__body m01-slide__body--chart" key={`${keyBase}-item-${i}`}>
+      {i === 0 && content.heading && <h2 className="m01-slide__title">{content.heading}</h2>}
+      <p className="m01-slide__jp">{item.kana}</p>
+      <p className="m01-vocab-card__meaning">{item.romaji} · {item.meaning}</p>
+      <AudioButton url={item.audioUrl} />
+    </div>
+  ));
+  if (content.closingParagraphs?.length) {
+    groupParagraphs(content.closingParagraphs).forEach((paras, gi) => {
+      slides.push(<ParagraphSlide key={`${keyBase}-close-${gi}`} paragraphs={paras} />);
+    });
+  }
+  return slides;
+}
+
+function dialogueBlockSlide(block: LessonContentBlockRow & { blockType: "dialogue" }, keyBase: string): ReactNode[] {
+  return [
+    <div className="m01-slide__body m01-slide__body--chart" key={keyBase}>
+      <DialogueBlock content={block.content} />
+    </div>,
+  ];
+}
+
+function calloutBlockSlide(block: LessonContentBlockRow & { blockType: "callout" }, keyBase: string): ReactNode[] {
+  return [
+    <div className="m01-slide__body m01-slide__body--callout" key={keyBase}>
+      <div className={`m01-callout m01-callout--${block.content.kind}`}><Bold text={block.content.body} /></div>
+    </div>,
+  ];
+}
+
+async function buildContentSlides(blocks: LessonContentBlockRow[]): Promise<ReactNode[]> {
+  const slides: ReactNode[] = [];
+  for (const block of blocks) {
+    const keyBase = `block-${block.id}`;
+    switch (block.blockType) {
+      case "text":
+        slides.push(...(await textBlockSlides(block.content, keyBase)));
+        break;
+      case "chart":
+        slides.push(...(await chartBlockSlides(block.content, keyBase)));
+        break;
+      case "table":
+        slides.push(...tableBlockSlides(block.content, keyBase));
+        break;
+      case "audio_list":
+        slides.push(...audioListBlockSlides(block.content, keyBase));
+        break;
+      case "dialogue":
+        slides.push(...dialogueBlockSlide(block, keyBase));
+        break;
+      case "callout":
+        slides.push(...calloutBlockSlide(block, keyBase));
+        break;
+    }
+  }
+  return slides;
+}
+
+export async function M01LessonView({ bundle }: { bundle: M01LessonBundle }) {
+  const contentSlides = await buildContentSlides(bundle.blocks);
+  return (
+    <M01SlideDeck
+      moduleCode={bundle.module.code}
+      lessonId={bundle.lesson.id}
+      contentSlides={contentSlides}
+      exercises={bundle.exercises}
+    />
   );
 }
