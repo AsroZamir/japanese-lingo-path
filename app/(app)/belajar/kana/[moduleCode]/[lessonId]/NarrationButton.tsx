@@ -20,11 +20,19 @@ function readAutoPreference(): boolean {
 export function NarrationButton({ url }: { url: string | null }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
-  // Lazy initializer, not an effect — this only ever needs to run once,
-  // on mount, and readAutoPreference() already guards the SSR case
-  // (window undefined -> false), so there's no synchronization concern
-  // an effect would actually be for here.
-  const [auto, setAuto] = useState(() => readAutoPreference());
+  const [auto, setAuto] = useState(false);
+
+  // A genuine sync-from-external-system effect, not one avoidable via a
+  // lazy initializer: this component is part of a server-rendered tree
+  // (M01LessonView), so a lazy initializer's first real read still needs
+  // a corrective pass once the client's actual localStorage is available —
+  // otherwise the "Auto" button's own displayed state (not the playback
+  // effect below, which already re-reads fresh) can end up stuck showing
+  // off/on-mismatched-with-preference after a reload.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from localStorage, unavailable during this component's SSR pass; see comment above.
+    setAuto(readAutoPreference());
+  }, []);
 
   useEffect(() => {
     if (!url) return;
