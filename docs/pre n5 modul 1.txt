@@ -1,0 +1,25 @@
+M01
+│
+├── L01 — Welcome to Japanese
+│   ├── Bahasa Jepang seperti apa?
+│   ├── Contoh tulisan Jepang
+│   ├── 3 sistem tulisan
+│   └── Gambaran perjalanan belajar
+│
+├── L02 — Meet Hiragana
+│   ├── Apa itu Hiragana?
+│   ├── Lihat chart Hiragana
+│   ├── Dengarkan beberapa contoh
+│   └── "Nanti kita akan belajar ini satu per satu."
+│
+├── L03 — Meet Katakana & Kanji
+│   ├── Katakana itu apa?
+│   ├── Kanji itu apa?
+│   └── Kapan akan mempelajarinya?
+│
+└── L04 — Your First Japanese
+    ├── こんにちは
+    ├── ありがとう
+    ├── すし
+    ├── 日本
+    └── First tiny interaction

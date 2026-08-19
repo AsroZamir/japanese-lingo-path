@@ -1,0 +1,473 @@
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                         PRE-N5 — MODULE 05                                           ║
+║                     GREETINGS & SOCIAL JAPANESE                                     ║
+║                                                                                      ║
+║ CORE GOAL                                                                            ║
+║ Learner mampu melakukan interaksi sosial dasar dalam bahasa Jepang:                 ║
+║ menyapa, memperkenalkan diri, berterima kasih, meminta maaf, meminta bantuan,        ║
+║ merespons lawan bicara, dan mengakhiri percakapan sederhana dengan tepat.            ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 1 — JAPANESE SOCIAL BASICS                                                     ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — WHY GREETINGS MATTER
+│   │
+│   ├── MATERI
+│   │   ├── Greeting culture
+│   │   ├── Salam sebagai bagian dari interaksi
+│   │   ├── Casual vs polite exposure
+│   │   ├── Greeting berdasarkan waktu
+│   │   └── Basic social awareness
+│   │
+│   ├── VISUAL
+│   │   ├── Morning
+│   │   ├── Afternoon
+│   │   ├── Evening
+│   │   └── Before sleep
+│   │
+│   └── AKTIVITAS
+│       ├── Situation → choose expression
+│       ├── Listen
+│       └── Repeat
+│
+├── L02 — BASIC GREETINGS
+│   │
+│   ├── おはよう
+│   ├── おはようございます
+│   ├── こんにちは
+│   ├── こんばんは
+│   ├── おやすみ
+│   └── おやすみなさい
+│
+│   ├── DEMONSTRATION
+│   │   ├── Native speaker
+│   │   ├── Situation
+│   │   ├── Tone
+│   │   └── Slow / normal playback
+│   │
+│   └── LATIHAN
+│       ├── Hear → choose
+│       ├── Situation → choose
+│       └── Repeat
+│
+├── L03 — GREETING IN CONTEXT
+│   │
+│   ├── HOME
+│   ├── SCHOOL
+│   ├── WORK
+│   ├── FRIEND
+│   └── FIRST MEETING
+│
+│   ├── MINI DIALOGUE
+│   │   ├── A greeting
+│   │   ├── B response
+│   │   └── context shift
+│   │
+│   └── ROLEPLAY
+│       └── Pick the correct greeting
+│
+└── L04 — GREETING MINI MASTERY
+    ├── Listening
+    ├── Situation recognition
+    ├── Speaking
+    ├── Response selection
+    └── Randomized review
+          │
+          ├── PASS → PHASE 2
+          └── FAIL → Greeting Drill
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 2 — THANKING, APOLOGIZING & POLITENESS                                         ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — THANK YOU
+│   │
+│   ├── ありがとう
+│   ├── ありがとうございます
+│   ├── どうも
+│   └── Situational differences
+│
+│   ├── MATERI
+│   │   ├── Meaning
+│   │   ├── Tone
+│   │   ├── Politeness
+│   │   └── When to use
+│   │
+│   └── PRACTICE
+│       ├── Situation → response
+│       ├── Audio recognition
+│       └── Speaking
+│
+├── L02 — APOLOGY
+│   │
+│   ├── ごめんなさい
+│   ├── すみません
+│   └── Context comparison
+│
+├── L03 — EXCUSE ME / GETTING ATTENTION
+│   │
+│   ├── すみません
+│   ├── 店員
+│   ├── Teacher
+│   └── Stranger
+│
+├── L04 — POLITE REQUEST CHUNKS
+│   │
+│   ├── お願いします
+│   ├── ください
+│   ├── もう一度お願いします
+│   └── ゆっくりお願いします
+│
+└── L05 — SOCIAL RESPONSE LAB
+    │
+    ├── Thank
+    ├── Apologize
+    ├── Ask politely
+    ├── Respond politely
+    └── Mini roleplay
+          │
+          ├── PASS → PHASE 3
+          └── FAIL → Contextual Review
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 3 — SELF INTRODUCTION                                                           ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — FIRST MEETING
+│   │
+│   ├── はじめまして
+│   ├── よろしくお願いします
+│   └── Social sequence
+│
+├── L02 — SAYING YOUR NAME
+│   │
+│   ├── 私は ___ です
+│   ├── 名前
+│   ├── お名前
+│   └── Name response
+│
+├── L03 — WHERE ARE YOU FROM?
+│   │
+│   ├── 国
+│   ├── 日本
+│   ├── インドネシア
+│   ├── ～人
+│   └── Basic country response
+│
+├── L04 — BASIC PERSONAL INTRODUCTION
+│   │
+│   ├── Name
+│   ├── Country
+│   ├── Age
+│   ├── Student / work status
+│   └── Japanese-learning status
+│
+└── L05 — SELF-INTRODUCTION ROLEPLAY
+    │
+    ├── Native character
+    ├── User introduction
+    ├── Follow-up question
+    ├── User response
+    └── Closing
+          │
+          ├── PASS → PHASE 4
+          └── FAIL → Introduction Recovery
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 4 — BASIC RESPONSES & CONVERSATION CONTROL                                     ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — YES / NO / CONFIRM
+│   │
+│   ├── はい
+│   ├── いいえ
+│   ├── そうです
+│   └── そうではありません
+│
+├── L02 — UNDERSTANDING
+│   │
+│   ├── わかりました
+│   ├── わかりません
+│   └── もう一度お願いします
+│
+├── L03 — SIMPLE AGREEMENT
+│   │
+│   ├── そうですね
+│   ├── いいですね
+│   └── はい
+│
+├── L04 — SIMPLE HESITATION / RESPONSE
+│   │
+│   ├── ちょっと…
+│   ├── そうですか
+│   └── ええ
+│
+└── L05 — CONVERSATION CONTROL LAB
+    │
+    ├── Ask for repetition
+    ├── Say you understand
+    ├── Say you don't understand
+    ├── Agree
+    └── Respond naturally
+          │
+          ▼
+      PHASE 5
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 5 — CLASSROOM JAPANESE                                                          ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — ASKING WHAT SOMETHING IS
+│   │
+│   ├── これは何ですか
+│   ├── これは日本語で何ですか
+│   └── Simple classroom context
+│
+├── L02 — ASKING FOR REPETITION
+│   │
+│   ├── もう一度お願いします
+│   ├── もう一度言ってください
+│   └── Audio practice
+│
+├── L03 — ASKING SOMEONE TO SLOW DOWN
+│   │
+│   ├── ゆっくりお願いします
+│   └── Listening / Speaking
+│
+├── L04 — SAYING YOU DON'T UNDERSTAND
+│   │
+│   ├── わかりません
+│   ├── ちょっとわかりません
+│   └── Help request
+│
+└── L05 — CLASSROOM ROLEPLAY
+    │
+    ├── Teacher talks
+    ├── User asks
+    ├── Teacher repeats
+    ├── User responds
+    └── Conversation recovery
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 6 — EVERYDAY SOCIAL SITUATIONS                                                  ║
+║ 6 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — MEETING SOMEONE
+│   ├── Greeting
+│   ├── Introduction
+│   ├── Name
+│   └── Closing
+│
+├── L02 — AT A SHOP
+│   ├── すみません
+│   ├── これをください
+│   ├── ありがとうございます
+│   └── Short interaction
+│
+├── L03 — AT A RESTAURANT
+│   ├── Greeting
+│   ├── Request
+│   ├── Thanking
+│   └── Closing
+│
+├── L04 — ASKING FOR HELP
+│   ├── すみません
+│   ├── お願いします
+│   ├── わかりません
+│   └── もう一度お願いします
+│
+├── L05 — PUBLIC SITUATION
+│   ├── Station
+│   ├── Store
+│   ├── School
+│   └── Stranger interaction
+│
+└── L06 — SOCIAL SURVIVAL SIMULATION
+    ├── Random scenario
+    ├── User must choose expression
+    ├── User speaks
+    ├── AI responds
+    └── User continues
+          │
+          ▼
+      PHASE 7
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 7 — LISTENING & RESPONSE LAB                                                    ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — HEAR THE SITUATION
+│   ├── Morning
+│   ├── First meeting
+│   ├── Shop
+│   ├── Classroom
+│   └── Restaurant
+│
+├── L02 — HEAR THE INTENTION
+│   ├── Greeting
+│   ├── Thanks
+│   ├── Apology
+│   ├── Request
+│   └── Question
+│
+├── L03 — CHOOSE THE RESPONSE
+│   ├── Situation
+│   ├── Audio
+│   ├── Multiple responses
+│   └── Best response
+│
+└── L04 — LISTEN & RESPOND
+    ├── Native audio
+    ├── No answer choices
+    ├── User speaks
+    └── AI judges relevance / intelligibility
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 8 — SPEAKING & ROLEPLAY LAB                                                     ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — GREETING ROLEPLAY
+│   ├── Morning
+│   ├── Afternoon
+│   └── Evening
+│
+├── L02 — FIRST MEETING ROLEPLAY
+│   ├── はじめまして
+│   ├── Name
+│   ├── Country
+│   └── よろしくお願いします
+│
+├── L03 — ASKING FOR HELP
+│   ├── すみません
+│   ├── Request
+│   └── Thanking
+│
+├── L04 — CLASSROOM ROLEPLAY
+│   ├── Ask question
+│   ├── Ask repetition
+│   ├── Confirm understanding
+│   └── Respond
+│
+└── L05 — FREE BASIC SOCIAL CONVERSATION
+    ├── AI starts conversation
+    ├── User responds
+    ├── AI asks follow-up
+    ├── User responds
+    └── Closing
+          │
+          ▼
+      PHASE 9
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 9 — CONSOLIDATION & ACTIVE RECALL                                                ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — EXPRESSION RECALL
+│   ├── Meaning → Japanese
+│   ├── Situation → Japanese
+│   ├── Audio → response
+│   └── Random recall
+│
+├── L02 — CONTEXT SWITCHING
+│   ├── Same expression
+│   ├── Different situations
+│   ├── Choose appropriate register
+│   └── Explain why
+│
+├── L03 — NO-CHOICE CHALLENGE
+│   ├── Situation appears
+│   ├── No multiple choice
+│   ├── User speaks
+│   └── AI evaluates
+│
+└── L04 — MIXED SOCIAL CHALLENGE
+    ├── Greeting
+    ├── Introduction
+    ├── Thanking
+    ├── Apology
+    ├── Request
+    ├── Clarification
+    └── Closing
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 10 — MASTERY + RETENTION                                                        ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — SOCIAL JAPANESE MASTERY TEST
+│   │
+│   ├── Listening
+│   ├── Situation recognition
+│   ├── Expression selection
+│   ├── Speaking
+│   ├── Response relevance
+│   └── Conversation completion
+│
+├── L02 — TARGETED REMEDIATION
+│   │
+│   ├── Weak expression
+│   ├── Wrong context
+│   ├── Wrong politeness
+│   ├── Pronunciation
+│   └── Response failure
+│
+├── L03 — DELAYED RETENTION
+│   ├── Same day
+│   ├── Next day
+│   ├── 3-day review
+│   └── 7-day review
+│
+└── L04 — FINAL SOCIAL SIMULATION
+    │
+    ├── Scenario randomly selected
+    ├── No script
+    ├── AI conversation
+    ├── User response
+    ├── Follow-up
+    └── Conversation ending
+          │
+          ├── PASS
+          │      ↓
+          │  ╔══════════════════════════════╗
+          │  ║ M05 MASTERY ACHIEVED         ║
+          │  ╚══════════════╤═══════════════╝
+          │                 │
+          │                 ▼
+          │             UNLOCK M06
+          │
+          └── FAIL
+                 ↓
+          TARGETED SOCIAL REVIEW
+
+
+

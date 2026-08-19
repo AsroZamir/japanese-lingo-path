@@ -1,0 +1,603 @@
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                         PRE-N5 — MODULE 02                                           ║
+║                              HIRAGANA MASTERY                                        ║
+║                                                                                      ║
+║ CORE GOAL                                                                            ║
+║ Learner mampu: SEE → HEAR → RECOGNIZE → RECALL → WRITE → READ → TYPE → USE Hiragana ║
+║ tanpa bergantung pada Romaji.                                                        ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 1 — ORIENTATION                                                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — WHAT IS HIRAGANA?
+│   │
+│   ├── MATERI
+│   │   ├── Apa itu Hiragana?
+│   │   ├── Fungsi Hiragana dalam bahasa Jepang
+│   │   ├── Perbedaan Hiragana / Katakana / Kanji
+│   │   ├── Konsep "character = sound"
+│   │   ├── 46 basic Hiragana
+│   │   └── Preview chart あ → ん
+│   │
+│   ├── CARA PEMBELAJARAN
+│   │   ├── Interactive Hiragana Chart
+│   │   ├── Klik karakter → dengar pronunciation
+│   │   ├── Hover/tap → tampil stroke preview
+│   │   └── Audio native Japanese
+│   │
+│   ├── AKTIVITAS
+│   │   ├── Explore chart
+│   │   ├── Listen & Repeat
+│   │   └── Identify random character
+│   │
+│   └── OUTPUT
+│       └── User memahami apa yang akan dipelajari
+│
+├── L02 — HOW TO WRITE HIRAGANA
+│   │
+│   ├── MATERI
+│   │   ├── Stroke order concept
+│   │   ├── Writing direction
+│   │   ├── Character proportions
+│   │   ├── Basic writing grid
+│   │   └── Correct vs incorrect stroke order
+│   │
+│   ├── MEDIA
+│   │   ├── Stroke animation
+│   │   ├── Slow animation
+│   │   ├── Instructor demonstration
+│   │   └── Interactive writing canvas
+│   │
+│   ├── AKTIVITAS
+│   │   ├── Watch
+│   │   ├── Trace
+│   │   ├── Follow guide
+│   │   └── Free writing
+│   │
+│   └── OUTPUT
+│       └── User memahami mekanisme menulis Hiragana
+│
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 2 — BASIC 46 HIRAGANA                                                           ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── GROUP A — あいうえお
+│   │
+│   ├── L01 — LEARN
+│   │   │
+│   │   ├── MATERI
+│   │   │   ├── あ /a/
+│   │   │   ├── い /i/
+│   │   │   ├── う /u/
+│   │   │   ├── え /e/
+│   │   │   └── お /o/
+│   │   │
+│   │   ├── SETIAP KARAKTER
+│   │   │   ├── Bentuk karakter
+│   │   │   ├── Audio pronunciation
+│   │   │   ├── Stroke count
+│   │   │   ├── Stroke order animation
+│   │   │   ├── Slow replay
+│   │   │   └── Example word
+│   │   │
+│   │   ├── CONTOH
+│   │   │   ├── あ → あさ
+│   │   │   ├── い → いえ
+│   │   │   ├── う → うえ
+│   │   │   ├── え → え
+│   │   │   └── お → おと
+│   │   │
+│   │   ├── AKTIVITAS
+│   │   │   ├── Listen
+│   │   │   ├── Repeat
+│   │   │   ├── Watch stroke
+│   │   │   └── Trace
+│   │   │
+│   │   └── OUTPUT
+│   │       └── Familiarity dengan 5 karakter
+│   │
+│   ├── L02 — RECOGNIZE + HEAR
+│   │   │
+│   │   ├── VISUAL RECOGNITION
+│   │   │   ├── あ → pilih bunyi
+│   │   │   ├── い → pilih bunyi
+│   │   │   ├── dst.
+│   │   │   └── random order
+│   │   │
+│   │   ├── AUDIO RECOGNITION
+│   │   │   ├── Audio /a/ → pilih あ
+│   │   │   ├── Audio /i/ → pilih い
+│   │   │   └── dst.
+│   │   │
+│   │   ├── DISTRACTORS
+│   │   │   ├── Visual similar
+│   │   │   ├── Sound similar
+│   │   │   └── Random choices
+│   │   │
+│   │   ├── LATIHAN
+│   │   │   ├── Multiple choice
+│   │   │   ├── Tap answer
+│   │   │   ├── Audio identification
+│   │   │   └── Timed recognition
+│   │   │
+│   │   └── TARGET
+│   │       ├── Visual ≥ 90%
+│   │       └── Audio ≥ 85%
+│   │
+│   ├── L03 — WRITE
+│   │   │
+│   │   ├── STAGE 1
+│   │   │   └── Trace character
+│   │   │
+│   │   ├── STAGE 2
+│   │   │   └── Guided writing
+│   │   │
+│   │   ├── STAGE 3
+│   │   │   └── Copy character
+│   │   │
+│   │   ├── STAGE 4
+│   │   │   └── Write with faint grid
+│   │   │
+│   │   ├── STAGE 5
+│   │   │   └── Write from sound
+│   │   │
+│   │   ├── FEEDBACK
+│   │   │   ├── Stroke order
+│   │   │   ├── Stroke direction
+│   │   │   ├── Shape
+│   │   │   └── Proportion
+│   │   │
+│   │   └── TARGET
+│   │       └── Writing ≥ 80%
+│   │
+│   └── L04 — READ + MINI MASTERY
+│       │
+│       ├── READING
+│       │   ├── あい
+│       │   ├── いえ
+│       │   ├── あさ
+│       │   ├── あお
+│       │   └── mixed
+│       │
+│       ├── TYPING
+│       │   ├── Audio → type kana
+│       │   └── Word → type reading
+│       │
+│       ├── RECALL
+│       │   ├── /a/ → あ
+│       │   ├── /i/ → い
+│       │   └── random
+│       │
+│       ├── MINI TEST
+│       │   ├── Visual 5
+│       │   ├── Audio 5
+│       │   ├── Recall 5
+│       │   ├── Writing 3
+│       │   └── Word reading 3
+│       │
+│       └── GATE
+│           ├── Pass → GROUP B
+│           └── Fail → Targeted Review A
+│
+│
+├── GROUP B — かきくけこ
+│   │
+│   ├── L01 — REVIEW A + LEARN B
+│   │   ├── Review あいうえお
+│   │   ├── Learn か き く け こ
+│   │   ├── Audio
+│   │   ├── Stroke animation
+│   │   ├── Tracing
+│   │   └── Example words
+│   │
+│   ├── L02 — RECOGNITION
+│   │   ├── A + B mixed
+│   │   ├── Visual → sound
+│   │   ├── Sound → character
+│   │   ├── Random order
+│   │   └── Similarity practice
+│   │
+│   ├── L03 — WRITING
+│   │   ├── かきくけこ
+│   │   ├── Trace
+│   │   ├── Guided
+│   │   ├── Recall
+│   │   └── Audio → writing
+│   │
+│   └── L04 — READING + MASTERY
+│       ├── かお
+│       ├── きく
+│       ├── ここ
+│       ├── こえ
+│       ├── A+B random
+│       └── Mini test
+│
+│
+├── GROUP C — さしすせそ
+│   │
+│   ├── L01 — REVIEW A+B + LEARN C
+│   │   ├── Review previous 10 kana
+│   │   ├── Learn さ し す せ そ
+│   │   ├── Special pronunciation: し
+│   │   └── Stroke demo
+│   │
+│   ├── L02 — RECOGNITION
+│   │   ├── A+B+C mixed
+│   │   ├── Visual recognition
+│   │   ├── Audio recognition
+│   │   └── Discrimination
+│   │
+│   ├── L03 — WRITING
+│   │   ├── Stroke practice
+│   │   ├── Recall writing
+│   │   └── Dictation writing
+│   │
+│   └── L04 — READING + MASTERY
+│       ├── すし
+│       ├── しお
+│       ├── そこ
+│       ├── せかい
+│       └── Mini mastery
+│
+│
+├── GROUP D — たちつてと
+│   │
+│   ├── L01 — REVIEW A+B+C + LEARN D
+│   │   ├── Learn た ち つ て と
+│   │   ├── Special focus ち / つ
+│   │   ├── Audio contrast
+│   │   └── Stroke animation
+│   │
+│   ├── L02 — RECOGNITION
+│   │   ├── Previous 15 + D
+│   │   ├── ち vs つ
+│   │   └── Audio → kana
+│   │
+│   ├── L03 — WRITING
+│   │   ├── Stroke
+│   │   ├── Recall
+│   │   └── Dictation
+│   │
+│   └── L04 — READING + MASTERY
+│       ├── たこ
+│       ├── つき
+│       ├── ちず
+│       └── Mixed test
+│
+│
+├── GROUP E — なにぬねの
+│   │
+│   ├── L01 — REVIEW A–D + LEARN E
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│       ├── なに
+│       ├── ねこ
+│       ├── ぬの
+│       └── Mixed test
+│
+│
+├── GROUP F — はひふへほ
+│   │
+│   ├── L01 — REVIEW A–E + LEARN F
+│   │   ├── Learn は ひ ふ へ ほ
+│   │   └── Special focus ふ
+│   │
+│   ├── L02 — RECOGNITION
+│   │   ├── は / ひ / ふ / へ / ほ
+│   │   └── Previous groups mixed
+│   │
+│   ├── L03 — WRITING
+│   │
+│   └── L04 — READING + MASTERY
+│       ├── はな
+│       ├── ふね
+│       ├── へや
+│       └── Mixed test
+│
+│
+├── GROUP G — まみむめも
+│   │
+│   ├── L01 — REVIEW A–F + LEARN G
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│       ├── まめ
+│       ├── みみ
+│       ├── むし
+│       └── Mixed test
+│
+│
+├── GROUP H — やゆよ
+│   │
+│   ├── L01 — REVIEW + LEARN H
+│   │   ├── や
+│   │   ├── ゆ
+│   │   └── よ
+│   │
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│       ├── やま
+│       ├── ゆき
+│       ├── よる
+│       └── Mixed review
+│
+│
+├── GROUP I — らりるれろ
+│   │
+│   ├── L01 — REVIEW + LEARN I
+│   │   ├── ら り る れ ろ
+│   │   └── Special listening focus
+│   │
+│   ├── L02 — RECOGNITION
+│   │   ├── Audio discrimination
+│   │   └── Similar-shape review
+│   │
+│   ├── L03 — WRITING
+│   │
+│   └── L04 — READING + MASTERY
+│       ├── りんご
+│       ├── ろく
+│       └── Mixed review
+│
+│
+└── GROUP J — わをん
+    │
+    ├── L01 — REVIEW + LEARN J
+    │   ├── わ
+    │   ├── を
+    │   └── ん
+    │
+    ├── L02 — RECOGNITION
+    │   ├── わ / を
+    │   ├── ん listening
+    │   └── Full mixed review
+    │
+    ├── L03 — WRITING
+    │   ├── わ
+    │   ├── を
+    │   └── ん
+    │
+    └── L04 — READING + MASTERY
+        ├── わたし
+        ├── おんがく
+        ├── ほん
+        └── Full 46 kana review
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 3 — MODIFIED HIRAGANA                                                          ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — DAKUTEN
+│   │
+│   ├── MATERI
+│   │   ├── か → が
+│   │   ├── さ → ざ
+│   │   ├── た → だ
+│   │   └── は → ば
+│   │
+│   ├── AUDIO
+│   │   ├── か / が
+│   │   ├── さ / ざ
+│   │   └── etc.
+│   │
+│   ├── WRITING
+│   │   ├── Base kana
+│   │   └── Add dakuten
+│   │
+│   └── WORD PRACTICE
+│       ├── がくせい
+│       ├── かぞく
+│       └── ざっし
+│
+├── L02 — HANDAKUTEN
+│   │
+│   ├── は → ば → ぱ
+│   ├── Audio discrimination
+│   ├── Writing
+│   ├── Recall
+│   └── Word reading
+│
+├── L03 — SMALL ゃゅょ
+│   │
+│   ├── きゃ / きゅ / きょ
+│   ├── しゃ / しゅ / しょ
+│   ├── ちゃ / ちゅ / ちょ
+│   ├── にゃ / にゅ / にょ
+│   ├── etc.
+│   ├── Audio
+│   ├── Reading
+│   └── Writing
+│
+└── L04 — SMALL っ + LONG SOUNDS
+    │
+    ├── っ
+    │   ├── きて / きって
+    │   └── さか / さっか
+    │
+    ├── LONG SOUNDS
+    │   ├── おばさん / おばあさん
+    │   └── おじさん / おじいさん
+    │
+    ├── Listening discrimination
+    ├── Reading
+    ├── Typing
+    └── Dictation
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 4 — READING LAB                                                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — 2–3 KANA WORDS
+│   │
+│   ├── Reading
+│   ├── Audio
+│   ├── Meaning
+│   ├── Word → Reading
+│   └── Audio → Word
+│
+├── L02 — 4+ KANA WORDS
+│   │
+│   ├── ありがとう
+│   ├── おはよう
+│   ├── たべもの
+│   ├── がっこう
+│   └── Mixed reading
+│
+└── L03 — REAL BEGINNER READING
+    │
+    ├── Greetings
+    ├── Short labels
+    ├── Simple signs
+    ├── Very short messages
+    └── No-Romaji reading
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 5 — ACTIVE RECALL                                                                ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — SOUND → KANA
+│   ├── Audio plays
+│   ├── User selects kana
+│   ├── No Romaji
+│   └── Randomized all groups
+│
+├── L02 — AUDIO → WRITING / DICTATION
+│   ├── Hear kana
+│   ├── Write kana
+│   ├── Hear word
+│   ├── Write word
+│   └── Correct errors
+│
+└── L03 — MIXED RANDOM RECALL
+    ├── Visual → Sound
+    ├── Sound → Kana
+    ├── Word → Reading
+    ├── Word → Typing
+    ├── Similar Kana
+    └── Random order
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 6 — WRITING LAB                                                                  ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — STROKE MASTERY
+│   ├── Stroke order
+│   ├── Direction
+│   ├── Shape
+│   ├── Proportion
+│   └── Blind stroke recall
+│
+├── L02 — WORD WRITING
+│   ├── Write 2-kana word
+│   ├── Write 3-kana word
+│   ├── Write 4+ kana word
+│   └── Dictation writing
+│
+└── L03 — BLIND WRITING
+    ├── Audio → kana
+    ├── English/Indonesian meaning → kana
+    ├── Word → kana
+    └── Full randomized writing
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 7 — CONSOLIDATION                                                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — SIMILAR KANA
+│   │
+│   ├── User-specific confusion pairs
+│   ├── ぬ vs め
+│   ├── れ vs ね
+│   ├── さ vs き
+│   ├── わ vs れ
+│   └── data-driven pairs
+│
+│   ├── Visual comparison
+│   ├── Audio comparison
+│   ├── Writing comparison
+│   └── Recall
+│
+└── L02 — NO-ROMAJI CHALLENGE
+    │
+    ├── Entire interface in Hiragana where appropriate
+    ├── Read words
+    ├── Read short phrases
+    ├── Audio → writing
+    ├── Typing
+    └── Speed recall
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 8 — MASTERY + RETENTION                                                          ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — HIRAGANA MASTERY TEST
+│   │
+│   ├── Visual Recognition
+│   ├── Audio Recognition
+│   ├── Sound → Kana
+│   ├── Reading
+│   ├── Dictation
+│   ├── Typing
+│   ├── Writing
+│   └── Similar Kana
+│
+├── L02 — TARGETED REMEDIATION
+│   │
+│   ├── Identify weak kana
+│   ├── Identify weak skill
+│   │   ├── Visual
+│   │   ├── Audio
+│   │   ├── Writing
+│   │   └── Reading
+│   │
+│   └── Generate personalized drills
+│
+├── L03 — DELAYED RETENTION CHECK
+│   │
+│   ├── Same day review
+│   ├── Next day
+│   ├── 3-day review
+│   ├── 7-day review
+│   └── Randomized retrieval
+│
+└── L04 — FINAL UNLOCK CHECK
+    │
+    ├── All 46 basic kana
+    ├── Modified kana
+    ├── Word reading
+    ├── Writing
+    ├── Audio recognition
+    └── Retention
+             │
+             ├── PASS
+             │      ↓
+             │  ╔══════════════════════╗
+             │  ║ HIRAGANA MASTERED    ║
+             │  ╚══════════╤═══════════╝
+             │             │
+             │             ▼
+             │       UNLOCK M03
+             │       KATAKANA
+             │
+             └── FAIL
+                    ↓
+             TARGETED REMEDIATION

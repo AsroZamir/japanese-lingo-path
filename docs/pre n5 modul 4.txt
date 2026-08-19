@@ -1,0 +1,823 @@
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                         PRE-N5 — MODULE 04                                           ║
+║                    NUMBERS & BASIC INFORMATION MASTERY                              ║
+║                                                                                      ║
+║ CORE GOAL                                                                            ║
+║ Learner mampu membaca, mendengar, mengucapkan, mengetik, dan menggunakan angka,     ║
+║ waktu, tanggal, umur, harga, serta informasi pribadi sederhana dalam konteks nyata. ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 1 — NUMBER FOUNDATION                                                           ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — MEET JAPANESE NUMBERS
+│   │
+│   ├── MATERI
+│   │   ├── 0–10
+│   │   ├── ゼロ / れい
+│   │   ├── 一〜十
+│   │   └── Pola angka Jepang
+│   │
+│   ├── MEDIA
+│   │   ├── Visual number cards
+│   │   ├── Native audio
+│   │   ├── Slow audio
+│   │   └── Number animation
+│   │
+│   ├── LATIHAN
+│   │   ├── See → say
+│   │   ├── Hear → choose
+│   │   ├── Japanese → meaning
+│   │   └── Meaning → Japanese
+│   │
+│   └── TARGET
+│       └── 0–10 otomatis dikenali
+│
+├── L02 — NUMBERS 11–100
+│   │
+│   ├── MATERI
+│   │   ├── 十一
+│   │   ├── 二十
+│   │   ├── 二十一
+│   │   └── 100 百
+│   │
+│   ├── CARA PEMBELAJARAN
+│   │   ├── Pattern discovery
+│   │   ├── Build the number
+│   │   └── Hear + construct
+│   │
+│   ├── LATIHAN
+│   │   ├── Number builder
+│   │   ├── Audio → number
+│   │   ├── Number → Japanese
+│   │   └── Random recall
+│   │
+│   └── TARGET
+│       └── Tidak menghafal 100 angka satu per satu
+│
+├── L03 — 100, 1,000 & 10,000
+│   │
+│   ├── MATERI
+│   │   ├── 百
+│   │   ├── 千
+│   │   └── 万
+│   │
+│   ├── CONTEXT
+│   │   ├── Prices
+│   │   ├── Population exposure
+│   │   └── Basic quantities
+│   │
+│   └── LATIHAN
+│       ├── Read numbers
+│       ├── Hear numbers
+│       └── Build numbers
+│
+└── L04 — NUMBER MASTER CHECK
+    │
+    ├── Visual recognition
+    ├── Audio recognition
+    ├── Recall
+    ├── Typing
+    └── Number dictation
+        │
+        ├── PASS → PHASE 2
+        └── FAIL → Targeted Number Review
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 2 — AGE, COUNTING & BASIC COUNTERS                                              ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — AGE
+│   │
+│   ├── MATERI
+│   │   ├── 何歳ですか
+│   │   ├── ～歳
+│   │   └── Basic age answers
+│   │
+│   ├── DEMONSTRATION
+│   │   ├── 18歳
+│   │   ├── 20歳
+│   │   └── common age patterns
+│   │
+│   ├── LATIHAN
+│   │   ├── Audio → age
+│   │   ├── Age → Japanese
+│   │   └── Ask & answer
+│   │
+│   └── SPEAKING
+│       └── "How old are you?"
+│
+├── L02 — COUNTING OBJECTS
+│   │
+│   ├── MATERI
+│   │   ├── 一つ
+│   │   ├── 二つ
+│   │   ├── 三つ
+│   │   └── Basic ～つ counter
+│   │
+│   ├── VISUAL
+│   │   ├── 1 apple
+│   │   ├── 2 apples
+│   │   └── 3 apples
+│   │
+│   └── LATIHAN
+│       ├── Count objects
+│       ├── Hear → quantity
+│       └── Image → Japanese
+│
+├── L03 — COUNTING PEOPLE
+│   │
+│   ├── MATERI
+│   │   ├── 一人
+│   │   ├── 二人
+│   │   └── ～人
+│   │
+│   ├── CONTEXT
+│   │   ├── Family
+│   │   ├── Friends
+│   │   └── Classroom
+│   │
+│   └── LATIHAN
+│       ├── Picture counting
+│       ├── Audio
+│       └── Sentence completion
+│
+└── L04 — COUNTER MINI MASTERY
+    │
+    ├── Age
+    ├── Objects
+    ├── People
+    ├── Listening
+    ├── Speaking
+    └── Mixed test
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 3 — MONEY & PRICES                                                               ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — JAPANESE MONEY
+│   │
+│   ├── MATERI
+│   │   ├── 円
+│   │   ├── 百円
+│   │   ├── 千円
+│   │   └── Basic price format
+│   │
+│   ├── VISUAL
+│   │   ├── Price tags
+│   │   ├── Shopping cards
+│   │   └── Menu examples
+│   │
+│   └── AUDIO
+│       └── Native price pronunciation
+│
+├── L02 — READING PRICES
+│   │
+│   ├── 100円
+│   ├── 500円
+│   ├── 1,000円
+│   ├── 2,500円
+│   └── Random prices
+│
+│   ├── LATIHAN
+│   │   ├── Read
+│   │   ├── Hear
+│   │   └── Type
+│   │
+├── L03 — ASKING PRICE
+│   │
+│   ├── MATERI
+│   │   ├── いくらですか
+│   │   ├── これはいくらですか
+│   │   └── ～円です
+│   │
+│   ├── ROLEPLAY
+│   │   ├── Customer
+│   │   └── Shop assistant
+│   │
+│   └── SPEAKING
+│       └── Ask and answer prices
+│
+└── L04 — SHOPPING PRICE CHALLENGE
+    │
+    ├── Menu
+    ├── Product cards
+    ├── Audio prices
+    ├── Total simple prices
+    └── Mini roleplay
+        │
+        ├── PASS → PHASE 4
+        └── FAIL → Price Review
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 4 — TIME & CLOCK                                                                 ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — HOURS
+│   │
+│   ├── MATERI
+│   │   ├── 一時
+│   │   ├── 二時
+│   │   ├── 三時
+│   │   └── 何時
+│   │
+│   ├── VISUAL
+│   │   └── Analog clock
+│   │
+│   └── INTERACTION
+│       └── Move clock hands → Japanese
+│
+├── L02 — MINUTES
+│   │
+│   ├── MATERI
+│   │   ├── ～分
+│   │   ├── 何分
+│   │   └── Basic pronunciation variations
+│   │
+│   ├── LATIHAN
+│   │   ├── Clock → Japanese
+│   │   ├── Audio → time
+│   │   └── Japanese → clock
+│
+├── L03 — HALF HOUR
+│   │
+│   ├── 三時半
+│   ├── 七時半
+│   └── Time listening
+│
+├── L04 — ASK & ANSWER TIME
+│   │
+│   ├── 何時ですか
+│   ├── 今何時ですか
+│   ├── ～時です
+│   └── ～時半です
+│   │
+│   └── SPEAKING
+│       └── Ask another person for the time
+│
+└── L05 — TIME MINI MASTERY
+    ├── Clock recognition
+    ├── Audio recognition
+    ├── Recall
+    ├── Speaking
+    └── Random challenge
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 5 — DAYS, DATES & CALENDAR                                                      ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — DAYS OF THE WEEK
+│   │
+│   ├── 月曜日
+│   ├── 火曜日
+│   ├── 水曜日
+│   ├── 木曜日
+│   ├── 金曜日
+│   ├── 土曜日
+│   └── 日曜日
+│
+│   ├── VISUAL
+│   │   └── Calendar
+│   │
+│   └── AUDIO
+│       └── Native pronunciation
+│
+├── L02 — TODAY / TOMORROW / YESTERDAY
+│   │
+│   ├── 今日
+│   ├── 明日
+│   ├── 昨日
+│   └── Context practice
+│
+├── L03 — MONTHS
+│   │
+│   ├── 一月～十二月
+│   ├── 何月
+│   └── Calendar interaction
+│
+├── L04 — DATES
+│   │
+│   ├── Basic dates
+│   ├── 何日
+│   ├── Calendar reading
+│   └── Date listening
+│
+└── L05 — CALENDAR CHALLENGE
+    ├── Hear date
+    ├── Find date
+    ├── Say date
+    ├── Type date
+    └── Ask & answer
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 6 — BASIC PERSONAL INFORMATION                                                  ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — NAME
+│   │
+│   ├── 名前
+│   ├── お名前
+│   ├── 名前は何ですか
+│   └── ～です
+│
+├── L02 — COUNTRY & NATIONALITY
+│   │
+│   ├── 国
+│   ├── 日本
+│   ├── Indonesia
+│   ├── 日本人
+│   └── ～人
+│
+├── L03 — AGE
+│   ├── 何歳ですか
+│   ├── ～歳です
+│   └── Review
+│
+├── L04 — BASIC STATUS
+│   │
+│   ├── 学生
+│   ├── 先生
+│   ├── 会社員
+│   ├── 会社
+│   └── Basic status questions
+│
+└── L05 — PERSONAL INFORMATION INTERVIEW
+    │
+    ├── Name
+    ├── Country
+    ├── Nationality
+    ├── Age
+    └── Occupation/status
+         │
+         ▼
+       MINI DIALOGUE
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 7 — INTEGRATED INFORMATION LAB                                                  ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — READ INFORMATION
+│   │
+│   ├── Profile card
+│   ├── Birthday card
+│   ├── Schedule
+│   ├── Price tag
+│   └── Calendar
+│
+├── L02 — LISTEN FOR INFORMATION
+│   │
+│   ├── Name
+│   ├── Age
+│   ├── Time
+│   ├── Date
+│   ├── Price
+│   └── Quantity
+│
+├── L03 — FILL IN THE INFORMATION
+│   │
+│   ├── Name
+│   ├── Age
+│   ├── Country
+│   ├── Date
+│   ├── Time
+│   └── Price
+│
+└── L04 — REAL-LIFE MINI SIMULATION
+    │
+    ├── Check a schedule
+    ├── Ask the time
+    ├── Ask a price
+    ├── State your age
+    ├── Give your basic information
+    └── Understand another person's information
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 8 — ACTIVE RECALL & WRITING                                                      ║
+║ 3 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — SOUND → INFORMATION
+│   ├── Hear number
+│   ├── Hear age
+│   ├── Hear time
+│   ├── Hear date
+│   └── Hear price
+│
+├── L02 — INFORMATION → JAPANESE
+│   ├── Type numbers
+│   ├── Type time
+│   ├── Type dates
+│   ├── Type prices
+│   └── Type personal information
+│
+└── L03 — SPEAK FROM MEMORY
+    ├── Say your age
+    ├── Say today's date
+    ├── Say current time
+    ├── Say your country
+    └── Say simple personal information
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 9 — CONSOLIDATION                                                                ║
+║ 3 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — RANDOM NUMBERS & TIME
+│   ├── Random numbers
+│   ├── Random ages
+│   ├── Random prices
+│   ├── Random times
+│   └── Random dates
+│
+├── L02 — INFORMATION MIX
+│   ├── Name
+│   ├── Age
+│   ├── Country
+│   ├── Price
+│   ├── Time
+│   └── Date
+│
+└── L03 — NO-ROMAJI INFORMATION CHALLENGE
+    ├── Japanese text only
+    ├── Hear → understand
+    ├── Read → understand
+    ├── Type → respond
+    └── Speak → respond
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 10 — MASTERY + RETENTION                                                         ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — NUMBERS & INFORMATION MASTERY TEST
+│   ├── Numbers
+│   ├── Counters
+│   ├── Money
+│   ├── Time
+│   ├── Dates
+│   ├── Personal information
+│   └── Listening
+│
+├── L02 — TARGETED REMEDIATION
+│   ├── Weak category detection
+│   ├── Number drills
+│   ├── Time drills
+│   ├── Date drills
+│   ├── Price drills
+│   └── Personal info drills
+│
+├── L03 — DELAYED RETENTION CHECK
+│   ├── Same day
+│   ├── Next day
+│   ├── 3-day review
+│   └── 7-day review
+│
+└── L04 — FINAL MODULE CHECK
+    ├── Reading
+    ├── Listening
+    ├── Speaking
+    ├── Typing
+    ├── Recall
+    └── Real-world simulation
+          │
+          ├── PASS
+          │      ↓
+          │  ╔══════════════════════════════╗
+          │  ║ M04 MASTERY ACHIEVED         ║
+          │  ╚══════════════╤═══════════════╝
+          │                 │
+          │                 ▼
+          │             UNLOCK M05
+          │
+          └── FAIL
+                 ↓
+          TARGETED REMEDIATION
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                TIME
+                 │
+                 ▼
+          SEE THE CLOCK
+                 │
+                 ▼
+          HEAR NATIVE AUDIO
+                 │
+                 ▼
+          UNDERSTAND PATTERN
+                 │
+                 ▼
+           RECOGNIZE
+                 │
+                 ▼
+             RECALL
+                 │
+                 ▼
+          SAY THE TIME
+                 │
+                 ▼
+          TYPE THE TIME
+                 │
+                 ▼
+          USE IN CONTEXT
+                 │
+                 ▼
+           DELAYED REVIEW
+                 │
+                 ▼
+              MASTERY
+
+
+┌─────────────────────────────────────────────┐
+│ WHAT TIME IS IT?                            │
+│                                             │
+│       🕒 3:00                               │
+│                                             │
+│       三時                                   │
+│                                             │
+│       🔊 さんじ                              │
+└───────────────────────┬─────────────────────┘
+                        │
+                        ▼
+                 WATCH / LISTEN
+                        │
+                        ▼
+                 TRY TO SAY IT
+                        │
+                        ▼
+                  RECORD VOICE
+                        │
+                        ▼
+                 VISUAL PRACTICE
+                        │
+                        ▼
+          Move clock → generate Japanese
+                        │
+                        ▼
+              Audio → select time
+                        │
+                        ▼
+               Time → type Japanese
+                        │
+                        ▼
+                Ask / answer
+
+
+
+
+
+
+
+NUMBERS
+├── Visual       ✓
+├── Audio        ✓
+├── Recall       ✓
+└── Production   ✓
+
+TIME
+├── Visual       ✓
+├── Audio        ✓
+├── Recall       ✓
+└── Production   ~
+
+DATE
+├── Visual       ✓
+├── Audio       ~
+├── Recall       ✓
+└── Production   ~
+
+MONEY
+├── Visual       ✓
+├── Audio        ✓
+├── Recall       ✓
+└── Production   ✓
+
+PERSONAL INFO
+├── Reading      ✓
+├── Listening    ✓
+├── Speaking     ✓
+└── Typing       ✓
+
+
+
+
+
+
+Numbers                 ≥ 90%
+Audio number recall     ≥ 85%
+
+Age / counters          ≥ 80%
+
+Money / price           ≥ 85%
+
+Time                    ≥ 85%
+
+Dates / calendar        ≥ 80%
+
+Personal information    ≥ 80%
+
+Listening               ≥ 80%
+Speaking                ≥ 75%
+Typing                  ≥ 80%
+
+AND
+
+No critical category < minimum threshold.
+
+
+
+
+
+
+
+
+
+
+SCENARIO:
+
+You are meeting a new Japanese learner.
+
+The system asks:
+
+① What is your name?
+② What country are you from?
+③ How old are you?
+④ What day is today?
+⑤ What time is it?
+⑥ How much does this cost?
+
+                         ↓
+
+USER MUST:
+
+Read
+Listen
+Recall
+Speak
+Type
+
+                         ↓
+
+FINAL RESULT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+名前は何ですか？
+    ↓
+私は ___ です。
+
+何歳ですか？
+    ↓
+___歳です。
+
+どこの国ですか？
+    ↓
+インドネシアです。
+
+今何時ですか？
+    ↓
+三時です。
+
+
+
+
+
+
+╔══════════════════════════════════════════════════════╗
+║ M04 — NUMBERS & BASIC INFORMATION                    ║
+╚══════════════════════════════════════════════════════╝
+
+PHASE 1
+Number Foundation
+└── 4 lessons
+
+PHASE 2
+Age & Counters
+└── 4 lessons
+
+PHASE 3
+Money & Prices
+└── 4 lessons
+
+PHASE 4
+Time & Clock
+└── 5 lessons
+
+PHASE 5
+Days, Dates & Calendar
+└── 5 lessons
+
+PHASE 6
+Basic Personal Information
+└── 5 lessons
+
+PHASE 7
+Integrated Information Lab
+└── 4 lessons
+
+PHASE 8
+Active Recall & Writing
+└── 3 lessons
+
+PHASE 9
+Consolidation
+└── 3 lessons
+
+PHASE 10
+Mastery + Retention
+└── 4 lessons
+
+────────────────────────────────
+≈ 41 learning sessions
+────────────────────────────────
+
+                    ↓
+
+          M04 MASTERY ACHIEVED
+                    ↓
+              UNLOCK M05
+
+
+
+
+
+
+M03
+Katakana
+│
+├── バス
+├── ホテル
+├── コーヒー
+└── コンビニ
+        │
+        ▼
+M04
+Information
+│
+├── 500円
+├── 3時
+├── 10歳
+├── 月曜日
+└── 3月15日
+        │
+        ▼
+M05
+Social Interaction
+│
+├── 名前は何ですか？
+├── 何歳ですか？
+├── どこから来ましたか？
+└── よろしくお願いします

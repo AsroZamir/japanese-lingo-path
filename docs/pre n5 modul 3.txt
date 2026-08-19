@@ -1,0 +1,352 @@
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                         PRE-N5 — MODULE 03                                           ║
+║                              KATAKANA MASTERY                                        ║
+║                                                                                      ║
+║ CORE GOAL                                                                            ║
+║ Learner mampu mengenali, mendengar, membaca, menulis, mengetik, dan mengingat        ║
+║ Katakana dasar serta menggunakannya untuk membaca kata serapan sederhana.            ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 1 — KATAKANA ORIENTATION                                                       ║
+║ 2 LESSONS                                                                    ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — WHAT IS KATAKANA?
+│   │
+│   ├── MATERI
+│   │   ├── Fungsi Katakana
+│   │   ├── Perbedaan Hiragana vs Katakana
+│   │   ├── Kapan Katakana digunakan
+│   │   ├── Loanwords
+│   │   ├── Foreign names
+│   │   └── Sound effects / emphasis exposure
+│   │
+│   ├── VISUAL
+│   │   ├── Katakana chart
+│   │   ├── Compare Hiragana / Katakana
+│   │   └── Example words
+│   │
+│   └── FIRST DISCOVERY
+│       ├── コーヒー
+│       ├── ホテル
+│       ├── テレビ
+│       └── バス
+│
+└── L02 — HOW TO WRITE KATAKANA
+    │
+    ├── Stroke order concept
+    ├── Writing grid
+    ├── Character proportions
+    ├── Stroke animation
+    ├── Trace
+    ├── Guided writing
+    └── Free writing
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 2 — BASIC 46 KATAKANA                                                          ║
+║ 10 GROUPS × 4 LEARNING SESSIONS                                                       ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── GROUP A — アイウエオ
+│   │
+│   ├── L01 — LEARN
+│   │   ├── ア /a/
+│   │   ├── イ /i/
+│   │   ├── ウ /u/
+│   │   ├── エ /e/
+│   │   ├── オ /o/
+│   │   ├── Audio
+│   │   ├── Stroke animation
+│   │   └── Example words
+│   │
+│   ├── L02 — RECOGNIZE + HEAR
+│   │   ├── Character → sound
+│   │   ├── Sound → character
+│   │   ├── Random order
+│   │   └── Hiragana/Katakana discrimination
+│   │
+│   ├── L03 — WRITE
+│   │   ├── Trace
+│   │   ├── Guided
+│   │   ├── Recall
+│   │   └── Audio → writing
+│   │
+│   └── L04 — READ + MINI MASTERY
+│       ├── アイ
+│       ├── ウエ
+│       ├── アオ
+│       ├── loanword fragments
+│       └── Mini test
+│
+├── GROUP B — カキクケコ
+│   ├── L01 — REVIEW A + LEARN B
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│
+├── GROUP C — サシスセソ
+│   ├── L01 — REVIEW A+B + LEARN C
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│
+├── GROUP D — タチツテト
+│   ├── L01 — REVIEW + LEARN D
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│
+├── GROUP E — ナニヌネノ
+│   ├── L01 — REVIEW + LEARN E
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│
+├── GROUP F — ハヒフヘホ
+│   ├── L01 — REVIEW + LEARN F
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│
+├── GROUP G — マミムメモ
+│   ├── L01 — REVIEW + LEARN G
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│
+├── GROUP H — ヤユヨ
+│   ├── L01 — REVIEW + LEARN H
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│
+├── GROUP I — ラリルレロ
+│   ├── L01 — REVIEW + LEARN I
+│   ├── L02 — RECOGNITION
+│   ├── L03 — WRITING
+│   └── L04 — READING + MASTERY
+│
+└── GROUP J — ワヲン
+    ├── L01 — REVIEW + LEARN J
+    ├── L02 — RECOGNITION
+    ├── L03 — WRITING
+    └── L04 — READING + MASTERY
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 3 — MODIFIED KATAKANA                                                          ║
+║ 5 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — DAKUTEN / HANDAKUTEN
+│   ├── ガ ギ グ ゲ ゴ
+│   ├── ザ ジ ズ ゼ ゾ
+│   ├── ダ ヂ ヅ デ ド
+│   ├── バ ビ ブ ベ ボ
+│   └── パ ピ プ ペ ポ
+│
+├── L02 — SMALL ャ ュ ョ
+│   ├── キャ
+│   ├── キュ
+│   ├── キョ
+│   ├── シャ
+│   ├── シュ
+│   ├── ショ
+│   └── extended combinations
+│
+├── L03 — SMALL ッ
+│   ├── コップ
+│   ├── ベッド
+│   └── Listening discrimination
+│
+├── L04 — LONG VOWEL MARK ー
+│   ├── コーヒー
+│   ├── ケーキ
+│   ├── スーパー
+│   └── Audio + writing
+│
+└── L05 — FOREIGN SOUND COMBINATIONS
+    ├── ティ
+    ├── ディ
+    ├── ファ
+    ├── フィ
+    ├── フェ
+    ├── フォ
+    ├── ウィ
+    ├── ウェ
+    └── ウォ
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 4 — LOANWORD READING LAB                                                       ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — EVERYDAY LOANWORDS
+│   ├── バス
+│   ├── ホテル
+│   ├── テレビ
+│   ├── パン
+│   ├── コーヒー
+│   └── タクシー
+│
+├── L02 — FOOD & DRINK
+│   ├── ケーキ
+│   ├── ジュース
+│   ├── アイスクリーム
+│   ├── カレー
+│   └── サンドイッチ
+│
+├── L03 — TECHNOLOGY & MODERN LIFE
+│   ├── テレビ
+│   ├── スマホ
+│   ├── コンピューター
+│   ├── インターネット
+│   └── メール
+│
+└── L04 — NAMES / PLACES / REAL-WORLD TEXT
+    ├── foreign names
+    ├── store signs
+    ├── menus
+    ├── simple labels
+    └── short Katakana-heavy text
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 5 — ACTIVE RECALL + DICTATION                                                   ║
+║ 3 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — SOUND → KATAKANA
+│   ├── Audio → character
+│   ├── Audio → word
+│   ├── Random order
+│   └── No Romaji
+│
+├── L02 — AUDIO → WRITING
+│   ├── Single character dictation
+│   ├── Word dictation
+│   ├── Long vowel dictation
+│   ├── Small ッ dictation
+│   └── Combination dictation
+│
+└── L03 — MIXED RECALL
+    ├── Hiragana vs Katakana
+    ├── Sound → script
+    ├── Word → reading
+    ├── Audio → typing
+    └── Randomized recall
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 6 — WRITING LAB                                                                 ║
+║ 3 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — STROKE MASTERY
+│   ├── Trace
+│   ├── Guided
+│   ├── Copy
+│   ├── Recall
+│   └── Stroke-order feedback
+│
+├── L02 — WORD WRITING
+│   ├── バス
+│   ├── ホテル
+│   ├── コーヒー
+│   ├── テレビ
+│   └── mixed words
+│
+└── L03 — BLIND WRITING
+    ├── Meaning → Katakana
+    ├── Audio → Katakana
+    ├── Image → Katakana
+    └── Dictation → Katakana
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 7 — KATAKANA CONSOLIDATION                                                      ║
+║ 3 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — SIMILAR KATAKANA
+│   ├── シ vs ツ
+│   ├── ソ vs ン
+│   ├── ク vs ケ
+│   ├── ヌ vs ス
+│   ├── フ vs ワ
+│   └── data-driven confusion pairs
+│
+├── L02 — HIRAGANA vs KATAKANA
+│   ├── あ / ア
+│   ├── き / キ
+│   ├── す / ス
+│   ├── こ / コ
+│   └── mixed script recognition
+│
+└── L03 — NO-ROMAJI KATAKANA CHALLENGE
+    ├── read words
+    ├── listen + type
+    ├── signs
+    ├── menu items
+    └── labels
+
+                                      │
+                                      ▼
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║ PHASE 8 — KATAKANA MASTERY + RETENTION                                                ║
+║ 4 LESSONS                                                                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+│
+├── L01 — BASIC KATAKANA MASTERY TEST
+│   ├── Visual Recognition
+│   ├── Audio Recognition
+│   ├── Sound → Katakana
+│   ├── Word Reading
+│   ├── Dictation
+│   ├── Typing
+│   └── Writing
+│
+├── L02 — TARGETED REMEDIATION
+│   ├── Weak characters
+│   ├── Weak sounds
+│   ├── Weak combinations
+│   ├── Similar-script confusion
+│   └── Personalized drills
+│
+├── L03 — DELAYED RETENTION
+│   ├── same-day review
+│   ├── next-day review
+│   ├── 3-day review
+│   ├── 7-day review
+│   └── randomized recall
+│
+└── L04 — FINAL UNLOCK CHECK
+    ├── 46 basic Katakana
+    ├── modified Katakana
+    ├── loanwords
+    ├── reading
+    ├── writing
+    ├── listening
+    └── retention
+          │
+          ├── PASS
+          │      ↓
+          │  ╔══════════════════════╗
+          │  ║ KATAKANA MASTERED    ║
+          │  ╚══════════╤═══════════╝
+          │             │
+          │             ▼
+          │          UNLOCK M04
+          │
+          └── FAIL
+                 ↓
+           TARGETED REMEDIATION

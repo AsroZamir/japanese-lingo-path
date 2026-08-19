@@ -15,6 +15,7 @@
     "seed:first-lesson": "tsx scripts/seed-first-lesson.ts",
     "generate:kana-audio": "tsx scripts/generate-kana-audio.ts",
     "generate:kana-audio-voicevox": "tsx scripts/generate-audio-voicevox.ts",
+    "generate:kana-audio-remaining": "tsx scripts/generate-audio-remaining-kana.ts",
     "seed:m01": "tsx scripts/seed-m01-content.ts",
     "generate:narration": "tsx scripts/generate-narration.ts"
   },
