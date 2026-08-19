@@ -12,6 +12,7 @@ import { LessonL04 } from "./LessonL04";
 import { LessonReading } from "./LessonReading";
 import { LessonActiveRecall } from "./LessonActiveRecall";
 import { LessonActiveRecallWriting } from "./LessonActiveRecallWriting";
+import { LessonWritingLab } from "./LessonWritingLab";
 import { M01LessonView } from "./M01LessonView";
 import { LessonPlayer } from "./LessonPlayer";
 
@@ -40,6 +41,13 @@ const MODULE_SCRIPT: Record<string, "hiragana" | "katakana"> = { M02: "hiragana"
 // L01/L03 are multiple-choice (LessonActiveRecall) — branched by lesson
 // code, same convention LessonReading already uses for L01 vs L02.
 const ACTIVE_RECALL_LESSON_TYPE = "active_recall";
+
+// Fase 6 (Writing Lab) — same pool-bundle shape as Active Recall (all 3
+// lessons draw from getKanaPool/getWordPool, no kana_lesson_items of
+// their own), all 3 lessons render through LessonWritingLab (which
+// branches its own item-building internally by code, same convention
+// LessonReading/LessonActiveRecall already use).
+const WRITING_LAB_LESSON_TYPE = "writing_lab";
 
 function NextLessonNav({
   nextLessonHref,
@@ -173,6 +181,38 @@ export default async function LessonPage({
         nextLessonTitle={nextLesson?.titleId ?? null}
       >
         {lessonCode === "L02" ? <LessonActiveRecallWriting bundle={recallBundle} /> : <LessonActiveRecall bundle={recallBundle} />}
+      </LessonPlayer>
+    );
+  }
+
+  if (currentSummary.lessonType === WRITING_LAB_LESSON_TYPE) {
+    const script = MODULE_SCRIPT[moduleCode] ?? "hiragana";
+    const [kana, words] = await Promise.all([getKanaPool(script), getWordPool(script, 1, 99)]);
+
+    const groupLessons = moduleLessons.lessons
+      .filter((l) => l.phaseCode === phaseCode)
+      .map((l) => ({ code: l.code, titleId: l.titleId }));
+    const exerciseTotals = { [lessonCode]: lessonCode === "L01" ? 20 : lessonCode === "L02" ? 24 : 16 };
+
+    const writingBundle = {
+      lesson: { id: currentSummary.id, code: lessonCode, titleId: currentSummary.titleId, lessonType: currentSummary.lessonType },
+      kana,
+      words,
+    };
+
+    return (
+      <LessonPlayer
+        moduleCode={moduleCode}
+        groupCode={phaseCode}
+        groupLessons={groupLessons}
+        currentLessonCode={lessonCode}
+        lessonTitle={currentSummary.titleId}
+        phaseTitle={`${moduleLessons.module.titleId} · ${currentSummary.phaseTitleId}`}
+        exerciseTotals={exerciseTotals}
+        nextLessonHref={nextLesson ? `/belajar/kana/${moduleCode}/${nextLesson.routeId}` : null}
+        nextLessonTitle={nextLesson?.titleId ?? null}
+      >
+        <LessonWritingLab bundle={writingBundle} />
       </LessonPlayer>
     );
   }
