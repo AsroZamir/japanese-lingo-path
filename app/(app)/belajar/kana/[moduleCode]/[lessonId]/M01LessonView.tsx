@@ -3,6 +3,7 @@ import * as wanakana from "wanakana";
 import { KanaChart } from "@/components/kana/KanaChart";
 import { AudioButton } from "@/components/kana/AudioButton";
 import { NumberBuilder } from "@/components/numbers/NumberBuilder";
+import { ClockDemo } from "@/components/numbers/ClockDemo";
 import { getCurrentUser } from "@/app/lib/current-user";
 import { getFullScriptChartPreview, type OrientationLessonBundle } from "@/app/lib/lesson-content-query";
 import { nameToKatakanaOrFallback } from "@/app/lib/name-to-katakana";
@@ -78,6 +79,22 @@ async function textBlockSlides(content: TextBlockContent, keyBase: string): Prom
           instruction={content.instruction}
           tensOptions={content.tensOptions}
           onesOptions={content.onesOptions}
+        />
+      </div>,
+    ];
+  }
+
+  if (content.kind === "clock-demo") {
+    return [
+      <div className="m01-slide__body m01-slide__body--chart" key={keyBase}>
+        <ClockDemo
+          heading={content.heading}
+          instruction={content.instruction}
+          hour={content.hour}
+          minute={content.minute}
+          mode={content.mode}
+          readingKanji={content.readingKanji}
+          readingRomaji={content.readingRomaji}
         />
       </div>,
     ];

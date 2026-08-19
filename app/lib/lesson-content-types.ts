@@ -35,6 +35,21 @@ export type TextBlockContent =
       instruction?: string;
       tensOptions: { label: string; kanji: string; romaji: string; value: number }[]; // value 0 = "kosong" (no tens), kanji/romaji "" for it
       onesOptions: { label: string; kanji: string; romaji: string; value: number }[]; // value 0 = "kosong" (no ones), kanji/romaji "" for it
+    }
+  | {
+      // M04 Fase 4 — teaches clock-reading. "display" shows a fixed
+      // time (paired with its kanji/romaji reading in the same slide);
+      // "interactive" lets the learner click hours + a 4-stop minute
+      // selector and read the label update live — same
+      // demo-not-graded spirit as number-builder.
+      kind: "clock-demo";
+      heading?: string;
+      instruction?: string;
+      hour: number; // 1-12
+      minute: number; // 0-59, but interactive mode only offers :00/:15/:30/:45
+      mode: "display" | "interactive";
+      readingKanji?: string; // e.g. "三時半" — shown for "display" mode
+      readingRomaji?: string; // e.g. "sanji-han"
     };
 
 export type ChartBlockContent = {

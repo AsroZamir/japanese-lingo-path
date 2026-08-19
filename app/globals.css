@@ -914,6 +914,26 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .number-builder__options { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
 .number-builder__options .exercise-runner__option { padding: 10px 6px; font-size: 15px; text-align: center; }
 
+/* ── M04 Analog Clock (Fase 4) ── */
+.analog-clock { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.analog-clock__face { fill: white; stroke: var(--line); stroke-width: 2; }
+.analog-clock__hour-label { font-size: 16px; fill: var(--ink, #1a2b45); user-select: none; }
+.analog-clock__hour-hit { fill: transparent; }
+.analog-clock__hour-hit.is-current { fill: var(--moji-accent); opacity: 0.18; }
+.analog-clock__hand { stroke-linecap: round; }
+.analog-clock__hand--hour { stroke: var(--ink, #1a2b45); stroke-width: 5; }
+.analog-clock__hand--minute { stroke: var(--moji-accent); stroke-width: 3; }
+.analog-clock__pivot { fill: var(--ink, #1a2b45); }
+.analog-clock__minute-stops { display: flex; gap: 8px; }
+.analog-clock__minute-stops .exercise-runner__option { padding: 8px 14px; font-size: 15px; }
+.clock-demo { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+.clock-demo__reading {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 16px 24px; border-radius: var(--moji-radius-2xl); background: var(--moji-success-bg, #f0f9f4);
+}
+.clock-demo__reading-kanji { font-size: 28px; font-weight: 700; }
+.clock-demo__reading-romaji { font-size: 15px; color: var(--muted); }
+
 /* ── Moji "layar 5" quiz-card spec — gated select→Periksa→Lanjutkan flow ── */
 .exercise-runner__options--gated { grid-template-columns: repeat(2, 1fr); }
 .exercise-runner__option--card {
