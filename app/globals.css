@@ -1097,3 +1097,26 @@ a.landing-cta-btn:hover { background: var(--moji-accent-hover); color: #fff; }
   .landing-hero__card { margin-top: 16px; }
   .landing-nav__links a:not(.landing-nav__cta):not(:last-of-type) { display: none; }
 }
+
+/* ── /login (Moji Masuk-Daftar.dc.html card, minus the tabs/form —
+   Google OAuth stays the only sign-in path; no email/password fields) */
+.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; font-family: var(--moji-font-sans); background: var(--moji-cream); }
+.login-card-wrap { width: min(380px, 100%); animation: landing-fade-up 320ms var(--moji-ease-out) both; }
+a.login-card__brand { display: block; text-align: center; font-weight: 800; font-size: 18px; color: var(--moji-ink); text-decoration: none; margin-bottom: 22px; }
+.login-card { background: var(--moji-white); border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-3xl); padding: 30px 26px; text-align: center; }
+.login-card__mark {
+  width: 52px; height: 52px; margin: 0 auto 16px; border-radius: var(--moji-radius-lg); background: var(--moji-accent-soft-bg);
+  display: flex; align-items: center; justify-content: center; font-family: var(--moji-font-jp); font-weight: 700; font-size: 24px; color: var(--moji-accent);
+}
+.login-card__pill { display: inline-block; margin-bottom: 14px; padding: 5px 12px; border-radius: var(--moji-radius-pill); background: var(--moji-cream); color: var(--moji-muted); font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.login-card h2 { margin: 0 0 8px; color: var(--moji-ink); font-size: 19px; font-weight: 800; }
+.login-card p { margin: 0 0 22px; color: var(--moji-muted); font-size: 13px; line-height: 1.6; }
+.login-card__error { color: #a13a2f !important; }
+.login-card__submit {
+  width: 100%; height: 48px; border: none; border-radius: var(--moji-radius-pill); background: var(--moji-accent); color: #fff;
+  font-family: var(--moji-font-sans); font-weight: 700; font-size: 14.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transform: scale(1); transition: transform var(--moji-d-spring) var(--moji-ease-spring), background-color 150ms var(--moji-ease-out), opacity 150ms var(--moji-ease-out);
+}
+.login-card__submit:hover:not(:disabled) { background: var(--moji-accent-hover); }
+.login-card__submit:active:not(:disabled) { transform: scale(0.97); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
+.login-card__submit:disabled { opacity: .6; cursor: default; }
