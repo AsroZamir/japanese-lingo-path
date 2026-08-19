@@ -112,6 +112,26 @@ export type DialogueBlockContent = {
   closingNote: string;
 };
 
+// M05 — scripted multi-turn roleplay (self-intro, shop, classroom).
+// Each turn: NPC line, a prompt, forced-choice response options (one
+// correct), and what the NPC says next once the learner picks right —
+// advances linearly turn-by-turn, same "pick right to proceed" gate as
+// DialogueBlockContent, just chained across more than one exchange
+// instead of one. Not a true branching tree (different wrong answers
+// don't lead to different content, they just block advancing) — that
+// depth isn't needed for any lesson in this modul; genuinely open-ended
+// AI conversation is handled separately (marked unavailable), not by
+// this type.
+export type MultiTurnDialogueContent = {
+  scenario: string; // one-line framing shown above the whole exchange, e.g. "Anda baru pindah ke kelas baru."
+  turns: {
+    npcKana: string;
+    prompt: string;
+    choices: { id: string; kana: string; correct?: boolean }[];
+  }[];
+  closingNote: string;
+};
+
 // Catatan validasi/implementasi/teknis/desain di docs/konten-M01-orientasi.md
 // adalah metadata produksi untuk tim konten & developer — TIDAK pernah
 // ditampilkan ke pembelajar. block_type 'callout' di sini murni untuk
@@ -133,7 +153,7 @@ export type LessonContentBlockRow = {
   | { blockType: "chart"; content: ChartBlockContent }
   | { blockType: "table"; content: TableBlockContent }
   | { blockType: "audio_list"; content: AudioListBlockContent }
-  | { blockType: "dialogue"; content: DialogueBlockContent }
+  | { blockType: "dialogue"; content: DialogueBlockContent | MultiTurnDialogueContent }
   | { blockType: "callout"; content: CalloutBlockContent }
 );
 

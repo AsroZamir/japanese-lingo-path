@@ -15,8 +15,11 @@ import type {
   ChartBlockContent,
   TableBlockContent,
   AudioListBlockContent,
+  DialogueBlockContent,
+  MultiTurnDialogueContent,
 } from "@/app/lib/lesson-content-types";
 import { DialogueBlock } from "./DialogueBlock";
+import { MultiTurnDialogue } from "./MultiTurnDialogue";
 import { M01SlideDeck, type ContentSlide } from "./M01SlideDeck";
 
 // **bold** ala markdown ringan — satu-satunya inline markup yang dipakai
@@ -284,10 +287,18 @@ function audioListBlockSlides(content: AudioListBlockContent, keyBase: string): 
   return slides;
 }
 
+function isMultiTurnDialogue(content: DialogueBlockContent | MultiTurnDialogueContent): content is MultiTurnDialogueContent {
+  return "turns" in content;
+}
+
 function dialogueBlockSlide(block: LessonContentBlockRow & { blockType: "dialogue" }, keyBase: string): ReactNode[] {
+  // Two shapes share block_type "dialogue" — MultiTurnDialogueContent
+  // (M05 scripted roleplay) is distinguished by its own "turns" field,
+  // DialogueBlockContent (M01/M04's single-exchange form) doesn't have one.
+  const content = block.content;
   return [
     <div className="m01-slide__body m01-slide__body--chart" key={keyBase}>
-      <DialogueBlock content={block.content} />
+      {isMultiTurnDialogue(content) ? <MultiTurnDialogue content={content} /> : <DialogueBlock content={content} />}
     </div>,
   ];
 }
