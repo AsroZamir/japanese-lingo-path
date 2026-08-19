@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; -webkit-font-smoothing: antialiased; background: #FFFFFF; }
+    a { color: #CC5436; }
+    a:hover { color: #B5482E; }
+  </style>
+</helmet>
+
+<div style="font-family:'Plus Jakarta Sans',sans-serif;background:#FFFFFF;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 48px;max-width:1200px;margin:0 auto;">
+    <a href="Landing.dc.html" style="font-weight:800;font-size:20px;color:#241E18;text-decoration:none;">Moji</a>
+    <div style="display:flex;align-items:center;gap:28px;">
+      <a href="Landing.dc.html#fitur" style="color:#6B645D;text-decoration:none;font-size:14px;font-weight:600;" style-hover="color:#241E18;">Fitur</a>
+      <a href="Harga.dc.html" style="color:#6B645D;text-decoration:none;font-size:14px;font-weight:600;" style-hover="color:#241E18;">Harga</a>
+      <a href="Masuk-Daftar.dc.html" style="color:#6B645D;text-decoration:none;font-size:14px;font-weight:600;" style-hover="color:#241E18;">Masuk</a>
+      <a href="Masuk-Daftar.dc.html" style="background:#CC5436;color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;text-decoration:none;" style-hover="background:#B5482E;">Daftar gratis</a>
+    </div>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:56px 48px 90px;display:flex;align-items:center;gap:60px;">
+    <div style="flex:1;max-width:520px;">
+      <div style="{{ heroEyebrow }};color:#CC5436;font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;">Bahasa Jepang untuk pemula total</div>
+      <h1 style="{{ heroTitle }};font-size:42px;line-height:1.15;font-weight:800;color:#241E18;margin:0 0 18px;letter-spacing:-.01em;">Kuasai Hiragana, satu huruf setiap kali.</h1>
+      <p style="{{ heroBody }};font-size:16px;line-height:1.65;color:#6B645D;margin:0 0 28px;">Moji mengajarkan huruf Jepang lewat slide singkat: lihat bentuknya, dengar bunyinya, tulis sendiri, lalu uji dengan kuis — semua dengan penjelasan berbahasa Indonesia.</p>
+      <div style="{{ heroCtas }};display:flex;align-items:center;gap:20px;margin-bottom:14px;">
+        <a href="Masuk-Daftar.dc.html" onPointerDown="{{ pd1 }}" onPointerUp="{{ pu1 }}" onPointerLeave="{{ pu1 }}" style="{{ ctaBtn }}">Daftar gratis ›</a>
+        <a href="Landing.dc.html#cara-kerja" style="color:#241E18;text-decoration:none;font-size:14px;font-weight:700;border-bottom:1.5px solid #241E18;padding-bottom:2px;">Lihat cara kerja</a>
+      </div>
+      <div style="{{ heroCtas }};font-size:12.5px;color:#9C948C;">Gratis untuk 5 huruf pertama. Tanpa kartu kredit.</div>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center;">
+      <div style="{{ heroCard }};transform:rotate(-3deg);width:260px;background:#fff;border:1px solid #E7E1DC;border-radius:20px;padding:22px;box-shadow:0 30px 60px -24px rgba(36,30,24,.22);">
+        <div style="display:flex;gap:4px;margin-bottom:18px;"><div style="flex:1;height:5px;border-radius:999px;background:#CC5436;"></div><div style="flex:1;height:5px;border-radius:999px;background:#CC5436;"></div><div style="flex:1;height:5px;border-radius:999px;background:#EDE7E1;"></div></div>
+        <div style="width:110px;height:110px;margin:0 auto 16px;background:#FBFAF8;border:1px solid #E7E1DC;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:52px;color:#241E18;">あ</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
+          <div style="width:36px;height:36px;border-radius:999px;background:#5472AE;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;">▶</div>
+          <div style="font-size:12px;color:#6B645D;">Dibaca "a"</div>
+        </div>
+        <div style="height:38px;border-radius:999px;background:#CC5436;color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;">Lanjutkan ›</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fitur" style="background:#F6F6F0;padding:80px 48px;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <h2 style="text-align:center;font-size:28px;font-weight:800;color:#241E18;margin:0 0 12px;">Semua yang kamu perlu untuk mulai</h2>
+      <p style="text-align:center;color:#6B645D;font-size:15px;margin:0 0 48px;">Empat langkah sederhana di setiap huruf.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+        <sc-for list="{{ features }}" as="f" hint-placeholder-count="4">
+          <div style="{{ f.style }};background:#fff;border:1px solid #E7E1DC;border-radius:18px;padding:26px;">
+            <div style="width:44px;height:44px;border-radius:12px;background:{{ f.bg }};color:{{ f.fg }};display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;margin-bottom:16px;font-family:'Noto Sans JP',sans-serif;">{{ f.icon }}</div>
+            <div style="font-size:16px;font-weight:700;color:#241E18;margin-bottom:8px;">{{ f.title }}</div>
+            <div style="font-size:13.5px;color:#6B645D;line-height:1.6;">{{ f.desc }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div id="cara-kerja" style="max-width:900px;margin:0 auto;padding:90px 48px;">
+    <h2 style="text-align:center;font-size:28px;font-weight:800;color:#241E18;margin:0 0 48px;">Cara kerjanya</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:32px;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+        <div style="{{ s.style }};text-align:center;">
+          <div style="width:36px;height:36px;border-radius:999px;background:#241E18;color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">{{ s.n }}</div>
+          <div style="font-size:16px;font-weight:700;color:#241E18;margin-bottom:8px;">{{ s.title }}</div>
+          <div style="font-size:13.5px;color:#6B645D;line-height:1.6;">{{ s.desc }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="background:#241E18;padding:70px 48px;text-align:center;">
+    <h2 style="color:#fff;font-size:26px;font-weight:800;margin:0 0 10px;">Mulai belajar hari ini</h2>
+    <p style="color:#B8B0A6;font-size:14.5px;margin:0 0 28px;">Lima huruf pertama, gratis selamanya.</p>
+    <a href="Masuk-Daftar.dc.html" onPointerDown="{{ pd2 }}" onPointerUp="{{ pu2 }}" onPointerLeave="{{ pu2 }}" style="{{ ctaBtn2 }}">Daftar gratis ›</a>
+  </div>
+
+  <div style="padding:32px 48px;max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-weight:800;color:#241E18;">Moji</div>
+    <div style="display:flex;gap:20px;">
+      <a href="Landing.dc.html#fitur" style="color:#9C948C;text-decoration:none;font-size:13px;">Fitur</a>
+      <a href="Harga.dc.html" style="color:#9C948C;text-decoration:none;font-size:13px;">Harga</a>
+      <a href="Masuk-Daftar.dc.html" style="color:#9C948C;text-decoration:none;font-size:13px;">Masuk</a>
+    </div>
+    <div style="color:#C7C0B8;font-size:12.5px;">© 2026 Moji</div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { entered: false, pressed: {} };
+  D = { press: 90, spring: 200, entrance: 320, stagger: 70 };
+  E = { spring: 'cubic-bezier(.34,1.56,.64,1)', out: 'cubic-bezier(.16,1,.3,1)', pressIn: 'cubic-bezier(.4,0,1,1)' };
+
+  componentDidMount() {
+    requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ entered: true })));
+  }
+  ent(i, dist = 14) {
+    const on = this.state.entered;
+    return {
+      opacity: on ? 1 : 0, transform: `translateY(${on ? 0 : dist}px)`,
+      transition: `opacity ${this.D.entrance}ms ${this.E.out} ${i * this.D.stagger}ms, transform ${this.D.entrance}ms ${this.E.out} ${i * this.D.stagger}ms`,
+    };
+  }
+  setPressed(key, val) { this.setState(s => ({ pressed: { ...s.pressed, [key]: val } })); }
+  pd(key) { return () => this.setPressed(key, true); }
+  pu(key) { return () => this.setPressed(key, false); }
+  pressScale(key) {
+    const p = !!this.state.pressed[key];
+    return { transform: `scale(${p ? 0.96 : 1})`, transition: p ? `transform ${this.D.press}ms ${this.E.pressIn}` : `transform ${this.D.spring}ms ${this.E.spring}` };
+  }
+
+  renderVals() {
+    const features = [
+      { icon: 'あ', bg: '#FBEAE4', fg: '#CC5436', title: 'Satu huruf, satu fokus', desc: 'Tiap slide fokus ke satu huruf. Tidak ada yang terlewat, tidak ada yang menumpuk.' },
+      { icon: '▶', bg: '#E7ECF6', fg: '#5472AE', title: 'Dengar cara bacanya', desc: 'Setiap huruf punya pengucapan yang bisa langsung kamu dengar dan tirukan.' },
+      { icon: '✎', bg: '#DCF3E1', fg: '#368A48', title: 'Tulis dengan jarimu', desc: 'Latihan menulis langsung di layar, mengikuti urutan coretan yang benar.' },
+      { icon: '✓', bg: '#F5E4DE', fg: '#D98F78', title: 'Uji lewat kuis singkat', desc: 'Setiap kelompok huruf ditutup dengan kuis cepat supaya benar-benar melekat.' },
+    ].map((f, i) => ({ ...f, style: this.ent(i, 10) }));
+
+    const steps = [
+      { n: 1, title: 'Pilih modul', desc: 'Mulai dari Hiragana, lanjut ke Katakana dan kosakata dasar.' },
+      { n: 2, title: 'Pelajari tiap huruf', desc: 'Lihat, dengar, dan tulis — satu huruf per slide.' },
+      { n: 3, title: 'Uji dan lanjut', desc: 'Kuis singkat memastikan huruf benar-benar melekat sebelum lanjut.' },
+    ].map((s, i) => ({ ...s, style: this.ent(i, 10) }));
+
+    return {
+      heroEyebrow: this.ent(0, 10), heroTitle: this.ent(1, 14), heroBody: this.ent(2, 14), heroCtas: this.ent(3, 10), heroCard: this.ent(1, 18),
+      features, steps,
+      ctaBtn: { display: 'inline-flex', alignItems: 'center', textDecoration: 'none', background: '#CC5436', color: '#fff', padding: '14px 26px', borderRadius: 999, fontWeight: 700, fontSize: 15, ...this.pressScale('cta1') },
+      ctaBtn2: { display: 'inline-flex', textDecoration: 'none', background: '#CC5436', color: '#fff', padding: '14px 28px', borderRadius: 999, fontWeight: 700, fontSize: 15, ...this.pressScale('cta2') },
+      pd1: this.pd('cta1'), pu1: this.pu('cta1'), pd2: this.pd('cta2'), pu2: this.pu('cta2'),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; -webkit-font-smoothing: antialiased; background: #F6F6F0; }
+    a { color: #CC5436; }
+    a:hover { color: #B5482E; }
+    input:focus { border-color: #CC5436 !important; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F6F6F0;padding:24px;font-family:'Plus Jakarta Sans',sans-serif;">
+  <div style="{{ cardWrapStyle }};width:380px;">
+    <a href="Landing.dc.html" style="display:block;text-align:center;font-weight:800;font-size:20px;color:#241E18;text-decoration:none;margin-bottom:24px;">Moji</a>
+
+    <div style="background:#fff;border:1px solid #E7E1DC;border-radius:20px;padding:28px;">
+      <div style="position:relative;display:flex;background:#F6F6F0;border-radius:999px;padding:4px;margin-bottom:22px;">
+        <div style="{{ tabIndicatorStyle }}"></div>
+        <button type="button" onClick="{{ toMasuk }}" style="{{ tabMasukStyle }}">Masuk</button>
+        <button type="button" onClick="{{ toDaftar }}" style="{{ tabDaftarStyle }}">Daftar</button>
+      </div>
+
+      <sc-if value="{{ isDaftar }}">
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12.5px;font-weight:700;color:#6B645D;margin-bottom:6px;">Nama</div>
+          <input type="text" placeholder="Nama lengkap" style="{{ inputStyle }}"/>
+        </div>
+      </sc-if>
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12.5px;font-weight:700;color:#6B645D;margin-bottom:6px;">Email</div>
+        <input type="email" placeholder="kamu@email.com" style="{{ inputStyle }}"/>
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:12.5px;font-weight:700;color:#6B645D;margin-bottom:6px;">Kata sandi</div>
+        <input type="password" placeholder="••••••••" style="{{ inputStyle }}"/>
+      </div>
+      <sc-if value="{{ isMasuk }}">
+        <div style="text-align:right;margin-bottom:18px;"><a href="javascript:void(0)" style="font-size:12.5px;text-decoration:none;font-weight:600;">Lupa kata sandi?</a></div>
+      </sc-if>
+      <sc-if value="{{ isDaftar }}"><div style="margin-bottom:18px;"></div></sc-if>
+
+      <button type="button" onClick="{{ onSubmit }}" onPointerDown="{{ pd1 }}" onPointerUp="{{ pu1 }}" onPointerLeave="{{ pu1 }}" style="{{ submitBtnStyle }}">{{ submitLabel }}</button>
+    </div>
+
+    <div style="text-align:center;margin-top:18px;font-size:13px;color:#6B645D;">{{ switchPrompt }} <a href="javascript:void(0)" onClick="{{ onSwitch }}" style="font-weight:700;text-decoration:none;">{{ switchLabel }}</a></div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { mode: 'masuk', entered: false, pressed: {} };
+  D = { press: 90, spring: 200, entrance: 320, stagger: 0 };
+  E = { spring: 'cubic-bezier(.34,1.56,.64,1)', out: 'cubic-bezier(.16,1,.3,1)', pressIn: 'cubic-bezier(.4,0,1,1)' };
+
+  componentDidMount() {
+    requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ entered: true })));
+  }
+  setPressed(key, val) { this.setState(s => ({ pressed: { ...s.pressed, [key]: val } })); }
+  pd(key) { return () => this.setPressed(key, true); }
+  pu(key) { return () => this.setPressed(key, false); }
+  pressScale(key) {
+    const p = !!this.state.pressed[key];
+    return { transform: `scale(${p ? 0.97 : 1})`, transition: p ? `transform ${this.D.press}ms ${this.E.pressIn}` : `transform ${this.D.spring}ms ${this.E.spring}` };
+  }
+  onSubmit() { window.location.href = 'Dashboard.dc.html'; }
+
+  renderVals() {
+    const isDaftar = this.state.mode === 'daftar';
+    const on = this.state.entered;
+    const tabBtn = (active) => ({
+      flex: 1, position: 'relative', zIndex: 1, background: 'transparent', border: 'none', padding: '10px 0',
+      fontWeight: 700, fontSize: 13.5, cursor: 'pointer', color: active ? '#241E18' : '#9C948C', WebkitTapHighlightColor: 'transparent',
+    });
+    return {
+      cardWrapStyle: { opacity: on ? 1 : 0, transform: `translateY(${on ? 0 : 10}px)`, transition: `opacity 320ms ${this.E.out}, transform 320ms ${this.E.out}` },
+      isDaftar, isMasuk: !isDaftar,
+      toMasuk: () => this.setState({ mode: 'masuk' }), toDaftar: () => this.setState({ mode: 'daftar' }),
+      tabIndicatorStyle: { position: 'absolute', top: 4, left: 4, width: 'calc(50% - 4px)', height: 'calc(100% - 8px)', background: '#fff', borderRadius: 999, boxShadow: '0 1px 2px rgba(36,30,24,.08)', transform: `translateX(${isDaftar ? '100%' : '0'})`, transition: `transform 220ms ${this.E.spring}` },
+      tabMasukStyle: tabBtn(!isDaftar), tabDaftarStyle: tabBtn(isDaftar),
+      inputStyle: { width: '100%', padding: '12px 14px', border: '1.5px solid #E7E1DC', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', transition: 'border-color 150ms ease' },
+      submitLabel: isDaftar ? 'Daftar gratis ›' : 'Masuk ›',
+      submitBtnStyle: { width: '100%', height: 48, border: 'none', borderRadius: 999, background: '#CC5436', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', WebkitTapHighlightColor: 'transparent', ...this.pressScale('submit') },
+      pd1: this.pd('submit'), pu1: this.pu('submit'),
+      switchPrompt: isDaftar ? 'Sudah punya akun?' : 'Belum punya akun?',
+      switchLabel: isDaftar ? 'Masuk' : 'Daftar',
+      onSwitch: () => this.setState({ mode: isDaftar ? 'masuk' : 'daftar' }),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

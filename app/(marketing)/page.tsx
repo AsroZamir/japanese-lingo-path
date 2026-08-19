@@ -18,45 +18,90 @@ const differentiators = [
 
 export default function LandingPage() {
   return (
-    <div className="content">
-      <section className="hero-card">
-        <div className="hero-copy">
-          <span className="blueprint-badge">VERSI AWAL — PRE-N5 SEDANG DIBANGUN</span>
-          <h2>Belajar bahasa Jepang<br />dari nol sampai <em>JLPT</em></h2>
+    <div className="landing">
+      <header className="landing-nav">
+        <span className="landing-nav__brand">Japanese Lingo Path</span>
+        <nav className="landing-nav__links">
+          <a href="#jalur">Jalur belajar</a>
+          <a href="#kenapa">Kenapa kami</a>
+          <Link href="/login">Masuk</Link>
+          <Link href="/login" className="landing-nav__cta">Mulai gratis</Link>
+        </nav>
+      </header>
+
+      <section className="landing-hero">
+        <div className="landing-hero__copy">
+          <span className="landing-eyebrow">VERSI AWAL — PRE-N5 SEDANG DIBANGUN</span>
+          <h1>Belajar bahasa Jepang<br />dari nol sampai <em>JLPT</em></h1>
           <p>Japanese Lingo Path adalah platform belajar bahasa Jepang berbahasa Indonesia, dari pemula total sampai siap menghadapi JLPT.</p>
-          <Link href="/login" className="primary-button">Masuk dengan Google <span>→</span></Link>
+          <div className="landing-hero__ctas">
+            <Link href="/login" className="landing-cta-btn">Masuk dengan Google <span>→</span></Link>
+            <a href="#jalur" className="landing-hero__secondary-link">Lihat jalur belajar</a>
+          </div>
         </div>
-        <div className="path-art" aria-hidden="true">
-          <div className="sun"></div><div className="mountain mountain-back"></div><div className="mountain mountain-front"></div>
-          <div className="path-line"></div><div className="torii"><i></i><b></b><span></span></div>
-          <div className="petal p1">◆</div><div className="petal p2">◆</div><div className="petal p3">◆</div>
+        <div className="landing-hero__card" aria-hidden="true">
+          <div className="landing-hero__card-bar">
+            <span /><span /><span className="is-empty" />
+          </div>
+          <div className="landing-hero__card-glyph">あ</div>
+          <div className="landing-hero__card-audio">
+            <span className="landing-hero__card-play">▶</span>
+            <span>Dibaca &quot;a&quot;</span>
+          </div>
+          <div className="landing-hero__card-btn">Lanjutkan ›</div>
         </div>
       </section>
 
-      <div className="curriculum-section-heading">
-        <div><span className="card-kicker dark">JALUR BELAJAR</span><h3>Dari Pre-N5 sampai N1</h3></div>
-        <p>Enam tahap berurutan, dibangun satu per satu.</p>
-      </div>
-      <section className="operational-scope-grid">
-        {roadmap.map((level) => (
-          <article key={level.code}>
-            <span>{level.code}</span>
-            <div><small>{level.status.toUpperCase()}</small><strong>{level.title} · {level.detail}</strong></div>
-          </article>
-        ))}
+      <section id="jalur" className="landing-section">
+        <div className="landing-section__heading">
+          <span className="landing-eyebrow">JALUR BELAJAR</span>
+          <h2>Dari Pre-N5 sampai N1</h2>
+          <p>Enam tahap berurutan, dibangun satu per satu.</p>
+        </div>
+        <div className="landing-grid">
+          {roadmap.map((level) => (
+            <article className="landing-card" key={level.code}>
+              <span className="landing-card__badge">{level.code}</span>
+              <div>
+                <small>{level.status.toUpperCase()}</small>
+                <strong>{level.title} · {level.detail}</strong>
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
-      <div className="curriculum-section-heading">
-        <div><span className="card-kicker dark">KENAPA JAPANESE LINGO PATH</span><h3>Tiga hal yang membedakan</h3></div>
-      </div>
-      <section className="operational-scope-grid">
-        {differentiators.map((item) => (
-          <article key={item.label}>
-            <span>{item.icon}</span>
-            <div><small>{item.label}</small><strong>{item.text}</strong></div>
-          </article>
-        ))}
+      <section id="kenapa" className="landing-section landing-section--tinted">
+        <div className="landing-section__heading">
+          <span className="landing-eyebrow">KENAPA JAPANESE LINGO PATH</span>
+          <h2>Tiga hal yang membedakan</h2>
+        </div>
+        <div className="landing-feature-grid">
+          {differentiators.map((item) => (
+            <article className="landing-feature-card" key={item.label}>
+              <div className="landing-feature-card__icon">{item.icon}</div>
+              <div className="landing-feature-card__title">{item.label}</div>
+              <div className="landing-feature-card__desc">{item.text}</div>
+            </article>
+          ))}
+        </div>
       </section>
+
+      <section className="landing-cta-dark">
+        <h2>Mulai perjalanan Anda hari ini</h2>
+        <p>Masuk dengan akun Google — gratis untuk memulai.</p>
+        <Link href="/login" className="landing-cta-btn">Masuk dengan Google <span>→</span></Link>
+      </section>
+
+      <footer className="landing-footer">
+        <span className="landing-footer__brand">Japanese Lingo Path</span>
+        <nav>
+          <a href="#jalur">Jalur belajar</a>
+          <a href="#kenapa">Kenapa kami</a>
+          <Link href="/login">Masuk</Link>
+        </nav>
+        <span className="landing-footer__copyright">© 2026 Japanese Lingo Path</span>
+      </footer>
     </div>
   );
 }

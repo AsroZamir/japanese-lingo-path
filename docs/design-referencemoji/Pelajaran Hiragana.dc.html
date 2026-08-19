@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; -webkit-font-smoothing: antialiased; background: #F6F6F0; }
+    button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;background:#F6F6F0;font-family:'Plus Jakarta Sans',sans-serif;">
+  <div style="width:380px;min-height:480px;background:#FFFFFF;border-radius:20px;border:1px solid #E7E1DC;padding:24px;position:relative;overflow:hidden;display:flex;flex-direction:column;">
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px;">
+      <button type="button" onClick="{{ onBack }}" style="{{ backBtnStyle }}">‹</button>
+      <sc-for list="{{ progress }}" as="seg" hint-placeholder-count="8">
+        <div style="flex:1;height:6px;border-radius:999px;background:#EDE7E1;overflow:hidden;">
+          <div style="{{ seg.fillStyle }}"></div>
+        </div>
+      </sc-for>
+      <div style="font-size:11px;color:#9C948C;font-weight:600;flex-shrink:0;min-width:28px;text-align:right;">{{ progressLabel }}</div>
+    </div>
+
+    <div style="{{ contentStyle }};flex:1;display:flex;flex-direction:column;">
+
+      <sc-if value="{{ isScreen0 }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="00" style="display:flex;flex-direction:column;flex:1;">
+          <div style="{{ s0Eyebrow }};text-align:center;color:#CC5436;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">Kelompok A</div>
+          <div style="{{ s0Title }};text-align:center;color:#241E18;font-weight:800;font-size:22px;line-height:1.35;margin-bottom:12px;">Mengenal 5 huruf pertama</div>
+          <div style="{{ s0Body }};text-align:center;color:#6B645D;font-size:13.5px;line-height:1.6;margin-bottom:26px;">あ, い, う, え, お adalah lima huruf hiragana pertama. Kelimanya melambangkan bunyi vokal — dasar dari semua bunyi dalam bahasa Jepang.</div>
+          <div style="display:flex;justify-content:center;gap:12px;margin-bottom:30px;">
+            <sc-for list="{{ s0Chars }}" as="c" hint-placeholder-count="5">
+              <span style="{{ c.style }};font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:28px;color:#241E18;">{{ c.char }}</span>
+            </sc-for>
+          </div>
+          <div style="flex:1;"></div>
+          <button type="button" onClick="{{ onNext }}" onPointerDown="{{ s0BtnDown }}" onPointerUp="{{ s0BtnUp }}" onPointerLeave="{{ s0BtnUp }}" style="{{ s0BtnStyle }}"><span>Mulai</span><span>›</span></button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScreen1 }}">
+        <div data-screen-label="01" style="display:flex;flex-direction:column;flex:1;">
+          <div style="{{ s1Square }};width:130px;height:130px;margin:6px auto 22px;background:#FBFAF8;border:1px solid #E7E1DC;border-radius:16px;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:64px;color:#241E18;">あ</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px;">
+            <button type="button" onClick="{{ onPlay }}" onPointerDown="{{ s1PlayDown }}" onPointerUp="{{ s1PlayUp }}" onPointerLeave="{{ s1PlayUp }}" style="{{ s1PlayBtnStyle }}">▶</button>
+            <div style="{{ s1PlayLabel }}">
+              <div style="font-weight:700;color:#241E18;font-size:14px;">a</div>
+              <div style="font-size:11.5px;color:#9C948C;">Ketuk untuk dengar</div>
+            </div>
+          </div>
+          <div style="{{ s1Caption }};text-align:center;color:#6B645D;font-size:13.5px;line-height:1.6;margin-bottom:20px;">Huruf ini dibaca "a", seperti pada kata "apa".</div>
+          <div style="flex:1;"></div>
+          <button type="button" onClick="{{ onNext }}" onPointerDown="{{ s1BtnDown }}" onPointerUp="{{ s1BtnUp }}" onPointerLeave="{{ s1BtnUp }}" style="{{ s1BtnStyle }}"><span>Lanjutkan</span><span>›</span></button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScreen2 }}">
+        <div data-screen-label="02" style="display:flex;flex-direction:column;flex:1;">
+          <div style="position:relative;width:130px;height:130px;margin:6px auto 20px;background:#FBFAF8;border:1px solid #E7E1DC;border-radius:16px;">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:64px;color:#E7E1DC;">あ</div>
+            <div style="{{ s2GlyphSolidStyle }};position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:64px;color:#241E18;">あ</div>
+            <sc-for list="{{ s2Badges }}" as="b" hint-placeholder-count="3">
+              <div style="{{ b.style }}">{{ b.num }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px;">
+            <div onClick="{{ onToggleStroke }}" style="{{ s2ToggleTrackStyle }}"><div style="{{ s2ToggleKnobStyle }}"></div></div>
+            <div style="font-size:12.5px;color:#6B645D;font-weight:600;">{{ s2Label }}</div>
+          </div>
+          <div style="{{ s2Caption }};text-align:center;color:#6B645D;font-size:13.5px;line-height:1.6;margin-bottom:20px;">Coretan pertama dimulai dari kiri atas.</div>
+          <div style="flex:1;"></div>
+          <button type="button" onClick="{{ onNext }}" onPointerDown="{{ s2BtnDown }}" onPointerUp="{{ s2BtnUp }}" onPointerLeave="{{ s2BtnUp }}" style="{{ s2BtnStyle }}"><span>Lanjutkan</span><span>›</span></button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScreen3 }}">
+        <div data-screen-label="03" style="display:flex;flex-direction:column;flex:1;">
+          <div style="{{ s3Instruction }};text-align:center;color:#6B645D;font-size:13.5px;line-height:1.6;margin-bottom:16px;">Tulis <span style="font-family:'Noto Sans JP',sans-serif;font-weight:700;color:#241E18;">あ</span> di kotak bawah ini. Ikuti garis panduan.</div>
+          <div style="position:relative;width:260px;height:260px;margin:0 auto 18px;background:#FBFAF8;border:1px dashed #D8D2CB;border-radius:16px;">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:150px;color:#EEE9E3;">あ</div>
+            <canvas ref="{{ canvasRef }}" width="260" height="260" onPointerDown="{{ onCanvasDown }}" onPointerMove="{{ onCanvasMove }}" onPointerUp="{{ onCanvasUp }}" onPointerLeave="{{ onCanvasUp }}" style="position:absolute;inset:0;touch-action:none;cursor:crosshair;border-radius:16px;"></canvas>
+          </div>
+          <div style="flex:1;"></div>
+          <div style="position:relative;min-height:78px;">
+            <div style="{{ s3PreRowStyle }}">
+              <button type="button" onClick="{{ onClearCanvas }}" onPointerDown="{{ s3ClearDown }}" onPointerUp="{{ s3ClearUp }}" onPointerLeave="{{ s3ClearUp }}" style="{{ s3ClearBtnStyle }}">Bersihkan</button>
+              <button type="button" onClick="{{ onCheckCanvas }}" onPointerDown="{{ s3CheckDown }}" onPointerUp="{{ s3CheckUp }}" onPointerLeave="{{ s3CheckUp }}" style="{{ s3CheckBtnStyle }}">Periksa Tulisan</button>
+            </div>
+            <div style="{{ s3PostRowStyle }}">
+              <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;">
+                <div style="width:20px;height:20px;border-radius:999px;background:#368A48;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;">✓</div>
+                <span style="color:#241E18;font-size:13px;line-height:1.5;">Bagus. Terus berlatih membentuk coretannya.</span>
+              </div>
+              <button type="button" onClick="{{ onNext }}" onPointerDown="{{ s3NextDown }}" onPointerUp="{{ s3NextUp }}" onPointerLeave="{{ s3NextUp }}" style="{{ s3NextBtnStyle }}"><span>Lanjutkan</span><span>›</span></button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScreen4 }}">
+        <div data-screen-label="04" style="display:flex;flex-direction:column;flex:1;">
+          <div style="{{ s4Title }};color:#241E18;font-weight:800;font-size:18px;margin-bottom:4px;">Peta Hiragana</div>
+          <div style="{{ s4Subtitle }};color:#9C948C;font-size:12.5px;margin-bottom:16px;">Huruf yang belum dipelajari masih redup.</div>
+          <div style="margin-bottom:8px;">
+            <sc-for list="{{ s4Rows }}" as="row" hint-placeholder-count="11">
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+                <div style="width:20px;flex-shrink:0;font-size:8.5px;color:#C7C0B8;font-weight:700;">{{ row.label }}</div>
+                <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="5">
+                  <div style="{{ cell.style }}">{{ cell.char }}</div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex:1;"></div>
+          <button type="button" onClick="{{ onNext }}" onPointerDown="{{ s4BtnDown }}" onPointerUp="{{ s4BtnUp }}" onPointerLeave="{{ s4BtnUp }}" style="{{ s4BtnStyle }}"><span>Lanjutkan</span><span>›</span></button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScreen5 }}">
+        <div data-screen-label="05" style="display:flex;flex-direction:column;flex:1;">
+          <div style="{{ quizPromptStyle }};text-align:center;color:#CC5436;font-weight:700;font-size:17px;margin-bottom:20px;">Huruf mana yang dibaca "e"?</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <sc-for list="{{ quizOptions }}" as="opt" hint-placeholder-count="4">
+              <button type="button" style="{{ opt.wrapStyle }}" onPointerDown="{{ opt.onDown }}" onPointerUp="{{ opt.onUp }}" onPointerLeave="{{ opt.onUp }}" onClick="{{ opt.onClick }}">
+                <div style="{{ opt.overlayStyle }}"></div>
+                <span style="{{ opt.glyphStyle }}">{{ opt.char }}</span>
+                <div style="{{ opt.badgeStyle }}">{{ opt.badgeSymbol }}</div>
+              </button>
+            </sc-for>
+          </div>
+          <div style="flex:1;"></div>
+          <div style="min-height:40px;margin:14px 0 14px;">
+            <div style="{{ quizExplainStyle }}">
+              <div style="{{ quizExplainIconStyle }}">{{ quizExplainIcon }}</div>
+              <span style="color:#241E18;font-size:13.5px;line-height:1.5;">{{ quizExplainText }}</span>
+            </div>
+          </div>
+          <button type="button" onClick="{{ quizButtonOnClick }}" onPointerDown="{{ quizBtnDown }}" onPointerUp="{{ quizBtnUp }}" onPointerLeave="{{ quizBtnUp }}" style="{{ quizBtnWrapStyle }}">
+            <div style="{{ quizBtnOrangeStyle }}"></div>
+            <div style="{{ quizBtnGreenStyle }}"></div>
+            <span style="{{ quizPeriksaStyle }}">Periksa ›</span>
+            <span style="{{ quizLanjutStyle }}">Lanjutkan ›</span>
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScreen6 }}">
+        <div data-screen-label="06" style="display:flex;flex-direction:column;flex:1;">
+          <div style="{{ s6NpcRow }};display:flex;align-items:flex-end;gap:8px;margin-bottom:20px;">
+            <div style="width:26px;height:26px;border-radius:999px;background:#5472AE;flex-shrink:0;"></div>
+            <div>
+              <div style="background:#F6F6F0;border-radius:14px 14px 14px 4px;padding:10px 14px;font-family:'Noto Sans JP',sans-serif;font-weight:600;font-size:15px;color:#241E18;">こんにちは。</div>
+              <div style="font-size:11px;color:#9C948C;margin:4px 0 0 4px;">Halo.</div>
+            </div>
+          </div>
+          <div style="{{ s6PromptLabel }};font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9C948C;margin-bottom:10px;">Pilih balasanmu</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ s6Replies }}" as="r" hint-placeholder-count="2">
+              <button type="button" onClick="{{ r.onClick }}" onPointerDown="{{ r.onDown }}" onPointerUp="{{ r.onUp }}" onPointerLeave="{{ r.onUp }}" style="{{ r.style }}">
+                <div style="font-family:'Noto Sans JP',sans-serif;font-weight:600;font-size:14.5px;color:#241E18;">{{ r.jp }}</div>
+                <div style="font-size:11px;color:#9C948C;margin-top:2px;">{{ r.gloss }}</div>
+              </button>
+            </sc-for>
+          </div>
+          <div style="flex:1;"></div>
+          <button type="button" onClick="{{ onNext }}" onPointerDown="{{ s6BtnDown }}" onPointerUp="{{ s6BtnUp }}" onPointerLeave="{{ s6BtnUp }}" style="{{ s6BtnStyle }}"><span>Lanjutkan</span><span>›</span></button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScreen7 }}">
+        <div data-screen-label="07" style="display:flex;flex-direction:column;flex:1;align-items:center;">
+          <div style="{{ s7CheckStyle }};width:60px;height:60px;border-radius:999px;background:#368A48;color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;margin:10px 0 18px;">✓</div>
+          <div style="{{ s7Title }};text-align:center;color:#241E18;font-weight:800;font-size:20px;margin-bottom:8px;">Pelajaran selesai!</div>
+          <div style="{{ s7Subtitle }};text-align:center;color:#6B645D;font-size:13.5px;line-height:1.6;margin-bottom:20px;">Kelompok A — あいうえお sudah kamu kuasai.</div>
+          <div style="display:flex;gap:8px;margin-bottom:22px;">
+            <sc-for list="{{ s7Badges }}" as="b" hint-placeholder-count="5">
+              <div style="{{ b.style }};width:36px;height:36px;border-radius:10px;background:#F6F6F0;border:1px solid #E7E1DC;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:16px;color:#241E18;">{{ b.char }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:22px;margin-bottom:24px;">
+            <sc-for list="{{ s7Stats }}" as="st" hint-placeholder-count="3">
+              <div style="{{ st.style }};text-align:center;">
+                <div style="font-size:16px;font-weight:800;color:#241E18;">{{ st.value }}</div>
+                <div style="font-size:10.5px;color:#9C948C;margin-top:2px;">{{ st.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex:1;"></div>
+          <button type="button" onClick="{{ onRestart }}" onPointerDown="{{ s7BtnDown }}" onPointerUp="{{ s7BtnUp }}" onPointerLeave="{{ s7BtnUp }}" style="{{ s7BtnStyle }}"><span>Ulangi dari awal</span><span>›</span></button>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    screenIndex: 0, phase: 'idle', dir: 1, entered: false, pressed: {},
+    maxStep: 0, animatingStep: null,
+    strokeRevealed: false,
+    canvasHasDrawing: false, canvasChecked: false,
+    quizSelected: null, quizChecked: false,
+    replySelected: null,
+  };
+
+  canvasRef = React.createRef();
+  quizQ = { prompt: 'e', options: ['う', 'え', 'お', 'あ'], correctIndex: 1 };
+
+  D = {
+    press: 90, spring: 200, entrance: 300, stagger: 60, slideHalf: 200,
+    progress: 420, progressDelay: 40,
+    reactCorrect: 190, reactCorrectDelay: 30, reactWrong: 170, reactWrongDelay: 30,
+    revealCorrect: 180, revealCorrectDelay: 110, dim: 180, dimDelay: 120,
+    explain: 190, explainDelayCorrect: 240, explainDelayWrong: 270, morph: 190,
+  };
+  E = {
+    spring: 'cubic-bezier(.34,1.56,.64,1)', out: 'cubic-bezier(.16,1,.3,1)',
+    gentle: 'cubic-bezier(.33,1,.68,1)', inout: 'cubic-bezier(.65,0,.35,1)',
+    standard: 'cubic-bezier(.4,0,.2,1)', pressIn: 'cubic-bezier(.4,0,1,1)',
+  };
+
+  componentDidMount() {
+    requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ entered: true })));
+  }
+  componentWillUnmount() {
+    clearTimeout(this._t1);
+    clearTimeout(this._t2);
+  }
+
+  ent(i, opts = {}) {
+    const on = opts.flag !== undefined ? opts.flag : this.state.entered;
+    const dur = opts.dur || this.D.entrance;
+    const delay = i * (opts.stagger || this.D.stagger);
+    const dist = opts.dist ?? 14;
+    return {
+      opacity: on ? 1 : 0,
+      transform: `translateY(${on ? 0 : dist}px)`,
+      transition: `opacity ${dur}ms ${this.E.out} ${delay}ms, transform ${dur}ms ${this.E.out} ${delay}ms`,
+    };
+  }
+  setPressed(key, val) { this.setState(s => ({ pressed: { ...s.pressed, [key]: val } })); }
+  pd(key) { return () => this.setPressed(key, true); }
+  pu(key) { return () => this.setPressed(key, false); }
+  pressScale(key, down = 0.96) {
+    const p = !!this.state.pressed[key];
+    return {
+      transform: `scale(${p ? down : 1})`,
+      transition: p ? `transform ${this.D.press}ms ${this.E.pressIn}` : `transform ${this.D.spring}ms ${this.E.spring}`,
+    };
+  }
+  ctaStyle(key, opts = {}) {
+    const disabled = !!opts.disabled;
+    return {
+      position: 'relative', width: opts.flex ? undefined : '100%', flex: opts.flex ? 1 : undefined,
+      height: opts.h || 50, border: 'none', borderRadius: 999, padding: 0,
+      background: opts.color || '#CC5436', color: '#fff', fontWeight: 700, fontSize: opts.fs || 15,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+      cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto',
+      WebkitTapHighlightColor: 'transparent',
+      ...this.pressScale(key),
+    };
+  }
+  secondaryBtnStyle(key) {
+    return {
+      position: 'relative', flex: 1, height: 46, borderRadius: 999, border: '1.5px solid #E7E1DC', background: '#FFFFFF',
+      color: '#6B645D', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+      ...this.pressScale(key),
+    };
+  }
+  speak(text) {
+    try {
+      if (window.speechSynthesis) {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'ja-JP'; u.rate = 0.8;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      }
+    } catch (e) {}
+  }
+
+  go(delta) {
+    const ns = this.state.screenIndex + delta;
+    if (ns < 0 || ns > 7) return;
+    clearTimeout(this._t1); clearTimeout(this._t2);
+    this.setState({ phase: 'out', dir: delta });
+    this._t1 = setTimeout(() => {
+      this.setState(s => {
+        const becomesNewMax = delta > 0 && ns > s.maxStep;
+        return {
+          screenIndex: ns, phase: 'preIn', entered: false,
+          maxStep: becomesNewMax ? ns : s.maxStep,
+          animatingStep: becomesNewMax ? ns : s.animatingStep,
+        };
+      });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        this.setState({ phase: 'in', entered: true });
+        this._t2 = setTimeout(() => this.setState({ phase: 'idle' }), this.D.slideHalf);
+      }));
+    }, this.D.slideHalf);
+  }
+  restart() {
+    clearTimeout(this._t1); clearTimeout(this._t2);
+    this.setState({ phase: 'out', dir: -1 });
+    this._t1 = setTimeout(() => {
+      this.setState({ screenIndex: 0, phase: 'preIn', entered: false, quizSelected: null, quizChecked: false, replySelected: null, canvasChecked: false, canvasHasDrawing: false, strokeRevealed: false });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        this.setState({ phase: 'in', entered: true });
+        this._t2 = setTimeout(() => this.setState({ phase: 'idle' }), this.D.slideHalf);
+      }));
+    }, this.D.slideHalf);
+  }
+
+  toggleStroke() { this.setState(s => ({ strokeRevealed: !s.strokeRevealed })); }
+
+  onCanvasDown(e) {
+    const canvas = this.canvasRef.current;
+    if (!canvas) return;
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    const rect = canvas.getBoundingClientRect();
+    this._drawing = true;
+    this._lastX = e.clientX - rect.left;
+    this._lastY = e.clientY - rect.top;
+    if (!this.state.canvasHasDrawing) this.setState({ canvasHasDrawing: true });
+  }
+  onCanvasMove(e) {
+    if (!this._drawing) return;
+    const canvas = this.canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#241E18'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(this._lastX, this._lastY); ctx.lineTo(x, y); ctx.stroke();
+    this._lastX = x; this._lastY = y;
+  }
+  onCanvasUp() { this._drawing = false; }
+  clearCanvas() {
+    const canvas = this.canvasRef.current;
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    this.setState({ canvasHasDrawing: false, canvasChecked: false });
+  }
+  checkCanvas() {
+    if (!this.state.canvasHasDrawing) return;
+    this.setState({ canvasChecked: true });
+  }
+
+  selectQuiz(i) {
+    if (this.state.quizChecked) return;
+    this.setState({ quizSelected: i });
+  }
+  checkQuiz() {
+    if (this.state.quizSelected == null || this.state.quizChecked) return;
+    this.setState({ quizChecked: true });
+  }
+
+  mapCell(char, active) {
+    if (!char) return { width: 26, height: 26 };
+    return {
+      width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: "'Noto Sans JP', sans-serif", fontWeight: 700, fontSize: 12.5,
+      background: active ? '#FBEAE4' : '#F6F6F0', border: `1px solid ${active ? '#CC5436' : '#E7E1DC'}`,
+      color: active ? '#CC5436' : '#C7C0B8',
+    };
+  }
+
+  buildQuizOption(i) {
+    const { D, E } = this;
+    const Q = this.quizQ;
+    const char = Q.options[i];
+    const sel = this.state.quizSelected;
+    const checked = this.state.quizChecked;
+    const isSelected = sel === i;
+    const isCorrectOpt = i === Q.correctIndex;
+    const isCorrect = checked && sel === Q.correctIndex;
+    const showCorrect = checked && isCorrectOpt;
+    const showWrong = checked && isSelected && !isCorrectOpt;
+    const dim = checked && !isCorrectOpt && !isSelected;
+    const pressed = !!this.state.pressed['q' + i];
+    const entered = this.state.entered;
+
+    let scale = 1;
+    if (checked) {
+      if (showCorrect) scale = isSelected ? 1.045 : 1.02;
+      else if (showWrong) scale = 1.02;
+    } else if (pressed) scale = 0.96;
+
+    const entryY = entered ? 0 : 14;
+    const wrapOpacity = !entered ? 0 : (dim ? 0.45 : 1);
+    let transformTransition, opacityTransition;
+    if (!entered) {
+      const d = i * D.stagger;
+      transformTransition = `transform ${D.entrance}ms ${E.out} ${d}ms`;
+      opacityTransition = `opacity ${D.entrance}ms ${E.out} ${d}ms`;
+    } else if (checked) {
+      if (isSelected) {
+        const dur = isCorrect ? D.reactCorrect : D.reactWrong;
+        const dly = isCorrect ? D.reactCorrectDelay : D.reactWrongDelay;
+        const ease = isCorrect ? E.spring : E.gentle;
+        transformTransition = `transform ${dur}ms ${ease} ${dly}ms`;
+      } else if (showCorrect) {
+        transformTransition = `transform ${D.revealCorrect}ms ${E.gentle} ${D.revealCorrectDelay}ms`;
+      } else {
+        transformTransition = `transform ${D.dim}ms ${E.gentle} ${D.dimDelay}ms`;
+      }
+      opacityTransition = `opacity ${D.dim}ms ${E.gentle} ${D.dimDelay}ms`;
+    } else {
+      transformTransition = pressed ? `transform ${D.press}ms ${E.pressIn}` : `transform ${D.spring}ms ${E.spring}`;
+      opacityTransition = 'opacity 120ms linear';
+    }
+
+    const wrapStyle = {
+      position: 'relative', aspectRatio: '1/1', borderRadius: 14, background: '#FFFFFF',
+      border: '1.5px solid #E7E1DC', cursor: checked ? 'default' : 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+      pointerEvents: checked ? 'none' : 'auto', WebkitTapHighlightColor: 'transparent',
+      outline: (isSelected && !checked) ? '2px solid #CC5436' : 'none', outlineOffset: 2,
+      transform: `translateY(${entryY}px) scale(${scale})`, opacity: wrapOpacity,
+      transition: `${transformTransition}, ${opacityTransition}`,
+      willChange: 'transform, opacity',
+    };
+    const overlayShow = showCorrect || showWrong;
+    const overlayDelay = isSelected ? (isCorrect ? D.reactCorrectDelay : D.reactWrongDelay) : D.revealCorrectDelay;
+    const overlayDur = isSelected ? (isCorrect ? D.reactCorrect : D.reactWrong) : D.revealCorrect;
+    const overlayStyle = {
+      position: 'absolute', inset: 0, borderRadius: 12.5,
+      background: showCorrect ? '#DCF3E1' : showWrong ? '#F5E4DE' : 'transparent',
+      border: `1.5px solid ${showCorrect ? '#368A48' : showWrong ? '#D98F78' : 'transparent'}`,
+      opacity: overlayShow ? 1 : 0,
+      transition: `opacity ${overlayDur}ms ${(isSelected && isCorrect) ? E.spring : E.gentle} ${overlayDelay}ms`,
+    };
+    const glyphStyle = { position: 'relative', zIndex: 2, fontFamily: "'Noto Sans JP', sans-serif", fontWeight: 700, fontSize: 34, color: '#241E18', userSelect: 'none' };
+    const badgeShow = overlayShow;
+    const badgeDelay = overlayDelay + 70;
+    const badgeStyle = {
+      position: 'absolute', top: -8, right: -8, width: 22, height: 22, borderRadius: 999,
+      background: showCorrect ? '#368A48' : '#D98F78', color: '#fff', fontSize: 12, fontWeight: 700,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3,
+      transform: `scale(${badgeShow ? 1 : 0})`, opacity: badgeShow ? 1 : 0,
+      transition: `transform 160ms ${(isSelected && isCorrect) ? E.spring : E.out} ${badgeDelay}ms, opacity 160ms ${E.out} ${badgeDelay}ms`,
+    };
+    return {
+      key: 'q' + i, char, wrapStyle, overlayStyle, glyphStyle, badgeStyle,
+      badgeSymbol: showCorrect ? '✓' : (showWrong ? '✕' : ''),
+      onDown: this.pd('q' + i), onUp: this.pu('q' + i),
+      onClick: () => this.selectQuiz(i),
+    };
+  }
+
+  renderVals() {
+    const { D, E } = this;
+    const { screenIndex, phase, entered } = this.state;
+    const sign = this.state.dir || 1;
+    const slideTr = `transform ${D.slideHalf}ms ${E.out}, opacity ${D.slideHalf}ms ${E.out}`;
+    let contentStyle;
+    if (phase === 'out') contentStyle = { transform: `translateX(${-22 * sign}px) scale(.98)`, opacity: 0, transition: slideTr };
+    else if (phase === 'preIn') contentStyle = { transform: `translateX(${22 * sign}px) scale(.98)`, opacity: 0, transition: 'none' };
+    else if (phase === 'in') contentStyle = { transform: 'translateX(0) scale(1)', opacity: 1, transition: slideTr };
+    else contentStyle = { transform: 'translateX(0) scale(1)', opacity: 1, transition: 'none' };
+
+    const progress = Array.from({ length: 8 }, (_, i) => {
+      const filled = i <= this.state.maxStep;
+      const animate = i === this.state.animatingStep;
+      return { fillStyle: {
+        transform: `scaleX(${filled ? 1 : 0})`, transformOrigin: 'left', height: '100%', borderRadius: 999, background: '#CC5436',
+        transition: animate ? `transform ${D.progress}ms ${E.inout} ${D.progressDelay}ms` : 'none',
+      }};
+    });
+
+    const backBtnStyle = {
+      width: 28, height: 28, borderRadius: 999, background: '#F6F6F0', border: '1px solid #E7E1DC', flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9C948C', fontSize: 14,
+      opacity: screenIndex === 0 ? 0.4 : 1, pointerEvents: screenIndex === 0 ? 'none' : 'auto', cursor: 'pointer',
+      ...this.pressScale('back'),
+    };
+
+    const s0Chars = ['あ', 'い', 'う', 'え', 'お'].map((c, i) => ({ char: c, style: this.ent(3 + i, { dist: 8 }) }));
+
+    const s2on = this.state.strokeRevealed;
+    const s2Badges = [{ left: '22%', top: '18%' }, { left: '58%', top: '42%' }, { left: '38%', top: '75%' }].map((pos, i) => ({
+      num: i + 1,
+      style: {
+        position: 'absolute', left: pos.left, top: pos.top, width: 20, height: 20, borderRadius: 999,
+        background: '#CC5436', color: '#fff', fontSize: 10, fontWeight: 700,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2,
+        opacity: s2on ? 1 : 0, transform: `translate(-50%,-50%) scale(${s2on ? 1 : 0.4})`,
+        transition: `opacity 200ms ${E.spring} ${i * 90}ms, transform 200ms ${E.spring} ${i * 90}ms`,
+      },
+    }));
+
+    const canvasChecked = this.state.canvasChecked;
+    const rowAbs = (visible) => ({
+      position: 'absolute', inset: 0, display: 'flex', flexDirection: visible === 'post' ? 'column' : 'row', gap: 10,
+    });
+
+    const s4Table = [
+      ['A', ['あ', 'い', 'う', 'え', 'お'], true],
+      ['KA', ['か', 'き', 'く', 'け', 'こ'], false],
+      ['SA', ['さ', 'し', 'す', 'せ', 'そ'], false],
+      ['TA', ['た', 'ち', 'つ', 'て', 'と'], false],
+      ['NA', ['な', 'に', 'ぬ', 'ね', 'の'], false],
+      ['HA', ['は', 'ひ', 'ふ', 'へ', 'ほ'], false],
+      ['MA', ['ま', 'み', 'む', 'め', 'も'], false],
+      ['YA', ['や', '', 'ゆ', '', 'よ'], false],
+      ['RA', ['ら', 'り', 'る', 'れ', 'ろ'], false],
+      ['WA', ['わ', '', '', '', 'を'], false],
+      ['N', ['ん', '', '', '', ''], false],
+    ];
+    const s4Rows = s4Table.map(([label, chars, active]) => ({ label, cells: chars.map(c => ({ char: c, style: this.mapCell(c, active) })) }));
+
+    const quizOptions = [0, 1, 2, 3].map(i => this.buildQuizOption(i));
+    const quizQ = this.quizQ;
+    const quizChecked = this.state.quizChecked;
+    const quizSel = this.state.quizSelected;
+    const quizIsCorrect = quizChecked && quizSel === quizQ.correctIndex;
+    const quizExplainDelay = quizIsCorrect ? D.explainDelayCorrect : D.explainDelayWrong;
+    const quizExplainStyle = {
+      display: 'flex', alignItems: 'flex-start', gap: 8, pointerEvents: 'none',
+      opacity: quizChecked ? 1 : 0, transform: `translateY(${quizChecked ? 0 : 8}px)`,
+      transition: `opacity ${D.explain}ms ${E.out} ${quizExplainDelay}ms, transform ${D.explain}ms ${E.out} ${quizExplainDelay}ms`,
+    };
+    const quizExplainIconStyle = {
+      width: 20, height: 20, borderRadius: 999, flexShrink: 0, marginTop: 1,
+      background: quizIsCorrect ? '#368A48' : '#D98F78', color: '#fff', fontSize: 11, fontWeight: 700,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    };
+    const quizExplainText = quizIsCorrect
+      ? `Tepat! ${quizQ.options[quizQ.correctIndex]} dibaca "${quizQ.prompt}".`
+      : (quizChecked ? `Belum tepat. ${quizQ.options[quizSel]} bukan "${quizQ.prompt}". Yang benar ${quizQ.options[quizQ.correctIndex]}.` : '');
+    const quizMorphTr = `opacity ${D.morph}ms ${E.standard} ${quizExplainDelay}ms, transform ${D.morph}ms ${E.standard} ${quizExplainDelay}ms`;
+    const quizPeriksaStyle = { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: quizChecked ? 0 : 1, transform: `translateY(${quizChecked ? -8 : 0}px)`, transition: quizMorphTr, color: '#fff', fontWeight: 700, fontSize: 15 };
+    const quizLanjutStyle = { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: quizChecked ? 1 : 0, transform: `translateY(${quizChecked ? 0 : 8}px)`, transition: quizMorphTr, color: '#fff', fontWeight: 700, fontSize: 15 };
+    const quizBtnOrangeStyle = { position: 'absolute', inset: 0, borderRadius: 999, background: '#CC5436', opacity: quizChecked ? 0 : 1, transition: quizMorphTr };
+    const quizBtnGreenStyle = { position: 'absolute', inset: 0, borderRadius: 999, background: '#368A48', opacity: quizChecked ? 1 : 0, transition: quizMorphTr };
+    const quizBtnPressed = !!this.state.pressed['quizbtn'];
+    const quizBtnWrapStyle = {
+      position: 'relative', width: '100%', height: 50, border: 'none', borderRadius: 999, padding: 0, cursor: 'pointer', overflow: 'hidden',
+      opacity: (!quizChecked && quizSel == null) ? 0.4 : 1, pointerEvents: (!quizChecked && quizSel == null) ? 'none' : 'auto',
+      transform: `scale(${quizBtnPressed ? 0.97 : 1})`,
+      transition: quizBtnPressed ? `transform ${D.press}ms ${E.pressIn}` : `transform ${D.spring}ms ${E.spring}`,
+    };
+
+    const replySel = this.state.replySelected;
+    const replyData = [
+      { jp: 'こんにちは。', gloss: 'Halo (balasan).' },
+      { jp: 'ありがとう。', gloss: 'Terima kasih.' },
+    ];
+    const s6Replies = replyData.map((r, i) => {
+      const isSel = replySel === i;
+      return {
+        ...r, onClick: () => this.setState({ replySelected: i }), onDown: this.pd('reply' + i), onUp: this.pu('reply' + i),
+        style: {
+          position: 'relative', textAlign: 'left', padding: '12px 14px', borderRadius: 14, background: isSel ? '#FBEAE4' : '#FFFFFF',
+          border: `1.5px solid ${isSel ? '#CC5436' : '#E7E1DC'}`, cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+          ...this.pressScale('reply' + i),
+        },
+      };
+    });
+
+    const s7Badges = ['あ', 'い', 'う', 'え', 'お'].map((c, i) => ({ char: c, style: this.ent(i, { dist: 8, dur: 240 }) }));
+    const s7Stats = [{ label: 'Waktu', value: '4 menit' }, { label: 'XP', value: '+15' }, { label: 'Akurasi', value: '92%' }].map((s, i) => ({ ...s, style: this.ent(i + 1, { dist: 8, dur: 240 }) }));
+
+    return {
+      backBtnStyle, onBack: () => this.go(-1),
+      progress, progressLabel: `${screenIndex + 1}/8`,
+      contentStyle,
+      isScreen0: screenIndex === 0, isScreen1: screenIndex === 1, isScreen2: screenIndex === 2, isScreen3: screenIndex === 3,
+      isScreen4: screenIndex === 4, isScreen5: screenIndex === 5, isScreen6: screenIndex === 6, isScreen7: screenIndex === 7,
+      onNext: () => this.go(1),
+
+      s0Eyebrow: this.ent(0), s0Title: this.ent(1), s0Body: this.ent(2), s0Chars,
+      s0BtnStyle: this.ctaStyle('s0next'), s0BtnDown: this.pd('s0next'), s0BtnUp: this.pu('s0next'),
+
+      s1Square: this.ent(0, { dist: 10 }),
+      s1PlayBtnStyle: { width: 52, height: 52, borderRadius: 999, background: '#5472AE', color: '#fff', fontSize: 18, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', WebkitTapHighlightColor: 'transparent', ...this.pressScale('play') },
+      s1PlayDown: this.pd('play'), s1PlayUp: this.pu('play'), onPlay: () => this.speak('あ'),
+      s1PlayLabel: this.ent(1, { dist: 8 }),
+      s1Caption: this.ent(2, { dist: 8 }),
+      s1BtnStyle: this.ctaStyle('s1next'), s1BtnDown: this.pd('s1next'), s1BtnUp: this.pu('s1next'),
+
+      s2GlyphSolidStyle: { opacity: s2on ? 1 : 0, transition: `opacity 500ms ${E.out} 150ms` },
+      s2Badges,
+      s2ToggleTrackStyle: { width: 44, height: 24, borderRadius: 999, background: s2on ? '#CC5436' : '#E7E1DC', position: 'relative', cursor: 'pointer', flexShrink: 0 },
+      s2ToggleKnobStyle: { position: 'absolute', top: 3, left: 3, width: 18, height: 18, borderRadius: 999, background: '#fff', transform: `translateX(${s2on ? 20 : 0}px)`, transition: `transform 220ms ${E.spring}` },
+      onToggleStroke: () => this.toggleStroke(),
+      s2Label: s2on ? 'Sedang diputar' : 'Ketuk untuk memutar',
+      s2Caption: this.ent(1, { dist: 8 }),
+      s2BtnStyle: this.ctaStyle('s2next'), s2BtnDown: this.pd('s2next'), s2BtnUp: this.pu('s2next'),
+
+      s3Instruction: this.ent(0, { dist: 8 }),
+      canvasRef: this.canvasRef,
+      onCanvasDown: (e) => this.onCanvasDown(e), onCanvasMove: (e) => this.onCanvasMove(e), onCanvasUp: () => this.onCanvasUp(),
+      s3PreRowStyle: { ...rowAbs('pre'), opacity: canvasChecked ? 0 : 1, transform: `translateY(${canvasChecked ? -6 : 0}px)`, transition: `opacity 200ms ${E.out}, transform 200ms ${E.out}`, pointerEvents: canvasChecked ? 'none' : 'auto' },
+      s3PostRowStyle: { ...rowAbs('post'), opacity: canvasChecked ? 1 : 0, transform: `translateY(${canvasChecked ? 0 : 8}px)`, transition: `opacity 200ms ${E.out} 60ms, transform 200ms ${E.out} 60ms`, pointerEvents: canvasChecked ? 'auto' : 'none' },
+      s3ClearBtnStyle: this.secondaryBtnStyle('s3clear'), s3ClearDown: this.pd('s3clear'), s3ClearUp: this.pu('s3clear'), onClearCanvas: () => this.clearCanvas(),
+      s3CheckBtnStyle: this.ctaStyle('s3check', { flex: true, h: 46, fs: 14, disabled: !this.state.canvasHasDrawing }), s3CheckDown: this.pd('s3check'), s3CheckUp: this.pu('s3check'), onCheckCanvas: () => this.checkCanvas(),
+      s3NextBtnStyle: this.ctaStyle('s3next', { color: '#368A48' }), s3NextDown: this.pd('s3next'), s3NextUp: this.pu('s3next'),
+
+      s4Title: this.ent(0, { dist: 8 }), s4Subtitle: this.ent(1, { dist: 8 }), s4Rows,
+      s4BtnStyle: { ...this.ctaStyle('s4next'), marginTop: 14 }, s4BtnDown: this.pd('s4next'), s4BtnUp: this.pu('s4next'),
+
+      quizPromptStyle: this.ent(0),
+      quizOptions, quizExplainStyle, quizExplainIconStyle, quizExplainIcon: quizIsCorrect ? '✓' : 'i', quizExplainText,
+      quizBtnWrapStyle, quizPeriksaStyle, quizLanjutStyle, quizBtnOrangeStyle, quizBtnGreenStyle,
+      quizButtonOnClick: () => (quizChecked ? this.go(1) : this.checkQuiz()),
+      quizBtnDown: this.pd('quizbtn'), quizBtnUp: this.pu('quizbtn'),
+
+      s6NpcRow: this.ent(0, { dist: 8 }), s6PromptLabel: this.ent(1, { dist: 8 }), s6Replies,
+      s6BtnStyle: { ...this.ctaStyle('s6next', { disabled: replySel == null }), marginTop: 16 }, s6BtnDown: this.pd('s6next'), s6BtnUp: this.pu('s6next'),
+
+      s7CheckStyle: { transform: `scale(${entered ? 1 : 0.4})`, opacity: entered ? 1 : 0, transition: `transform 260ms ${E.spring}, opacity 200ms ${E.out}` },
+      s7Title: this.ent(0, { dist: 8 }), s7Subtitle: this.ent(1, { dist: 8 }), s7Badges, s7Stats,
+      s7BtnStyle: this.ctaStyle('s7next', { color: '#368A48' }), s7BtnDown: this.pd('s7next'), s7BtnUp: this.pu('s7next'),
+      onRestart: () => this.restart(),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Claude Design mockups (.dc.html) + their own support.js runtime —
+    // read as a design spec, never executed or shipped; not our code.
+    "docs/design-referencemoji/**",
   ]),
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
