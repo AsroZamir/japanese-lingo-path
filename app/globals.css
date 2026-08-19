@@ -54,6 +54,7 @@
   --moji-ease-gentle: cubic-bezier(0.33, 1, 0.68, 1);
   --moji-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --moji-ease-press-in: cubic-bezier(0.4, 0, 1, 1);
+  --moji-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
 
   --moji-d-press: 90ms;
   --moji-d-spring: 200ms;
@@ -67,6 +68,8 @@
   --moji-d-dim: 180ms;
   --moji-d-dim-delay: 120ms;
   --moji-d-morph: 190ms;
+  --moji-d-progress: 420ms;
+  --moji-d-progress-delay: 40ms;
 }
 
 * { box-sizing: border-box; }
@@ -985,3 +988,22 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 @media (max-width: 640px) {
   .m01-dialogue__choices { grid-template-columns: 1fr; }
 }
+
+/* ── LessonPlayer — 9-segment group progress bar + completion card ─── */
+.lesson-player__progress { display: flex; align-items: center; gap: 6px; margin-bottom: 22px; }
+.lesson-player__segment { flex: 1; height: 6px; border-radius: var(--moji-radius-pill); background: var(--moji-line); overflow: hidden; }
+.lesson-player__segment-fill {
+  display: block; width: 100%; height: 100%; border-radius: var(--moji-radius-pill); background: var(--moji-accent);
+  transform-origin: left; transition: transform var(--moji-d-progress) var(--moji-ease-inout) var(--moji-d-progress-delay);
+}
+
+.lesson-player__summary { margin: 28px 0; padding: 28px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-3xl); background: var(--moji-white); text-align: center; }
+.lesson-player__summary-check {
+  width: 52px; height: 52px; margin: 0 auto 14px; border-radius: var(--moji-radius-pill); background: var(--moji-success);
+  color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center;
+}
+.lesson-player__summary h3 { margin: 0 0 18px; color: var(--moji-ink); font-family: var(--moji-font-sans); font-size: 18px; font-weight: 800; }
+.lesson-player__summary-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.lesson-player__summary-stats > div { display: flex; flex-direction: column; gap: 4px; padding: 14px 8px; border-radius: var(--moji-radius-lg); background: var(--moji-cream); }
+.lesson-player__summary-stats strong { color: var(--moji-ink); font-family: var(--moji-font-sans); font-size: 17px; font-weight: 800; }
+.lesson-player__summary-stats span { color: var(--moji-muted); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }

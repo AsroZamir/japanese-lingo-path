@@ -5,6 +5,7 @@ import { ExerciseRunner, type ExerciseItem, type ExerciseAttemptResult, type Exe
 import type { LessonBundle } from "@/app/lib/lesson-query";
 import { recordAttempt, completeLesson } from "./actions";
 import { skillForExerciseType, type SkillOutcome } from "./skill-mapping";
+import { useLessonProgress } from "./LessonPlayer";
 
 function buildItems(bundle: LessonBundle): ExerciseItem[] {
   const kanaOptions = bundle.kana.map((k) => ({ id: k.id, label: k.character }));
@@ -35,6 +36,7 @@ function buildItems(bundle: LessonBundle): ExerciseItem[] {
 export function LessonL03({ bundle }: { bundle: LessonBundle }) {
   const items = useMemo(() => buildItems(bundle), [bundle]);
   const [result, setResult] = useState<ExerciseRunnerResult | null>(null);
+  const { reportProgress, reportLessonResult } = useLessonProgress();
 
   function handleAttempt(attempt: ExerciseAttemptResult) {
     void recordAttempt({
@@ -56,11 +58,12 @@ export function LessonL03({ bundle }: { bundle: LessonBundle }) {
       .filter((a): a is ExerciseAttemptResult & { kanaId: number } => a.kanaId != null)
       .map((a) => ({ kanaId: a.kanaId, skill: skillForExerciseType(a.exerciseType), correct: a.isCorrect }));
     void completeLesson(bundle.lesson.id, outcomes);
+    reportLessonResult(runnerResult.correctCount, runnerResult.totalCount);
   }
 
   if (result) {
     return <p className="welcome-copy">Selesai — {result.correctCount}/{result.totalCount} benar.</p>;
   }
 
-  return <ExerciseRunner items={items} config={{ shuffle: true }} onAttempt={handleAttempt} onComplete={handleComplete} />;
+  return <ExerciseRunner items={items} config={{ shuffle: true }} onAttempt={handleAttempt} onComplete={handleComplete} onProgress={reportProgress} />;
 }
