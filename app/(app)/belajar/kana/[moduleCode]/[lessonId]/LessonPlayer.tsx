@@ -55,7 +55,7 @@ type SegmentDef = { lessonCode: string; kind: "fixed" | "proportional" };
 // (L03 latihan, L04 tes) that fill by real answered-question count via
 // reportProgress, instead of being mapped to a single fixed number —
 // see the segment-math discussion this was approved from.
-const SEGMENT_TEMPLATE: SegmentDef[] = [
+const FOUR_LESSON_SEGMENT_TEMPLATE: SegmentDef[] = [
   { lessonCode: "L01", kind: "fixed" },
   { lessonCode: "L01", kind: "fixed" },
   { lessonCode: "L02", kind: "fixed" },
@@ -66,6 +66,24 @@ const SEGMENT_TEMPLATE: SegmentDef[] = [
   { lessonCode: "L04", kind: "fixed" },
   { lessonCode: "L04", kind: "fixed" },
 ];
+
+// The 9-segment template above is hand-tuned for exactly the L01-L04
+// group-drill cycle (Fase 2/3) — see the comment that used to sit here.
+// Fase 4+ phases don't all have 4 lessons (Reading Lab has 3, Consolidation
+// has 2), and reusing that fixed 9-segment array for a shorter phase would
+// leave the last segments permanently unfillable (their lessonCode, e.g.
+// "L04", never exists in groupLessons) — the bar would visibly stick below
+// 100%. This generic fallback (2 segments per lesson: one fixed "arrival",
+// one proportional "completion") only applies when the lesson count isn't
+// 4, so every already-shipped Fase 2/3 lesson keeps the exact tuned
+// template above, unchanged.
+function segmentTemplateFor(groupLessons: LessonPlayerLesson[]): SegmentDef[] {
+  if (groupLessons.length === 4) return FOUR_LESSON_SEGMENT_TEMPLATE;
+  return groupLessons.flatMap((l) => [
+    { lessonCode: l.code, kind: "fixed" as const },
+    { lessonCode: l.code, kind: "proportional" as const },
+  ]);
+}
 
 export function LessonPlayer({
   moduleCode,
@@ -120,6 +138,7 @@ export function LessonPlayer({
   );
 
   const lessonIndexByCode = new Map(groupLessons.map((l, i) => [l.code, i]));
+  const segmentTemplate = segmentTemplateFor(groupLessons);
 
   function segmentFill(seg: SegmentDef): number {
     const segIndex = lessonIndexByCode.get(seg.lessonCode) ?? -1;
@@ -131,7 +150,7 @@ export function LessonPlayer({
   }
 
   const overallPercent = Math.round(
-    (SEGMENT_TEMPLATE.reduce((sum, seg) => sum + segmentFill(seg), 0) / SEGMENT_TEMPLATE.length) * 100,
+    (segmentTemplate.reduce((sum, seg) => sum + segmentFill(seg), 0) / segmentTemplate.length) * 100,
   );
 
   return (
@@ -142,7 +161,7 @@ export function LessonPlayer({
       <Link href="/belajar" className="back-button">← Kembali ke daftar modul</Link>
 
       <div className="lesson-player__progress" role="progressbar" aria-valuenow={overallPercent} aria-valuemin={0} aria-valuemax={100}>
-        {SEGMENT_TEMPLATE.map((seg, i) => (
+        {segmentTemplate.map((seg, i) => (
           <span key={i} className="lesson-player__segment">
             <span className="lesson-player__segment-fill" style={{ transform: `scaleX(${segmentFill(seg)})` }} />
           </span>

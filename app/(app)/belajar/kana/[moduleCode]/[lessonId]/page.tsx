@@ -3,10 +3,12 @@ import { redirect } from "next/navigation";
 import { getLessonBundle } from "@/app/lib/lesson-query";
 import { getOrientationLessonContent } from "@/app/lib/lesson-content-query";
 import { getModuleLessons } from "@/app/lib/module-query";
+import { getWordPool } from "@/app/lib/word-pool-query";
 import { LessonL01 } from "./LessonL01";
 import { LessonL02 } from "./LessonL02";
 import { LessonL03 } from "./LessonL03";
 import { LessonL04 } from "./LessonL04";
+import { LessonReading } from "./LessonReading";
 import { M01LessonView } from "./M01LessonView";
 import { LessonPlayer } from "./LessonPlayer";
 
@@ -16,6 +18,18 @@ import { LessonPlayer } from "./LessonPlayer";
 // Matched by lesson_type, not module code, so any module's orientation
 // phase (not just M01) gets the same treatment — see M02 Phase 1.
 const ORIENTATION_LESSON_TYPES = new Set(["orientation", "orientation_practice"]);
+
+// Fase 4 (Reading Lab) practices vocabulary already taught, not new
+// characters — no kana_lesson_items of its own, so it reads from the
+// whole kana_example_words pool instead of getLessonBundle. Word-length
+// range (kana count, not codepoint count) is keyed by lesson code, same
+// convention LessonL01-L04 already use to vary behavior by code.
+const READING_LESSON_TYPE = "reading_practice";
+const READING_LENGTH_BY_CODE: Record<string, [number, number]> = {
+  L01: [2, 3],
+  L02: [4, 99],
+};
+const MODULE_SCRIPT: Record<string, "hiragana" | "katakana"> = { M02: "hiragana", M03: "katakana" };
 
 function NextLessonNav({
   nextLessonHref,
@@ -80,6 +94,40 @@ export default async function LessonPage({
           nextLessonTitle={nextLesson?.titleId ?? null}
         />
       </div>
+    );
+  }
+
+  if (currentSummary.lessonType === READING_LESSON_TYPE) {
+    const [minLen, maxLen] = READING_LENGTH_BY_CODE[lessonCode] ?? [2, 99];
+    const script = MODULE_SCRIPT[moduleCode] ?? "hiragana";
+    const words = await getWordPool(script, minLen, maxLen);
+
+    const groupLessons = moduleLessons.lessons
+      .filter((l) => l.phaseCode === phaseCode)
+      .map((l) => ({ code: l.code, titleId: l.titleId }));
+    const exerciseTotals = { [lessonCode]: words.length * 2 };
+
+    return (
+      <LessonPlayer
+        moduleCode={moduleCode}
+        groupCode={phaseCode}
+        groupLessons={groupLessons}
+        currentLessonCode={lessonCode}
+        lessonTitle={currentSummary.titleId}
+        phaseTitle={`${moduleLessons.module.titleId} · ${currentSummary.phaseTitleId}`}
+        exerciseTotals={exerciseTotals}
+        nextLessonHref={nextLesson ? `/belajar/kana/${moduleCode}/${nextLesson.routeId}` : null}
+        nextLessonTitle={nextLesson?.titleId ?? null}
+      >
+        <LessonReading
+          bundle={{
+            module: moduleLessons.module,
+            phase: { id: 0, code: phaseCode, titleId: currentSummary.phaseTitleId },
+            lesson: { id: currentSummary.id, code: lessonCode, titleId: currentSummary.titleId, lessonType: currentSummary.lessonType, romajiPolicy: "on_demand" },
+            words,
+          }}
+        />
+      </LessonPlayer>
     );
   }
 
