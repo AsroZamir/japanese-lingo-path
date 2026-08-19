@@ -955,7 +955,7 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .m01-slide-frame__head .lesson-player__progress { flex: 1; margin-bottom: 0; }
 .m01-slide-frame__counter { flex: 0 0 auto; color: var(--moji-muted); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .m01-slide-frame__close {
-  flex: 0 0 auto; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  flex: 0 0 auto; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
   border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-pill); background: var(--moji-white);
   color: var(--moji-muted); font-size: 14px; text-decoration: none; cursor: pointer;
   transition: border-color 150ms var(--moji-ease-out), color 150ms var(--moji-ease-out);
@@ -977,9 +977,22 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 
 .m01-slide__title { margin: 0 0 14px; color: var(--moji-ink); font-size: 28px; font-weight: 700; line-height: 1.25; }
 .m01-slide__body { text-align: left; }
-.m01-slide__body p { margin: 0 0 12px; color: var(--moji-ink); font-size: 18px; font-weight: 400; line-height: 1.6; }
-.m01-slide__body p:last-child { margin-bottom: 0; }
-.m01-slide__body--chart, .m01-slide__body--callout { display: flex; flex-direction: column; align-items: center; text-align: center; }
+/* Direct-child combinator on purpose — plain prose paragraphs
+   (ParagraphSlide) are direct children of .m01-slide__body, but
+   sub-components nested deeper in it (.m01-showcase, .m01-vocab-card,
+   .m01-dialogue) have their OWN <p> tags with their OWN color/size
+   classes. A descendant selector here would out-specificity those
+   single-class rules (0,1,1 beats 0,1,0) and silently overwrite them —
+   exactly what happened to the showcase caption before this fix. */
+.m01-slide__body > p { margin: 0 0 12px; color: var(--moji-ink); font-size: 18px; font-weight: 400; line-height: 1.6; }
+.m01-slide__body > p:last-child { margin-bottom: 0; }
+/* align-items:center here centers the CARD/VISUAL as a block on the
+   frame — it must not also force text-align:center on the prose inside
+   (vocab-card note, showcase caption, etc.), per Tugas 3's "teks isi
+   rata kiri, bukan rata tengah". Text defaults to left; only the chart
+   slide's own heading (a caption for the chart below it, not body
+   prose) is deliberately re-centered. */
+.m01-slide__body--chart, .m01-slide__body--callout { display: flex; flex-direction: column; align-items: center; }
 .m01-slide__body--chart .m01-slide__title { text-align: center; }
 /* Karakter Jepang tunggal/kata pendek (vocab-card, item audio_list) — rasio
    min. 4:1 terhadap teks penjelasan di sekitarnya, per skala Tugas 3.
@@ -989,24 +1002,30 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .m01-slide__jp.is-correct { color: var(--moji-success); }
 .m01-slide__jp.is-wrong { color: #a13a2f; }
 
+/* Tugas 3 gives one fixed number for title/body (28px/18px, no separate
+   mobile figure — unlike the Japanese-character rule, which explicitly
+   splits 120px desktop / 88px mobile) — so those stay constant here.
+   Only the stage's own height budget adjusts for shorter viewports. */
 @media (max-width: 640px) {
   .m01-slide-frame__stage { height: clamp(380px, 68vh, 520px); }
-  .m01-slide__title { font-size: 24px; }
-  .m01-slide__body p { font-size: 16px; }
 }
 
 .m01-option--correct { border-color: var(--moji-success); background: var(--moji-success-bg); }
 
-.m01-showcase { padding: 28px; border-radius: var(--moji-radius-2xl); background: var(--moji-ink); text-align: center; }
+.m01-showcase { padding: 28px; border-radius: var(--moji-radius-2xl); background: var(--moji-ink); }
+/* .m01-slide__jp defaults to --moji-ink text, which is invisible on this
+   card's own --moji-ink background — this is the one spot that needs
+   white back, everywhere else .m01-slide__jp sits on a light surface. */
+.m01-showcase .m01-slide__jp { color: #fff; }
 .m01-showcase__romaji { margin: 12px 0 0; color: #d8cfc4; font-size: 14px; font-style: italic; }
 .m01-showcase__meaning { margin: 6px 0 0; color: #f0e6dc; font-size: 14px; }
 
 .m01-steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.m01-steps li { display: flex; align-items: center; gap: 14px; min-height: 48px; padding: 12px 16px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-md); background: var(--moji-white); font-size: 16px; color: var(--moji-ink); }
+.m01-steps li { display: flex; align-items: center; gap: 14px; min-height: 48px; padding: 12px 16px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-md); background: var(--moji-white); font-size: 18px; color: var(--moji-ink); }
 .m01-steps__label { flex: 0 0 auto; padding: 4px 8px; border-radius: var(--moji-radius-xs); color: #fff; background: var(--moji-accent); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 
 .m01-table-wrap { overflow-x: auto; padding: 0; }
-.m01-table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.m01-table { width: 100%; border-collapse: collapse; font-size: 18px; }
 .m01-table th, .m01-table td { padding: 12px 16px; border-bottom: 1px solid var(--moji-line); text-align: left; }
 .m01-table th { color: var(--moji-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
 .m01-table td { color: var(--moji-ink); font-family: var(--moji-font-jp); }
@@ -1016,26 +1035,27 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .m01-vocab-card__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .m01-vocab-card__romaji { margin: 6px 0 0; color: var(--moji-accent); font-size: 14px; font-style: italic; }
 .m01-vocab-card__meaning { margin: 4px 0 0; color: var(--moji-muted); font-size: 14px; }
-.m01-vocab-card__note { margin: 18px 0 0; color: var(--moji-ink); font-size: 16px; line-height: 1.6; text-align: left; }
+.m01-vocab-card__note { margin: 18px 0 0; color: var(--moji-ink); font-size: 18px; line-height: 1.6; text-align: left; }
 .m01-vocab-card__activity { margin: 14px 0 0; padding: 10px 14px; border-radius: var(--moji-radius-sm); color: var(--moji-muted); background: var(--moji-cream); font-size: 13px; text-align: left; }
 .m01-vocab-card__secondary { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--moji-line); color: var(--moji-muted); font-size: 14px; }
 .m01-vocab-card__secondary .m01-slide__jp { font-size: 24px; }
 
-.m01-callout { padding: 18px 22px; border-radius: var(--moji-radius-lg); font-size: 18px; line-height: 1.6; max-width: 520px; }
+.m01-callout { padding: 18px 22px; border-radius: var(--moji-radius-lg); font-size: 18px; line-height: 1.6; max-width: 520px; text-align: left; }
 .m01-callout--encouragement { color: #1a7a4c; background: var(--moji-success-bg); }
 .m01-callout--tip { color: #1c5d99; background: #e8f1fc; }
 .m01-callout--important { color: #8a5a12; background: #fff3de; }
 
-.m01-dialogue { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
+.m01-dialogue { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .m01-dialogue__bubble { display: inline-block; padding: 12px 18px; border-radius: var(--moji-radius-lg); font-family: var(--moji-font-jp); font-size: 22px; }
 .m01-dialogue__bubble--npc { background: var(--moji-cream); color: var(--moji-ink); }
-.m01-dialogue__prompt { margin: 16px 0; color: var(--moji-muted); font-size: 16px; }
+.m01-dialogue__prompt { margin: 16px 0; color: var(--moji-ink); font-size: 18px; width: 100%; }
 .m01-dialogue__choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
-.m01-dialogue__hint { margin: 10px 0 0; color: var(--moji-muted); font-size: 14px; }
-.m01-dialogue__narrative { margin: 18px 0 6px; color: var(--moji-muted); font-size: 14px; }
-.m01-dialogue__closing { margin: 14px 0 0; color: var(--moji-success); font-size: 14px; font-weight: 600; }
+.m01-dialogue__choices button { min-height: 48px; }
+.m01-dialogue__hint { margin: 10px 0 0; color: var(--moji-muted); font-size: 14px; width: 100%; }
+.m01-dialogue__narrative { margin: 18px 0 6px; color: var(--moji-muted); font-size: 14px; width: 100%; }
+.m01-dialogue__closing { margin: 14px 0 0; color: var(--moji-success); font-size: 14px; font-weight: 600; width: 100%; }
 
-.m01-feedback-inline { margin: 12px 0 0; padding: 12px 16px; border-radius: var(--moji-radius-md); font-size: 14px; line-height: 1.5; width: 100%; }
+.m01-feedback-inline { margin: 12px 0 0; padding: 12px 16px; border-radius: var(--moji-radius-md); font-size: 18px; line-height: 1.5; text-align: left; width: 100%; }
 .m01-feedback-inline.is-correct { color: #1a7a4c; background: var(--moji-success-bg); }
 .m01-feedback-inline.is-wrong { color: #a13a2f; background: var(--moji-error-bg); }
 @media (max-width: 640px) {
@@ -1328,7 +1348,12 @@ a.login-card__brand { display: block; text-align: center; font-weight: 800; font
    exactly as it already was; only this M01 usage picks up Moji tokens. */
 .exercise-runner.m01-exercise {
   border: none; border-radius: 0; background: transparent; font-family: var(--moji-font-sans);
-  padding: 0; gap: 20px; width: 100%;
+  /* Horizontal padding on purpose, not 0 — the option cards' badge
+     (top:-8px/right:-8px) and selected-state outline (outline-offset:2px)
+     both render outside the card's own box; without this gutter they
+     get clipped by .m01-slide-frame__stage's overflow:hidden right at
+     the frame edge (border-box keeps the outer footprint at 100%). */
+  padding: 0 10px; gap: 20px; width: 100%;
 }
 .exercise-runner.m01-exercise .exercise-runner__prompt p { color: var(--moji-ink); font-size: 18px; font-weight: 400; }
 
