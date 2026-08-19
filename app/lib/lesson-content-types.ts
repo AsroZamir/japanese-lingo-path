@@ -22,6 +22,19 @@ export type TextBlockContent =
       leadParagraphs?: string[];
       steps: { label?: string; title: string }[];
       closingParagraphs?: string[];
+    }
+  | {
+      // M04 Fase 1 L02 — teaches the compositional pattern behind 11-99
+      // (二十一 = 二十 + 一, concatenated directly, no separator) by
+      // letting the learner assemble it themselves instead of being
+      // shown a table of 90 memorized entries. Pure client-side demo
+      // (DialogueBlock's pattern) — not graded, not written to
+      // user_kana_attempts; the graded check is a separate lesson_exercises row.
+      kind: "number-builder";
+      heading?: string;
+      instruction?: string;
+      tensOptions: { label: string; kanji: string; romaji: string; value: number }[]; // value 0 = "kosong" (no tens), kanji/romaji "" for it
+      onesOptions: { label: string; kanji: string; romaji: string; value: number }[]; // value 0 = "kosong" (no ones), kanji/romaji "" for it
     };
 
 export type ChartBlockContent = {

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import * as wanakana from "wanakana";
 import { KanaChart } from "@/components/kana/KanaChart";
 import { AudioButton } from "@/components/kana/AudioButton";
+import { NumberBuilder } from "@/components/numbers/NumberBuilder";
 import { getCurrentUser } from "@/app/lib/current-user";
 import { getFullScriptChartPreview, type OrientationLessonBundle } from "@/app/lib/lesson-content-query";
 import { nameToKatakanaOrFallback } from "@/app/lib/name-to-katakana";
@@ -65,6 +66,19 @@ async function textBlockSlides(content: TextBlockContent, keyBase: string): Prom
           <p className="m01-showcase__romaji">{sentenceRomaji}</p>
           <p className="m01-showcase__meaning">{meaning}</p>
         </div>
+      </div>,
+    ];
+  }
+
+  if (content.kind === "number-builder") {
+    return [
+      <div className="m01-slide__body m01-slide__body--chart" key={keyBase}>
+        <NumberBuilder
+          heading={content.heading}
+          instruction={content.instruction}
+          tensOptions={content.tensOptions}
+          onesOptions={content.onesOptions}
+        />
       </div>,
     ];
   }

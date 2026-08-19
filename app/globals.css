@@ -895,6 +895,24 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .exercise-runner__option { padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: white; font-size: 18px; }
 .exercise-runner__option:hover { border-color: #bcd1ea; background: #edf4fc; }
 .exercise-runner__option--wrong { border-color: #c0392b; background: #fdecea; }
+.exercise-runner__option.is-selected { border-color: var(--moji-accent); background: #edf4fc; outline: 2px solid var(--moji-accent); }
+
+/* ── M04 Number Builder (Fase 1 L02) — reuses exercise-runner__option's
+   card styling for its two picker grids, not a separate button style. ── */
+.number-builder { display: flex; flex-direction: column; gap: 20px; align-items: center; width: 100%; }
+.number-builder__instruction { margin: 0; color: var(--muted); text-align: center; }
+.number-builder__result {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-height: 96px; justify-content: center; width: 100%;
+  padding: 20px; border-radius: var(--moji-radius-2xl); background: var(--moji-success-bg, #f0f9f4);
+}
+.number-builder__result-kanji { font-size: 40px; font-weight: 700; }
+.number-builder__result-romaji { font-size: 16px; color: var(--muted); }
+.number-builder__result-value { font-size: 14px; color: var(--muted); }
+.number-builder__result-placeholder { color: var(--muted); font-size: 15px; }
+.number-builder__group { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.number-builder__options { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+.number-builder__options .exercise-runner__option { padding: 10px 6px; font-size: 15px; text-align: center; }
 
 /* ── Moji "layar 5" quiz-card spec — gated select→Periksa→Lanjutkan flow ── */
 .exercise-runner__options--gated { grid-template-columns: repeat(2, 1fr); }
