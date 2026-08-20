@@ -23,52 +23,87 @@ async function fetchStrokeData(character: string): Promise<StrokeData> {
   return res.json();
 }
 
-// Some raw entries from the source contain a leftover duplicate stroke —
-// a median that shares most of its points with an earlier one in the
-// same character (e.g. あ's raw data has 4 medians, but #2 and #3 share
-// ~77% of their points; の has 2 medians sharing ~94%). Real distinct
-// strokes in this dataset never exceed ~27% incidental point overlap
-// (checked across the whole 211-character set), so this is a clean,
-// well-separated signal, not a guess. Stripped here — at the source —
-// rather than just subtracting from stroke_count, since a leftover path
-// would otherwise also corrupt stroke-order animation and handwriting
-// validation downstream.
-const DUPLICATE_OVERLAP_THRESHOLD = 0.5;
-
-function pointKey(point: number[]) {
-  return `${point[0]},${point[1]}`;
-}
-
-function overlapRatio(a: number[][], b: number[][]): number {
-  const setA = new Set(a.map(pointKey));
-  const setB = new Set(b.map(pointKey));
-  let shared = 0;
-  for (const key of setA) if (setB.has(key)) shared++;
-  return shared / Math.min(setA.size, setB.size);
-}
+// PERBAIKAN KRITIS (lihat commit): mekanisme dedupe geometris lama (ambang
+// overlap titik median 0.5) DIHAPUS TOTAL — terbukti salah untuk beberapa
+// karakter meski stroke_count akhirnya kebetulan cocok dengan tabel baku.
+// Kasus nyata yang ditemukan lewat rendering visual langsung (bukan cuma
+// hitung angka):
+//   - の: median milik stroke SPIRAL PENUH (benar) py overlap tinggi
+//     dengan stroke lain yang JUSTRU berupa fragmen kecil/rusak (salah) —
+//     ambang overlap membuang yang benar, menyisakan yang rusak.
+//   - ぬ/め: stroke loop (lingkaran, secara fisik berbeda dari stroke
+//     garis pertama) py overlap median tinggi dengan salah satu VARIAN
+//     GAYA stroke garis pertama — ambang overlap salah mengira loop itu
+//     "duplikat" lalu membuangnya, menyisakan dua varian garis yang sama
+//     tanpa loop sama sekali.
+// Median (centerline pena yang disederhanakan) TIDAK selalu berkorelasi
+// dengan bentuk fill SVG yang sebenarnya sangat berbeda — overlap tinggi
+// pada median tidak berarti dua stroke itu "sama".
+//
+// Sumber data (@k1low/hanzi-writer-data-jp) TIDAK punya field "id" per
+// stroke seperti kana-svg-data (yang menandai varian gaya dengan suffix
+// "3a"/"3b") — jadi pengelompokan berbasis id tidak bisa diterapkan
+// langsung di sini. Bahkan aturan sederhana "selalu ambil varian
+// pertama" terbukti salah juga (untuk の, varian yang benar justru raw
+// index 1, bukan index 0).
+//
+// Perbaikan: setiap karakter di bawah ini diverifikasi SATU PER SATU
+// secara visual — merender SEMUA kombinasi C(raw, kanonik) dari stroke
+// mentah lalu memilih yang benar-benar terlihat seperti karakter yang
+// dituju (bukan tebakan geometris). Ini SATU-SATUNYA 20 karakter di
+// seluruh 211 kana dasar+dakuten+handakuten+sokuon+long_vowel yang
+// jumlah stroke mentahnya melebihi jumlah baku (diverifikasi lewat
+// survei penuh terhadap sumber CDN) — sisanya sudah 1:1 raw==kanonik,
+// tidak butuh seleksi sama sekali.
+const STROKE_INDEX_OVERRIDES: Record<string, number[]> = {
+  // 15 hiragana dasar yang jumlah stroke mentahnya > baku
+  "あ": [0, 1, 2],
+  "お": [0, 1, 2],
+  "ぬ": [0, 2],
+  "の": [1],
+  "め": [1, 2],
+  "は": [0, 2, 3],
+  "ほ": [0, 1, 3, 4],
+  "み": [0, 1],
+  "よ": [0, 1],
+  "る": [0],
+  "す": [1, 2],
+  "ね": [1, 2],
+  "ま": [0, 2, 3],
+  "む": [0, 1, 2],
+  "な": [0, 1, 2, 3],
+  // dakuten/handakuten yang mewarisi masalah yang sama dari basis-nya
+  // (di-fetch terpisah sebagai codepoint sendiri, bukan diturunkan dari
+  // basis + tanda, jadi punya set stroke mentahnya sendiri)
+  "ば": [0, 2, 3, 4, 5],
+  "ぱ": [0, 2, 3, 4],
+  "ず": [0, 1, 3, 4],
+  "ぼ": [0, 1, 3, 4, 5, 6],
+  "ぽ": [0, 1, 3, 4, 5],
+  // small ょ (dipakai di 11 youon hiragana: きょしょちょ dst.) — bukan
+  // baris kana_characters sendiri, tapi tetap kena masalah yang sama
+  // karena diambil lewat getSingle() yang sama untuk perakitan youon.
+  // Ditemukan setelah fix awal karena SEMUA kombo -ょ tetap +1 stroke
+  // dari kanonik. ぁ/ぉ (kecil) juga punya masalah serupa tapi TIDAK
+  // dipakai di kana_characters manapun saat ini — sengaja tidak
+  // diperbaiki karena tidak mempengaruhi data yang benar-benar disajikan.
+  "ょ": [0, 1],
+};
 
 function dedupeStrokes(character: string, data: StrokeData): StrokeData {
-  const keptStrokes: string[] = [];
-  const keptMedians: number[][][] = [];
-
-  data.medians.forEach((median, index) => {
-    const duplicateOf = keptMedians.findIndex(
-      (kept) => overlapRatio(kept, median) >= DUPLICATE_OVERLAP_THRESHOLD,
-    );
-    if (duplicateOf !== -1) {
-      console.warn(`  "${character}": stroke ${index} dibuang (duplikat stroke ${duplicateOf})`);
-      return;
-    }
-    keptStrokes.push(data.strokes[index]);
-    keptMedians.push(median);
-  });
-
-  return { strokes: keptStrokes, medians: keptMedians };
+  const override = STROKE_INDEX_OVERRIDES[character];
+  if (!override) return data;
+  return {
+    strokes: override.map((i) => data.strokes[i]),
+    medians: override.map((i) => data.medians[i]),
+  };
 }
 
 function combine(a: StrokeData, b: StrokeData): StrokeData {
   return { strokes: [...a.strokes, ...b.strokes], medians: [...a.medians, ...b.medians] };
 }
+
+const FORCE = process.argv.includes("--force");
 
 async function main() {
   const { db, close } = createSeedClient();
@@ -77,20 +112,27 @@ async function main() {
   let updated = 0;
 
   // Reuse a file already on disk instead of re-fetching — makes reruns
-  // after a partial failure fast and cheap on the CDN.
+  // after a partial failure fast and cheap on the CDN. --force bypasses
+  // the cache (e.g. after changing STROKE_INDEX_OVERRIDES for a
+  // character whose file was already written by an older dedupe rule).
   async function getSingle(script: string, character: string): Promise<StrokeData> {
     const cacheKey = `${script}:${character}`;
     if (singleCache.has(cacheKey)) return singleCache.get(cacheKey)!;
 
     const filePath = path.join(OUTPUT_DIR, script, `${character}.json`);
     let data: StrokeData;
-    try {
-      data = JSON.parse(await fs.readFile(filePath, "utf-8"));
-    } catch {
-      data = dedupeStrokes(character, await fetchStrokeData(character));
-      await fs.mkdir(path.dirname(filePath), { recursive: true });
-      await fs.writeFile(filePath, JSON.stringify(data));
+    if (!FORCE) {
+      try {
+        data = JSON.parse(await fs.readFile(filePath, "utf-8"));
+        singleCache.set(cacheKey, data);
+        return data;
+      } catch {
+        // fall through to fetch
+      }
     }
+    data = dedupeStrokes(character, await fetchStrokeData(character));
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(data));
     singleCache.set(cacheKey, data);
     return data;
   }
