@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getLessonBundle } from "@/app/lib/lesson-query";
 import { getOrientationLessonContent } from "@/app/lib/lesson-content-query";
 import { getModuleLessons } from "@/app/lib/module-query";
-import { getWordPool, getWordsByKana } from "@/app/lib/word-pool-query";
+import { getWordPool, getWordsByKana, getWordsForKanaTaughtThrough } from "@/app/lib/word-pool-query";
 import { getKanaPool, getConfusionPairs } from "@/app/lib/kana-pool-query";
 import { getWeakestKana, getDueForReview } from "@/app/lib/mastery-query";
 import { LessonL01 } from "./LessonL01";
@@ -335,6 +335,12 @@ export default async function LessonPage({
   const bundle = await getLessonBundle(moduleCode, phaseCode, lessonCode);
   if (!bundle) redirect("/belajar");
 
+  // Mini Test's word-level questions need every kana taught up through
+  // this group, not just this lesson's own ~5 (see the comment on
+  // getWordsForKanaTaughtThrough — an individual group's own word pool
+  // is too sparse for a real word-level quiz).
+  const cumulativeWords = bundle.lesson.code === "L04" ? await getWordsForKanaTaughtThrough(moduleCode, bundle.phase.id) : [];
+
   // "Kelompok" for the LessonPlayer progress bar = this lesson's phase
   // (kana_phases row), same thing seed-first-lesson.ts calls a
   // group (P2 = Kelompok A) — moduleLessons already spans every phase
@@ -364,7 +370,7 @@ export default async function LessonPage({
       {bundle.lesson.code === "L01" && <LessonL01 bundle={bundle} />}
       {bundle.lesson.code === "L02" && <LessonL02 bundle={bundle} />}
       {bundle.lesson.code === "L03" && <LessonL03 bundle={bundle} />}
-      {bundle.lesson.code === "L04" && <LessonL04 bundle={bundle} />}
+      {bundle.lesson.code === "L04" && <LessonL04 bundle={bundle} cumulativeWords={cumulativeWords} />}
     </LessonPlayer>
   );
 }

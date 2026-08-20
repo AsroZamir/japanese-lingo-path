@@ -13,6 +13,7 @@ const EXERCISE_TYPE_SKILL: Record<string, KanaSkill> = {
   word_reading: "reading",
   typing: "typing",
   dictation: "typing",
+  word_arrange: "typing",
   similar_kana_discrimination: "visual",
   timed_recognition: "visual",
   writing: "writing",

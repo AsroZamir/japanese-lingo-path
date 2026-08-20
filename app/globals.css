@@ -832,6 +832,32 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .exercise-runner__typing { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .exercise-runner__typing-answer { margin: 0; color: #c0392b; font-size: 13px; font-weight: 700; }
 
+/* ── Susun Kata (word_arrange) — Bagian 4 ────────────────────────────
+   Two rows: the answer being built (tap a tile to remove it) above a
+   bank of remaining scrambled tiles (tap to place). Shares the same
+   idle/correct/incorrect state naming as kana-typing-input. */
+.word-arrange { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+.word-arrange__build {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px;
+  min-height: 56px; width: 100%; max-width: 320px; padding: 8px 12px; border-radius: var(--moji-radius-lg);
+  background: #f4f7fb; border: 1.5px dashed var(--moji-line);
+}
+.word-arrange__build-placeholder { color: var(--moji-faint); font-size: 13px; }
+.word-arrange__bank { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.word-arrange__tile {
+  min-width: 44px; height: 44px; padding: 0 10px; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-md);
+  background: var(--moji-white); font-family: var(--moji-font-jp); font-weight: 700; font-size: 20px; color: var(--moji-ink);
+  cursor: pointer; transition: transform var(--moji-d-press) var(--moji-ease-press-in), border-color 120ms linear, background-color 120ms linear;
+}
+.word-arrange__tile:not(:disabled):hover { border-color: var(--moji-accent); }
+.word-arrange__tile:not(:disabled):active { transform: scale(0.94); }
+.word-arrange__tile:disabled { cursor: default; opacity: 0.35; }
+.word-arrange__tile--placed { background: var(--moji-accent-soft-bg); border-color: var(--moji-accent); opacity: 1; }
+.word-arrange__tile--placed:disabled { opacity: 1; }
+.word-arrange--correct .word-arrange__build { border-style: solid; border-color: var(--moji-success); background: var(--moji-success-bg); }
+.word-arrange--incorrect .word-arrange__build { border-style: solid; border-color: var(--moji-error-soft); background: var(--moji-error-bg); }
+.word-arrange__clear { border: none; background: none; color: var(--moji-muted); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: underline; }
+
 /* Moji reskin — grouping/sorting, hover-preview, and long-press logic
    in KanaChart.tsx untouched; matches the density/interactivity of
    mapCell (s4 "Peta Hiragana") without shrinking to its 26px reference

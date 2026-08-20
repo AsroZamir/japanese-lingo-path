@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { AudioButton } from "./AudioButton";
 import { KanaTypingInput } from "./KanaTypingInput";
+import { WordArrange } from "./WordArrange";
 
 export type ExerciseType =
   | "visual_to_sound"
@@ -12,16 +13,8 @@ export type ExerciseType =
   | "typing"
   | "dictation"
   | "similar_kana_discrimination"
-  | "timed_recognition";
-
-// sound_to_visual and dictation present audio as the PROMPT itself (not
-// just an optional "hear it" extra) — with audio_url null everywhere
-// right now (Fase 4's premise), there is nothing to actually present, so
-// these two can't be meaningfully attempted yet. Structure is built and
-// wired exactly like the rest; the note below is both a code comment and
-// a visible on-screen notice, since a silent guessing game would be
-// worse than an honest "not testable yet".
-const AUDIO_DEPENDENT_TYPES: ExerciseType[] = ["sound_to_visual", "dictation"];
+  | "timed_recognition"
+  | "word_arrange";
 
 export type ExerciseOption = {
   id: number;
@@ -37,11 +30,13 @@ export type ExerciseItem = {
   promptRomaji?: string;
   promptAudioUrl?: string | null;
   promptMeaning?: string;
-  /** Multiple-choice types only (everything except typing/dictation). */
+  /** Multiple-choice types only (everything except typing/dictation/word_arrange). */
   options?: ExerciseOption[];
   correctOptionId?: number;
-  /** typing/dictation only — what KanaTypingInput should match. */
+  /** typing/dictation/word_arrange only — what the freeform answer should match. */
   expectedTyping?: string;
+  /** word_arrange only — scrambled tile pool the learner taps to rebuild expectedTyping. */
+  scrambledChars?: string[];
   /** timed_recognition only. */
   timeLimitSeconds?: number;
 };
@@ -102,11 +97,17 @@ function shuffleArray<T>(input: T[]): T[] {
   return arr;
 }
 
-function BlockedNote({ type }: { type: ExerciseType }) {
-  if (!AUDIO_DEPENDENT_TYPES.includes(type)) return null;
+// sound_to_visual and dictation present audio as the PROMPT itself (not
+// just an optional "hear it" extra) — only actually blocked per-item
+// when THAT item's audio_url is still null, not by type alone (audio
+// generation has since filled in for every taught kana/word this was
+// originally written against).
+function BlockedNote({ item }: { item: ExerciseItem }) {
+  const isAudioPromptType = item.type === "sound_to_visual" || item.type === "dictation";
+  if (!isAudioPromptType || item.promptAudioUrl != null) return null;
   return (
     <p className="exercise-runner__blocked-note">
-      Tipe latihan &quot;{type}&quot; butuh audio sebagai prompt — belum bisa diuji sampai audio_url terisi.
+      Tipe latihan &quot;{item.type}&quot; butuh audio sebagai prompt — belum bisa diuji sampai audio_url terisi.
     </p>
   );
 }
@@ -281,8 +282,8 @@ export function ExerciseRunner({ items, config, onAttempt, onComplete, onProgres
   function handleContinue() {
     if (!checked || !currentItem) return;
     const now = Date.now();
-    const isTypingItem = currentItem.type === "typing" || currentItem.type === "dictation";
-    const wasCorrect = isTypingItem ? typedValue === currentItem.expectedTyping : selected === currentItem.correctOptionId;
+    const isFreeformItem = currentItem.type === "typing" || currentItem.type === "dictation" || currentItem.type === "word_arrange";
+    const wasCorrect = isFreeformItem ? typedValue === currentItem.expectedTyping : selected === currentItem.correctOptionId;
     if (!wasCorrect && config?.allowRetry) {
       setSelected(null);
       setChecked(false);
@@ -302,17 +303,21 @@ export function ExerciseRunner({ items, config, onAttempt, onComplete, onProgres
     );
   }
 
-  const isTyping = currentItem.type === "typing" || currentItem.type === "dictation";
+  const isArrange = currentItem.type === "word_arrange";
+  // typing/dictation/word_arrange all grade the same way — a freeform
+  // constructed string compared against expectedTyping — they only
+  // differ in which input widget builds that string.
+  const isFreeform = currentItem.type === "typing" || currentItem.type === "dictation" || isArrange;
   const isTimed = currentItem.type === "timed_recognition";
-  const isGated = !isTyping && !isTimed;
-  const typedIsCorrect = isTyping && checked && typedValue === currentItem.expectedTyping;
+  const isGated = !isFreeform && !isTimed;
+  const typedIsCorrect = isFreeform && checked && typedValue === currentItem.expectedTyping;
   const retryWrong =
     checked && config?.allowRetry &&
-    (isTyping ? typedValue !== currentItem.expectedTyping : isGated && selected !== currentItem.correctOptionId);
-  // Same select-or-type→Periksa→Lanjutkan gate for both card and typing
-  // items — only timed_recognition (below) skips this entirely.
-  const showCheckBtn = isGated || isTyping;
-  const canCheck = isTyping ? typedValue.trim().length > 0 : selected != null;
+    (isFreeform ? typedValue !== currentItem.expectedTyping : isGated && selected !== currentItem.correctOptionId);
+  // Same select-or-type→Periksa→Lanjutkan gate for card, typing, AND
+  // word_arrange items — only timed_recognition (below) skips it entirely.
+  const showCheckBtn = isGated || isFreeform;
+  const canCheck = isFreeform ? typedValue.trim().length > 0 : selected != null;
 
   return (
     <div className="exercise-runner">
@@ -324,20 +329,30 @@ export function ExerciseRunner({ items, config, onAttempt, onComplete, onProgres
         )}
       </div>
 
-      <BlockedNote type={currentItem.type} />
+      <BlockedNote item={currentItem} />
       <ExercisePrompt item={currentItem} />
 
-      {isTyping ? (
+      {isFreeform ? (
         currentItem.expectedTyping && (
           <div className="exercise-runner__typing">
-            <KanaTypingInput
-              key={`${currentItem.id}-${attemptKey}`}
-              expected={currentItem.expectedTyping}
-              status={checked ? (typedIsCorrect ? "correct" : "incorrect") : "idle"}
-              disabled={checked}
-              onChange={setTypedValue}
-              onSubmit={handleTypingCheck}
-            />
+            {isArrange ? (
+              <WordArrange
+                key={`${currentItem.id}-${attemptKey}`}
+                characters={currentItem.scrambledChars ?? []}
+                status={checked ? (typedIsCorrect ? "correct" : "incorrect") : "idle"}
+                disabled={checked}
+                onChange={setTypedValue}
+              />
+            ) : (
+              <KanaTypingInput
+                key={`${currentItem.id}-${attemptKey}`}
+                expected={currentItem.expectedTyping}
+                status={checked ? (typedIsCorrect ? "correct" : "incorrect") : "idle"}
+                disabled={checked}
+                onChange={setTypedValue}
+                onSubmit={handleTypingCheck}
+              />
+            )}
             {checked && !typedIsCorrect && (
               <p className="exercise-runner__typing-answer">Jawaban benar: {currentItem.expectedTyping}</p>
             )}
@@ -396,7 +411,7 @@ export function ExerciseRunner({ items, config, onAttempt, onComplete, onProgres
           type="button"
           className={`exercise-runner__check-btn ${checked ? "is-checked" : ""}`}
           disabled={!checked && !canCheck}
-          onClick={checked ? handleContinue : isTyping ? handleTypingCheck : handleCheck}
+          onClick={checked ? handleContinue : isFreeform ? handleTypingCheck : handleCheck}
         >
           <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--orange" />
           <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--green" />
