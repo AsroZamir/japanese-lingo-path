@@ -10,7 +10,7 @@ import { RomajiText } from "@/components/kana/RomajiText";
 import { AudioButton } from "@/components/kana/AudioButton";
 import { StrokeAnimation, type KanaStrokeData } from "@/components/kana/StrokeAnimation";
 import { WritingCanvas, type WritingCanvasMode, type WritingCanvasResult } from "@/components/kana/WritingCanvas";
-import { KanaTypingInput, type KanaTypingResult } from "@/components/kana/KanaTypingInput";
+import { KanaTypingInput, type KanaTypingStatus } from "@/components/kana/KanaTypingInput";
 import { KanaChart, type KanaChartCharacter } from "@/components/kana/KanaChart";
 import { ExerciseRunner, type ExerciseItem, type ExerciseRunnerResult } from "@/components/kana/ExerciseRunner";
 import { DEMO_BEEP_URL } from "./demo-audio";
@@ -238,22 +238,33 @@ function WritingCanvasDemo() {
 const TYPING_TARGETS = ["あ", "ア", "きゃ", "たべる"];
 
 function KanaTypingInputDemo() {
-  const [log, setLog] = useState<KanaTypingResult[]>([]);
+  const [log, setLog] = useState<{ expected: string; typed: string; correct: boolean }[]>([]);
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [statuses, setStatuses] = useState<Record<string, KanaTypingStatus>>({});
+
+  function submit(target: string) {
+    const typed = values[target] ?? "";
+    const correct = typed === target;
+    setStatuses((prev) => ({ ...prev, [target]: correct ? "correct" : "incorrect" }));
+    setLog((prev) => [{ expected: target, typed, correct }, ...prev].slice(0, 8));
+  }
 
   return (
     <section style={{ marginBottom: 40 }}>
       <h2>5. KanaTypingInput</h2>
       <p style={{ fontSize: 13, color: "#666", marginBottom: 12 }}>
         Ketik romaji-nya (mis. &quot;a&quot; untuk あ, &quot;kya&quot; untuk きゃ) — wanakana mengubahnya jadi kana
-        otomatis saat mengetik, tanpa keyboard Jepang. Auto-submit begitu benar, atau tekan Enter untuk cek jawaban
-        yang salah.
+        otomatis saat mengetik, tanpa keyboard Jepang. Tekan Enter untuk cek jawaban (tidak lagi auto-submit begitu
+        benar — komponen ini sekarang parent-controlled, sama seperti dipakai lewat Periksa/Lanjutkan di ExerciseRunner).
       </p>
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
         {TYPING_TARGETS.map((target) => (
           <KanaTypingInput
             key={target}
             expected={target}
-            onResult={(result) => setLog((prev) => [result, ...prev].slice(0, 8))}
+            status={statuses[target] ?? "idle"}
+            onChange={(value) => setValues((prev) => ({ ...prev, [target]: value }))}
+            onSubmit={() => submit(target)}
           />
         ))}
       </div>

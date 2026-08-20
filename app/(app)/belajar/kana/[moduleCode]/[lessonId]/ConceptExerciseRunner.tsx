@@ -35,6 +35,7 @@ export function ConceptExerciseRunner({
   onAdvance: () => void;
 }) {
   const [startedAt] = useState(() => Date.now());
+  const [typedValue, setTypedValue] = useState("");
 
   function selectOption(optionId: number) {
     if (answer.checked) return;
@@ -56,17 +57,21 @@ export function ConceptExerciseRunner({
     onChecked(isCorrect);
   }
 
-  function handleTyping(result: { typed: string; correct: boolean }) {
+  // Typing's own "Periksa" — mirrors handleCheck (grade on an explicit
+  // action, never the instant on-keystroke auto-submit KanaTypingInput
+  // used to do internally).
+  function handleTypingCheck() {
     if (answer.checked) return;
+    const correct = typedValue === expectedTyping;
     const now = Date.now();
     void recordConceptAttempt({
       lessonId,
       exerciseType: exercise.exerciseType,
-      isCorrect: result.correct,
-      chosenOptionLabel: result.typed,
+      isCorrect: correct,
+      chosenOptionLabel: typedValue,
       responseTimeMs: now - startedAt,
     });
-    onChecked(result.correct);
+    onChecked(correct);
   }
 
   async function handleAdvance() {
@@ -87,7 +92,13 @@ export function ConceptExerciseRunner({
 
       {isTyping ? (
         !answer.checked ? (
-          <KanaTypingInput key={exercise.id} expected={expectedTyping} onResult={handleTyping} />
+          <KanaTypingInput
+            key={exercise.id}
+            expected={expectedTyping}
+            status="idle"
+            onChange={setTypedValue}
+            onSubmit={handleTypingCheck}
+          />
         ) : (
           <p className={`m01-slide__jp m01-slide__jp--sentence ${answer.isCorrect ? "is-correct" : "is-wrong"}`}>{expectedTyping}</p>
         )
@@ -130,21 +141,19 @@ export function ConceptExerciseRunner({
         <p className={`m01-feedback-inline ${answer.isCorrect ? "is-correct" : "is-wrong"}`}>{exercise.explanation}</p>
       )}
 
-      {(!isTyping || answer.checked) && (
-        <button
-          type="button"
-          className={`exercise-runner__check-btn ${answer.checked ? "is-checked" : ""}`}
-          disabled={!answer.checked && answer.selectedId == null}
-          onClick={answer.checked ? handleAdvance : handleCheck}
-        >
-          <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--orange" />
-          <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--green" />
-          <span className="exercise-runner__check-btn-label exercise-runner__check-btn-label--periksa">Periksa ›</span>
-          <span className="exercise-runner__check-btn-label exercise-runner__check-btn-label--lanjut">
-            {isLast ? "Selesaikan lesson ›" : "Lanjutkan ›"}
-          </span>
-        </button>
-      )}
+      <button
+        type="button"
+        className={`exercise-runner__check-btn ${answer.checked ? "is-checked" : ""}`}
+        disabled={!answer.checked && (isTyping ? typedValue.trim().length === 0 : answer.selectedId == null)}
+        onClick={answer.checked ? handleAdvance : isTyping ? handleTypingCheck : handleCheck}
+      >
+        <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--orange" />
+        <span className="exercise-runner__check-btn-layer exercise-runner__check-btn-layer--green" />
+        <span className="exercise-runner__check-btn-label exercise-runner__check-btn-label--periksa">Periksa ›</span>
+        <span className="exercise-runner__check-btn-label exercise-runner__check-btn-label--lanjut">
+          {isLast ? "Selesaikan lesson ›" : "Lanjutkan ›"}
+        </span>
+      </button>
     </div>
   );
 }

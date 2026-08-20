@@ -1,30 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, type FormEvent, type KeyboardEvent } from "react";
 import { bind, isKatakana, unbind } from "wanakana";
 
-export type KanaTypingResult = {
-  expected: string;
-  typed: string;
-  correct: boolean;
-  /** How many leading characters of `typed` already match `expected` — useful for highlighting progress before a full match/submit. */
-  matchedLength: number;
-};
+export type KanaTypingStatus = "idle" | "correct" | "incorrect";
 
 export type KanaTypingInputProps = {
   expected: string;
-  onResult?: (result: KanaTypingResult) => void;
+  /** Parent-controlled grading state — same select→Periksa→Lanjutkan gate as the multiple-choice cards, not an internal auto-submit. */
+  status: KanaTypingStatus;
+  /** Locks the field once graded, so the value can't change before "Lanjutkan". */
+  disabled?: boolean;
+  onChange: (value: string) => void;
+  /** Enter key — asks the parent to grade (its "Periksa" action), never advances by itself. */
+  onSubmit: () => void;
 };
 
-function matchedLength(a: string, b: string): number {
-  let i = 0;
-  while (i < a.length && i < b.length && a[i] === b[i]) i++;
-  return i;
-}
-
-export function KanaTypingInput({ expected, onResult }: KanaTypingInputProps) {
+export function KanaTypingInput({ expected, status, disabled, onChange, onSubmit }: KanaTypingInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [status, setStatus] = useState<"idle" | "correct" | "incorrect">("idle");
 
   // expected can be hiragana or katakana — bind() needs to be told which
   // one to convert typed romaji into, so it's detected rather than
@@ -39,36 +32,18 @@ export function KanaTypingInput({ expected, onResult }: KanaTypingInputProps) {
     return () => unbind(el);
   }, [imeMode]);
 
-  // Reset when the target changes — adjusted during render (React's
-  // documented pattern for this) rather than as an effect-body setState.
-  const [prevExpected, setPrevExpected] = useState(expected);
-  if (expected !== prevExpected) {
-    setPrevExpected(expected);
-    setStatus("idle");
-  }
-
   useEffect(() => {
     if (inputRef.current) inputRef.current.value = "";
   }, [expected]);
 
-  function submit(value: string) {
-    const correct = value === expected;
-    setStatus(correct ? "correct" : "incorrect");
-    onResult?.({ expected, typed: value, correct, matchedLength: matchedLength(value, expected) });
-  }
-
   function handleInput(event: FormEvent<HTMLInputElement>) {
-    const value = event.currentTarget.value;
-    if (value === expected) {
-      submit(value); // auto-submits the moment it's right, no Enter needed
-    } else if (status !== "idle") {
-      setStatus("idle");
-    }
+    onChange(event.currentTarget.value);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
-      submit(inputRef.current?.value ?? "");
+      event.preventDefault();
+      onSubmit();
     }
   }
 
@@ -81,6 +56,7 @@ export function KanaTypingInput({ expected, onResult }: KanaTypingInputProps) {
         className="kana-typing-input__field"
         onInput={handleInput}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
         placeholder="ketik romaji…"
         aria-label={`Ketik romaji untuk ${expected}`}
         autoComplete="off"
