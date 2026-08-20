@@ -17,7 +17,8 @@
     "generate:kana-audio-voicevox": "tsx scripts/generate-audio-voicevox.ts",
     "generate:kana-audio-remaining": "tsx scripts/generate-audio-remaining-kana.ts",
     "seed:m01": "tsx scripts/seed-m01-content.ts",
-    "generate:narration": "tsx scripts/generate-narration.ts"
+    "generate:narration": "tsx scripts/generate-narration.ts",
+    "e2e:auth-setup": "tsx scripts/auth-setup.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@eslint/js": "9.39.4",
     "@next/eslint-plugin-next": "16.2.6",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",

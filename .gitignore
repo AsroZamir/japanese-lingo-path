@@ -39,3 +39,14 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+
+# Playwright E2E — saved session (auth-setup.ts) and run artifacts.
+# The storage state holds a live Supabase session cookie for the E2E
+# test account, so it must never be committed even though it's not
+# technically a ".env*" file.
+/.auth/
+/.screenshots/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
