@@ -881,7 +881,10 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
   .kana-chart--dense .kana-chart__row-cells { gap: 10px; }
 }
 
-.exercise-runner { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: white; width: min(420px, 100%); }
+.exercise-runner { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: white; width: min(560px, 100%); }
+@media (min-width: 1024px) {
+  .exercise-runner { width: min(880px, 100%); }
+}
 .exercise-runner--done { align-items: center; justify-content: center; min-height: 120px; color: var(--deep-navy); font-size: 15px; font-weight: 700; }
 .exercise-runner__header { display: flex; align-items: center; gap: 10px; width: 100%; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .exercise-runner__type { margin-left: auto; }
@@ -954,15 +957,27 @@ button.romaji-text--toggle:hover { background: rgba(37, 99, 235, .08); }
 .calendar-grid__reading-kanji { font-size: 20px; font-weight: 700; }
 .calendar-grid__reading-romaji { font-size: 14px; color: var(--muted); }
 
-/* ── Moji "layar 5" quiz-card spec — gated select→Periksa→Lanjutkan flow ── */
-.exercise-runner__options--gated { grid-template-columns: repeat(2, 1fr); }
+/* ── Moji "layar 5" quiz-card spec — gated select→Periksa→Lanjutkan flow ──
+   Grid track uses minmax(min, max) rather than a bare 1fr — a plain 1fr
+   column stretches to fill the whole (now much wider, up to 880px)
+   .exercise-runner frame, blowing each square card up to ~390px and
+   pushing the 2-row grid past a comfortable one-screen height. minmax
+   keeps cards near their intended size regardless of frame width;
+   justify-content centers the now-narrower grid within the frame. */
+.exercise-runner__options--gated { grid-template-columns: repeat(2, minmax(140px, 200px)); justify-content: center; }
+@media (min-width: 1024px) {
+  .exercise-runner__options--gated { grid-template-columns: repeat(2, minmax(180px, 240px)); }
+}
 .exercise-runner__option--card {
   position: relative; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
   padding: 0; border: 1.5px solid var(--moji-line); border-radius: var(--moji-radius-lg);
-  background: var(--moji-white); font-family: var(--moji-font-jp); font-weight: 700; font-size: 28px; color: var(--moji-ink);
+  background: var(--moji-white); font-family: var(--moji-font-jp); font-weight: 700; font-size: 48px; color: var(--moji-ink);
   outline: none; outline-offset: 2px; cursor: pointer; -webkit-tap-highlight-color: transparent;
   transform: scale(1); opacity: 1;
   transition: transform var(--moji-d-spring) var(--moji-ease-spring), opacity 120ms linear, border-color 120ms linear, background-color 120ms linear;
+}
+@media (min-width: 1024px) {
+  .exercise-runner__option--card { font-size: 64px; }
 }
 .exercise-runner__option--card:active { transform: scale(0.96); transition: transform var(--moji-d-press) var(--moji-ease-press-in); }
 .exercise-runner__option--card.is-selected { outline: 2px solid var(--moji-accent); border-color: var(--moji-accent); }
