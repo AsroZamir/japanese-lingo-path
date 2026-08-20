@@ -54,6 +54,14 @@ export type ModuleSummary = {
 // future module code not listed here yet.
 const MODULE_ICON: Record<string, string> = { M01: "日", M02: "あ", M03: "ア", M04: "数", M05: "話" };
 
+// Bagian 5 (validasi konten): buka semua modul tanpa syarat modul
+// sebelumnya selesai, supaya QA lintas modul tidak perlu menyelesaikan
+// M01-M04 dulu untuk mengecek M05. Flag ini SENGAJA hardcoded (bukan
+// betulan env var Vercel) supaya efeknya langsung terlihat begitu
+// di-deploy tanpa perlu konfigurasi environment terpisah — kembalikan
+// ke `false` untuk memulihkan unlock sekuensial normal.
+const UNLOCK_ALL_MODULES = true;
+
 export const getModuleSummaries = cache(async (): Promise<ModuleSummary[]> => {
   const existingCodes = await getExistingKanaModuleCodes();
   const unsorted = await Promise.all(
@@ -85,7 +93,7 @@ export const getModuleSummaries = cache(async (): Promise<ModuleSummary[]> => {
   // sebelumnya" copy.
   let previousComplete = true;
   return modules.map((m): ModuleSummary => {
-    const locked = !previousComplete;
+    const locked = UNLOCK_ALL_MODULES ? false : !previousComplete;
     previousComplete = m.percentComplete === 100;
     const statusLabel = locked
       ? "Terkunci"
