@@ -15,7 +15,7 @@ if (!databaseUrl) {
 
 export default defineConfig({
   dialect: "postgresql",
-  schema: "./db/schema/kana.ts",
+  schema: "./db/schema/*.ts",
   out: "./db/migrations",
   dbCredentials: {
     url: databaseUrl,

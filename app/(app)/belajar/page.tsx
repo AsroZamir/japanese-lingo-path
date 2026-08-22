@@ -1,52 +1,71 @@
 import Link from "next/link";
-import { getModuleSummaries } from "@/app/lib/learner-stats";
+import { getCurriculumV2ModuleSummaries } from "@/app/lib/curriculum-v2";
 import { PageHeader } from "../_components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
 export default async function LearnPage() {
-  const moduleSummaries = await getModuleSummaries();
+  const moduleSummaries = await getCurriculumV2ModuleSummaries();
 
   return (
     <>
       <PageHeader
-        eyebrow="DAFTAR MODUL"
-        title="Semua Modul"
-        copy="Pilih modul untuk mulai belajar. Selesaikan satu untuk membuka berikutnya."
+        eyebrow="KURIKULUM V2 · PRE-N5"
+        title="Fondasi Active Mastery"
+        copy="Sebelas modul baru dari script mastery sampai Boss Battle. Setiap modul dibangun melalui Discover, Trace, Recall, Blitz, SRS, dan gerbang penguasaan."
       />
       <div className="modul-grid">
-        {moduleSummaries.map((m, i) => {
-          const href = !m.locked && m.resumeLessonRouteId ? `/belajar/kana/${m.code}/${m.resumeLessonRouteId}` : null;
-          const content = (
-            <>
+        {moduleSummaries.map((module, index) => {
+          const style = { animationDelay: `${index * 60}ms` };
+          const canOpen = !module.locked && module.contentStatus === "ready";
+          const card = (
+            <article
+              className={`modul-card ${module.locked ? "modul-card--locked" : ""}`}
+              style={style}
+              key={module.code}
+            >
               <div className="modul-card__top">
-                <div className={`modul-card__icon ${m.locked ? "" : "is-unlocked"}`}>{m.icon}</div>
-                <div className="modul-card__tag">Pemula</div>
+                <div className={`modul-card__icon ${module.locked ? "" : "is-unlocked"}`}>
+                  {module.icon}
+                </div>
+                <div className="modul-card__tag">
+                  {module.moduleType} · Pre-N5
+                </div>
               </div>
-              <div className="modul-card__title">{m.titleId}</div>
-              <div className="modul-card__desc">{m.descriptionId}</div>
-              {m.locked ? (
-                <div className="modul-card__locked">🔒 Selesaikan modul sebelumnya</div>
+              <div className="modul-card__code">{module.code}</div>
+              <div className="modul-card__title">{module.title}</div>
+              <div className="modul-card__desc">{module.description}</div>
+              <div className="modul-card__meta">
+                <span>{module.stageCount} tahap</span>
+                <span>{module.estimatedHours}</span>
+                <span>{module.methodName}</span>
+              </div>
+              {module.locked ? (
+                <div className="modul-card__locked">🔒 {module.unlockNote}</div>
               ) : (
                 <div className="modul-card__progress">
                   <div className="modul-card__progress-track">
-                    <div className="modul-card__progress-fill" style={{ width: `${m.percentComplete ?? 0}%` }} />
+                    <div
+                      className="modul-card__progress-fill"
+                      style={{ width: `${module.percentComplete}%` }}
+                    />
                   </div>
-                  <div className="modul-card__progress-label">{m.percentComplete != null ? `${m.percentComplete}%` : ""}</div>
+                  <div className="modul-card__progress-label">{module.statusLabel}</div>
                 </div>
               )}
-            </>
+            </article>
           );
-          const style = { animationDelay: `${i * 60}ms` };
-          return href ? (
-            <Link href={href} className="modul-card" style={style} key={m.code}>
-              {content}
+
+          return canOpen ? (
+            <Link
+              className="modul-card-link"
+              href={`/belajar/pre-n5/${module.code}`}
+              key={module.code}
+              aria-label={`Buka ${module.title}`}
+            >
+              {card}
             </Link>
-          ) : (
-            <div className="modul-card modul-card--locked" style={style} key={m.code} aria-disabled="true">
-              {content}
-            </div>
-          );
+          ) : card;
         })}
       </div>
     </>

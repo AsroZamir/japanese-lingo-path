@@ -17,6 +17,8 @@
     "generate:kana-audio-voicevox": "tsx scripts/generate-audio-voicevox.ts",
     "generate:kana-audio-remaining": "tsx scripts/generate-audio-remaining-kana.ts",
     "seed:m01": "tsx scripts/seed-m01-content.ts",
+    "seed:pre-n5-v2": "tsx scripts/seed-pre-n5-v2.ts",
+    "verify:pre-n5-v2": "tsx scripts/verify-pre-n5-v2.ts",
     "generate:narration": "tsx scripts/generate-narration.ts",
     "e2e:auth-setup": "tsx scripts/auth-setup.ts"
   },

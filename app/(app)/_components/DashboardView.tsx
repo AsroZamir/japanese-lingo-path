@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { ContinueLearningTarget } from "@/app/lib/continue-learning";
-import type { ModuleSummary } from "@/app/lib/learner-stats";
+import type { CurriculumModuleSummary } from "@/app/lib/curriculum-v2";
 
 // Removed vs. the pre-Moji version: the daily-goal ring (18/30 min —
 // no session-duration tracking exists), the streak badge (no streak
@@ -16,7 +16,7 @@ export function DashboardView({
 }: {
   userName: string;
   continueLearning: ContinueLearningTarget | null;
-  moduleSummaries: ModuleSummary[];
+  moduleSummaries: CurriculumModuleSummary[];
 }) {
   const router = useRouter();
   const continueHref = continueLearning
@@ -57,7 +57,7 @@ export function DashboardView({
             <div className="dash-module-row" key={m.code}>
               <div className="dash-module-row__icon">{m.icon}</div>
               <div className="dash-module-row__body">
-                <strong>{m.titleId}</strong>
+                <strong>{m.title}</strong>
                 <small>{m.statusLabel}</small>
               </div>
             </div>

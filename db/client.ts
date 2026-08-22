@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as schema from "./schema/kana";
+import * as schema from "./schema";
 
 // Runtime app client — used by Server Components/Actions/Route Handlers,
 // which may run as short-lived Vercel serverless functions. Must go

@@ -78,7 +78,7 @@ async function main() {
   const storageStatePath = path.join(authDir, "storageState.json");
   await context.storageState({ path: storageStatePath });
   await browser.close();
-  await supabase.auth.signOut(); // don't leave the throwaway client's own session dangling
+  // Keep this test session valid; signing out here revokes the refresh token stored above.
 
   console.log(
     `Sesi tersimpan ke ${storageStatePath} (cookie "${cookieName}"${chunks.length > 1 ? ` dipecah jadi ${chunks.length} chunk` : ""}).`,
