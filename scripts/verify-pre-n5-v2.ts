@@ -137,29 +137,32 @@ async function main() {
       "PRE-N5.01 dan seluruh tahapnya harus berstatus ready.",
     );
     const hiraganaStageByCode = new Map(hiraganaStages.map((stage) => [stage.code, stage]));
-    const discover = hiraganaStageByCode.get("F1");
-    const trace = hiraganaStageByCode.get("F2");
-    const recall = hiraganaStageByCode.get("F3");
-    const blitz = hiraganaStageByCode.get("F4");
-    const retention = hiraganaStageByCode.get("F5");
+    const expectedBatches = [
+      { code: "F1", batchStart: 0, newCount: 10, cumulativeCount: 10, unitSize: 5 },
+      { code: "F2", batchStart: 10, newCount: 10, cumulativeCount: 20, unitSize: 5 },
+      { code: "F3", batchStart: 20, newCount: 10, cumulativeCount: 30, unitSize: 5 },
+      { code: "F4", batchStart: 30, newCount: 10, cumulativeCount: 40, unitSize: 5 },
+      { code: "F5", batchStart: 40, newCount: 6, cumulativeCount: 46, unitSize: 3 },
+    ];
+    for (const expected of expectedBatches) {
+      const stage = hiraganaStageByCode.get(expected.code);
+      assert(stage, "Tahap " + expected.code + " tidak ditemukan.");
+      assert(stage.configuration.batchStart === expected.batchStart, "Awal batch " + expected.code + " salah.");
+      assert(stage.configuration.newCharacterCount === expected.newCount, "Jumlah huruf baru " + expected.code + " salah.");
+      assert(
+        stage.configuration.cumulativeCharacterCount === expected.cumulativeCount,
+        "Jumlah kumulatif " + expected.code + " salah.",
+      );
+      assert(stage.configuration.unitSize === expected.unitSize, "Ukuran unit " + expected.code + " salah.");
+      const validator = stage.configuration.writingValidator as Record<string, unknown>;
+      assert(validator.requireAllLogicalStrokes === true, expected.code + " harus memeriksa semua goresan.");
+      assert(validator.requireUnaidedRecall === true, expected.code + " harus mewajibkan recall tanpa petunjuk.");
+      assert(stage.passCriteria.accuracyPercent === 80, "Batas checkpoint " + expected.code + " harus 80%.");
+    }
     const gate = hiraganaStageByCode.get("BOSS");
-    assert(discover?.configuration.unitSize === 5, "Unit Kenali harus per lima karakter.");
-    assert(discover.configuration.targetCharacterCount === 20, "Tahap Kenali harus mencakup 20 Hiragana.");
-    const writingValidator = discover.configuration.writingValidator as Record<string, unknown>;
-    assert(writingValidator.requireAllLogicalStrokes === true, "Kenali harus memeriksa seluruh goresan logis.");
-    assert(writingValidator.requireUnaidedRecall === true, "Kenali harus mewajibkan recall tanpa petunjuk.");
-    assert(discover.passCriteria.accuracyPercent === 80, "Batas Discover harus 80%.");
-    assert(trace?.passCriteria.practiceCharacterCount === 20, "Konsolidasi harus mencakup 20 Hiragana.");
-    assert(trace.passCriteria.accuracyPercent === 100, "Seluruh tulisan konsolidasi harus cocok.");
-    assert(recall?.configuration.questionCount === 20, "Recall harus berisi 20 soal.");
-    assert(blitz?.configuration.durationSeconds === 60, "Blitz harus berdurasi 60 detik.");
-    assert(blitz.passCriteria.correctCount === 20, "Target Blitz harus 20 jawaban benar.");
-    assert(
-      JSON.stringify(retention?.configuration.reviewIntervalsDays) === JSON.stringify([1, 3, 7, 14, 30]),
-      "Interval SRS harus 1, 3, 7, 14, dan 30 hari.",
-    );
-    assert(gate?.configuration.questionCount === 30, "Hiragana Gate harus berisi 30 soal.");
-    assert(gate.configuration.timeLimitSeconds === 300, "Hiragana Gate harus berdurasi lima menit.");
+    assert(gate?.configuration.cumulativeCharacterCount === 46, "Gate harus memakai seluruh 46 Hiragana.");
+    assert(gate.configuration.questionCount === 46, "Hiragana Gate harus berisi 46 soal.");
+    assert(gate.configuration.timeLimitSeconds === 600, "Hiragana Gate harus berdurasi sepuluh menit.");
     assert(gate.passCriteria.accuracyPercent === 80, "Batas lulus Hiragana Gate harus 80%.");
     const grants = await sql.unsafe<{ tableName: string; privilege: string }[]>(
       "select table_name as \"tableName\", privilege_type as privilege " +
@@ -193,7 +196,7 @@ async function main() {
         "(select count(*)::int from kana_lessons) as lessons, " +
         "(select count(*)::int from kana_lesson_items) as \"lessonItems\"",
     );
-    console.log("Verifikasi JLP lulus: trial 20 Hiragana ready, enam tahap aktif, resume state tersedia, dan 7/7 tabel V2 memakai RLS.");
+    console.log("Verifikasi JLP lulus: alur kumulatif 10-20-30-40-46 ready, Gate 46 aktif, resume state tersedia, dan 7/7 tabel V2 memakai RLS.");
     console.log(
       "Data lama tetap utuh: " +
         legacy.modules +

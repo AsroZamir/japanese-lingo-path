@@ -47,6 +47,15 @@ function numberArray(value: unknown): number[] {
     : [];
 }
 
+function configurationNumber(
+  configuration: Record<string, unknown>,
+  key: string,
+  fallback: number,
+): number {
+  const value = configuration[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
 function choicesFor(
   pool: HiraganaLearningItem[],
   target: HiraganaLearningItem,
@@ -64,19 +73,36 @@ function choicesFor(
 
 function buildCheckpointQuestions(
   units: HiraganaUnit[],
+  cumulativeItems: HiraganaLearningItem[],
   unitIndex: number,
+  questionCount: number,
 ): HiraganaQuizQuestion[] {
-  const learnedPool = units
-    .slice(0, unitIndex + 1)
-    .flatMap((unit) => unit.items);
   const currentItems = units[unitIndex]?.items ?? [];
-  const previousPool = units
-    .slice(0, unitIndex)
-    .flatMap((unit) => unit.items);
+  const futureIds = new Set(
+    units
+      .slice(unitIndex + 1)
+      .flatMap((unit) => unit.items)
+      .map((item) => item.id),
+  );
+  const learnedPool = cumulativeItems.filter((item) => !futureIds.has(item.id));
+  const currentIds = new Set(currentItems.map((item) => item.id));
+  const previousPool = learnedPool.filter((item) => !currentIds.has(item.id));
   if (learnedPool.length === 0 || currentItems.length === 0) return [];
 
-  const targets = Array.from({ length: 10 }, (_, index) => {
-    if (index < 7) return currentItems[index % currentItems.length];
+  const finalUnit = unitIndex === units.length - 1;
+  const totalQuestions = Math.max(1, questionCount);
+  const targets = Array.from({ length: totalQuestions }, (_, index) => {
+    if (finalUnit) {
+      return learnedPool[
+        Math.min(
+          learnedPool.length - 1,
+          Math.floor((index * learnedPool.length) / totalQuestions),
+        )
+      ];
+    }
+    if (index < Math.ceil(totalQuestions * 0.7)) {
+      return currentItems[index % currentItems.length];
+    }
     return previousPool.length > 0
       ? previousPool[(index * 3 + unitIndex) % previousPool.length]
       : currentItems[index % currentItems.length];
@@ -199,17 +225,44 @@ export function HiraganaLearningLab({
   const [paperRevealed, setPaperRevealed] = useState(false);
   const [checkpointKey, setCheckpointKey] = useState(0);
   const [checkpointMessage, setCheckpointMessage] = useState("");
+  const [lastCheckpointResult, setLastCheckpointResult] =
+    useState<HiraganaQuizResult | null>(null);
   const [saving, setSaving] = useState(false);
 
   const unit = bundle.units[unitIndex];
   const item = unit?.items[itemIndex];
   const stroke = useStrokeData(item);
+  const phaseTarget = bundle.items.length;
+  const batchCharacterCount = bundle.units.reduce(
+    (total, candidate) => total + candidate.items.length,
+    0,
+  );
+  const previousPhaseCount = Math.max(0, phaseTarget - batchCharacterCount);
+  const finalUnit = unitIndex === bundle.units.length - 1;
+  const regularCheckpointCount = configurationNumber(
+    bundle.stage.configuration,
+    "checkpointQuestions",
+    10,
+  );
+  const cumulativeCheckpointCount = configurationNumber(
+    bundle.stage.configuration,
+    "cumulativeCheckpointQuestions",
+    Math.min(phaseTarget, 20),
+  );
+  const checkpointQuestionCount = finalUnit
+    ? cumulativeCheckpointCount
+    : regularCheckpointCount;
   const checkpointQuestions = useMemo(
-    () => buildCheckpointQuestions(bundle.units, unitIndex),
-    [bundle.units, unitIndex],
+    () => buildCheckpointQuestions(
+      bundle.units,
+      bundle.items,
+      unitIndex,
+      checkpointQuestionCount,
+    ),
+    [bundle.items, bundle.units, checkpointQuestionCount, unitIndex],
   );
   const unlockWords = unit ? HIRAGANA_WORD_UNLOCKS[unit.code] ?? [] : [];
-  const learnedCharacterCount = bundle.units
+  const learnedCharacterCount = previousPhaseCount + bundle.units
     .filter((candidate) => completedUnitCodes.includes(candidate.code))
     .reduce((total, candidate) => total + candidate.items.length, 0);
 
@@ -340,9 +393,10 @@ export function HiraganaLearningLab({
 
   async function finishCheckpoint(result: HiraganaQuizResult) {
     if (!unit) return;
-    if (result.correct < 8) {
+    const requiredCorrect = Math.ceil(result.total * 0.8);
+    if (result.correct < requiredCorrect) {
       setCheckpointMessage(
-        "Hasil " + result.correct + "/10. Ulangi sampai minimal 8 benar; petunjuk tidak dibuka.",
+        "Hasil " + result.correct + "/" + result.total + ". Ulangi sampai minimal " + requiredCorrect + " benar; petunjuk tidak dibuka.",
       );
       setCheckpointKey((value) => value + 1);
       return;
@@ -362,7 +416,8 @@ export function HiraganaLearningLab({
       return;
     }
     setCompletedUnitCodes(nextCompleted);
-    setCheckpointMessage("Checkpoint lulus " + result.correct + "/10.");
+    setLastCheckpointResult(result);
+    setCheckpointMessage("Checkpoint lulus " + result.correct + "/" + result.total + ".");
     setPhase("unlock");
   }
 
@@ -374,14 +429,14 @@ export function HiraganaLearningLab({
       currentUnitCode: bundle.units[unitIndex + 1]?.code ?? null,
     };
     if (completedUnitCodes.length >= bundle.units.length) {
-      onComplete({ correct: 10, total: 10 }, state);
+      onComplete(lastCheckpointResult ?? { correct: 10, total: 10 }, state);
       return;
     }
     openUnit(unitIndex + 1);
   }
 
   if (!unit || !item) {
-    return <div className="hiragana-stage__empty">Data trial 20 Hiragana belum tersedia.</div>;
+    return <div className="hiragana-stage__empty">Data batch Hiragana belum tersedia.</div>;
   }
 
   const phaseNumber =
@@ -392,11 +447,11 @@ export function HiraganaLearningLab({
       <aside className="hiragana-lab__rail">
         <div className="hiragana-lab__rail-head">
           <div>
-            <span>TRIAL 20 HIRAGANA</span>
-            <strong>{learnedCharacterCount}/20 dipelajari</strong>
+            <span>{bundle.stage.code} - BATCH +{batchCharacterCount}</span>
+            <strong>{learnedCharacterCount}/{phaseTarget} dipelajari</strong>
           </div>
           <div className="hiragana-lab__progress">
-            <span style={{ width: Math.round((learnedCharacterCount / 20) * 100) + "%" }} />
+            <span style={{ width: Math.round((learnedCharacterCount / phaseTarget) * 100) + "%" }} />
           </div>
         </div>
 
@@ -427,7 +482,7 @@ export function HiraganaLearningLab({
 
         <div className="hiragana-lab__principle">
           <b>Workflow menuju 46 huruf</b>
-          <p>Belajar satu huruf, tulis terpandu, lalu ingat kembali. Setiap lima huruf diuji campuran; huruf lama tetap masuk pengulangan. Status dikuasai baru diperoleh setelah review tertunda.</p>
+          <p>Selesaikan batch kecil aktif, lalu uji bank huruf kumulatif. Fase berikutnya hanya menambah huruf baru setelah ingatan lama kembali dipanggil.</p>
         </div>
       </aside>
 
@@ -443,7 +498,7 @@ export function HiraganaLearningLab({
               {phase === "unlock" && "Makna mulai terbuka"}
             </h2>
           </div>
-          <b>{phase === "checkpoint" || phase === "unlock" ? "5/5 huruf" : itemIndex + 1 + "/5"}</b>
+          <b>{phase === "checkpoint" || phase === "unlock" ? unit.items.length + "/" + unit.items.length + " huruf" : itemIndex + 1 + "/" + unit.items.length}</b>
         </header>
 
         <div className="hiragana-lab__steps" aria-label={"Langkah belajar " + phaseNumber + " dari 4"}>
@@ -714,8 +769,12 @@ export function HiraganaLearningLab({
         {phase === "checkpoint" && (
           <div className="hiragana-lab__checkpoint">
             <div className="hiragana-lab__checkpoint-note">
-              <strong>10 soal - minimal 8 benar</strong>
-              <span>70% kelompok baru, 30% huruf sebelumnya. Soal mencampur bunyi, pengenalan, dan tulisan.</span>
+              <strong>{checkpointQuestionCount} soal - minimal {Math.ceil(checkpointQuestionCount * 0.8)} benar</strong>
+              <span>
+                {finalUnit
+                  ? "Checkpoint akhir fase memakai bank seluruh " + phaseTarget + " huruf yang telah dipelajari."
+                  : "70% kelompok baru, 30% huruf lama. Bunyi, pengenalan, dan tulisan dicampur."}
+              </span>
             </div>
             {checkpointMessage && <p className="hiragana-stage__feedback">{checkpointMessage}</p>}
             <HiraganaQuiz
@@ -730,16 +789,30 @@ export function HiraganaLearningLab({
         {phase === "unlock" && (
           <div className="hiragana-lab__unlock">
             <span className="hiragana-lab__unlock-mark">UNLOCK</span>
-            <h3>Huruf-huruf ini sekarang menjadi kata nyata</h3>
-            <p>Romaji hanya ditampilkan di sini untuk mengonfirmasi bacaan. Coba baca kana lebih dahulu.</p>
+            <h3>
+              {unlockWords.length > 0
+                ? "Huruf-huruf ini sekarang menjadi kata nyata"
+                : "Kelompok selesai; ingatan lama tetap aktif"}
+            </h3>
+            <p>
+              {unlockWords.length > 0
+                ? "Romaji hanya ditampilkan di sini untuk mengonfirmasi bacaan. Coba baca kana lebih dahulu."
+                : "Huruf baru ini akan dicampur dengan seluruh huruf sebelumnya pada checkpoint kumulatif."}
+            </p>
             <div className="hiragana-lab__words">
-              {unlockWords.map((word) => (
+              {unlockWords.length > 0 ? unlockWords.map((word) => (
                 <div key={word.kana}>
                   <strong>{word.kana}</strong>
                   <span>{word.romaji}</span>
                   <small>{word.meaning}</small>
                 </div>
-              ))}
+              )) : (
+                <div className="is-summary">
+                  <strong>{unit.items.map((candidate) => candidate.character).join(" ")}</strong>
+                  <span>Masuk bank soal {phaseTarget} huruf</span>
+                  <small>Tetap muncul kembali pada fase berikutnya</small>
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -748,7 +821,7 @@ export function HiraganaLearningLab({
               onClick={continueAfterUnlock}
             >
               {completedUnitCodes.length >= bundle.units.length
-                ? "Selesaikan tahap Kenali 20"
+                ? "Selesaikan " + bundle.stage.code + " - total " + phaseTarget + " huruf"
                 : "Buka kelompok berikutnya"}
             </button>
           </div>

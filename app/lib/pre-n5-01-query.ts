@@ -1,20 +1,18 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
+  HIRAGANA_BASIC_CHARACTERS,
   HIRAGANA_LAB_MNEMONICS,
   HIRAGANA_LAB_VERSION,
   HIRAGANA_MNEMONICS,
-  HIRAGANA_TRIAL_CHARACTERS,
   type HiraganaMnemonic,
 } from "@/app/lib/hiragana-mnemonics";
 
 const CURRICULUM_CODE = "v2";
 const LEVEL_CODE = "PRE-N5";
 const HIRAGANA_MODULE_CODE = "PRE-N5.01";
-const HIRAGANA_TYPES = ["basic", "dakuten", "handakuten", "youon", "sokuon"] as const;
-
 export type LearningProgressStatus = "not_started" | "in_progress" | "completed";
-export type HiraganaType = (typeof HIRAGANA_TYPES)[number];
+export type HiraganaType = "basic" | "dakuten" | "handakuten" | "youon" | "sokuon";
 
 export type PreN5StageSummary = {
   id: number;
@@ -96,9 +94,14 @@ export type HiraganaStageBundle = {
 };
 
 function estimatedHours(minMinutes: number, maxMinutes: number): string {
-  const minHours = minMinutes / 60;
-  const maxHours = maxMinutes / 60;
-  return minHours === maxHours ? minHours + " jam" : minHours + "-" + maxHours + " jam";
+  const formatter = new Intl.NumberFormat("id-ID", {
+    maximumFractionDigits: 1,
+  });
+  const minHours = Math.round((minMinutes / 60) * 10) / 10;
+  const maxHours = Math.round((maxMinutes / 60) * 10) / 10;
+  return minHours === maxHours
+    ? formatter.format(minHours) + " jam"
+    : formatter.format(minHours) + "\u2013" + formatter.format(maxHours) + " jam";
 }
 
 function asObject(value: unknown): Record<string, unknown> {
@@ -191,12 +194,9 @@ export const getPreN5ModuleOverview = cache(
           ? (progress?.status as LearningProgressStatus | undefined) ?? "not_started"
           : "not_started";
       const contentStatus = stage.status as PreN5StageSummary["contentStatus"];
-      const prerequisites =
-        stage.code === "F2" ? ["F1"]
-          : stage.code === "F3" ? ["F2"]
-            : stage.code === "F4" ? ["F3"]
-              : stage.code === "BOSS" ? ["F1", "F2", "F3", "F4", "F5"]
-                : [];
+      const stageIndex = (stageRows ?? []).findIndex((candidate) => candidate.id === stage.id);
+      const previousStage = stageIndex > 0 ? (stageRows ?? [])[stageIndex - 1] : null;
+      const prerequisites = previousStage ? [previousStage.code] : [];
       const locked =
         prerequisites.some((code) => !completedStageCodes.has(code)) ||
         contentStatus !== "ready";
@@ -397,22 +397,47 @@ export const getHiraganaStageBundle = cache(
         "id, character, romaji, type, group_code, order_in_group, base_character_id, audio_url, stroke_data_key",
       )
       .eq("script", "hiragana")
-      .in("character", [...HIRAGANA_TRIAL_CHARACTERS]);
+      .in("character", [...HIRAGANA_BASIC_CHARACTERS]);
     if (kanaError) throw new Error(kanaError.message);
 
-    const sortedRows = [...(rows ?? [])].sort((a, b) => {
-      const typeDifference =
-        HIRAGANA_TYPES.indexOf(a.type as HiraganaType) -
-        HIRAGANA_TYPES.indexOf(b.type as HiraganaType);
-      if (typeDifference !== 0) return typeDifference;
-      if (a.group_code !== b.group_code) {
-        return (a.group_code ?? "Z").localeCompare(b.group_code ?? "Z");
-      }
-      if ((a.order_in_group ?? 99) !== (b.order_in_group ?? 99)) {
-        return (a.order_in_group ?? 99) - (b.order_in_group ?? 99);
-      }
-      return a.id - b.id;
-    });
+    const defaultScopes: Record<string, {
+      batchStart: number;
+      newCharacterCount: number;
+      cumulativeCharacterCount: number;
+    }> = {
+      F1: { batchStart: 0, newCharacterCount: 10, cumulativeCharacterCount: 10 },
+      F2: { batchStart: 10, newCharacterCount: 10, cumulativeCharacterCount: 20 },
+      F3: { batchStart: 20, newCharacterCount: 10, cumulativeCharacterCount: 30 },
+      F4: { batchStart: 30, newCharacterCount: 10, cumulativeCharacterCount: 40 },
+      F5: { batchStart: 40, newCharacterCount: 6, cumulativeCharacterCount: 46 },
+      BOSS: { batchStart: 0, newCharacterCount: 0, cumulativeCharacterCount: 46 },
+    };
+    const defaultScope = defaultScopes[stage.code] ?? defaultScopes.F1;
+    const configuredNumber = (key: string, fallback: number) => {
+      const value = stage.configuration[key];
+      return typeof value === "number" && Number.isFinite(value)
+        ? Math.max(0, Math.round(value))
+        : fallback;
+    };
+    const batchStart = configuredNumber("batchStart", defaultScope.batchStart);
+    const newCharacterCount = configuredNumber(
+      "newCharacterCount",
+      defaultScope.newCharacterCount,
+    );
+    const cumulativeCharacterCount = configuredNumber(
+      "cumulativeCharacterCount",
+      defaultScope.cumulativeCharacterCount,
+    );
+    const characterOrder = new Map(
+      HIRAGANA_BASIC_CHARACTERS.map((character, index) => [character, index]),
+    );
+    const sortedRows = [...(rows ?? [])]
+      .sort(
+        (a, b) =>
+          (characterOrder.get(a.character) ?? 99) -
+          (characterOrder.get(b.character) ?? 99),
+      )
+      .slice(0, cumulativeCharacterCount);
     const kanaIds = sortedRows.map((row) => row.id);
 
     const {
@@ -533,11 +558,16 @@ export const getHiraganaStageBundle = cache(
       };
     });
 
+    const newItems = items.slice(
+      batchStart,
+      Math.min(batchStart + newCharacterCount, items.length),
+    );
+
     return {
       module: moduleOverview,
       stage,
       items,
-      units: buildUnits(items),
+      units: buildUnits(newItems),
     };
   },
 );

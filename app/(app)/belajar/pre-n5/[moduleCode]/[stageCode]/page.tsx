@@ -18,6 +18,10 @@ export default async function HiraganaStagePage({
   if (bundle.stage.locked) {
     redirect("/belajar/pre-n5/" + moduleCode);
   }
+  const newCharacterCount = bundle.units.reduce(
+    (total, unit) => total + unit.items.length,
+    0,
+  );
 
   return (
     <div className="content hiragana-stage-page">
@@ -34,7 +38,9 @@ export default async function HiraganaStagePage({
           <aside>
             <strong>{bundle.stage.mechanic}</strong>
             <small>
-              {bundle.items.length} karakter aktif - attempt {bundle.stage.attempts + 1}
+              {bundle.stage.code === "BOSS"
+                ? "Bank lengkap 46 huruf"
+                : "+" + newCharacterCount + " huruf baru - bank " + bundle.items.length + " huruf"} - attempt {bundle.stage.attempts + 1}
             </small>
           </aside>
         </div>

@@ -170,32 +170,31 @@ function buildSrsQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion[
 
 function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion[] {
   const pool = items.filter((item) => item.type === "basic");
-  const questions: HiraganaQuizQuestion[] = [];
-  pool.slice(0, 10).forEach((item) => {
-    questions.push({
-      id: "gate-recognition-" + item.id,
-      kind: "typing",
-      item,
-      prompt: "Recognition: ketik romaji.",
-      promptMode: "kana",
-      exerciseType: "gate_recognition",
-      skill: "visual",
-    });
-  });
-  pool.slice(10, 20).forEach((item, index) => {
-    questions.push({
-      id: "gate-audio-" + item.id,
-      kind: "choice",
-      item,
-      prompt: "Audio: pilih kana yang diucapkan.",
-      promptMode: "audio",
-      choices: choicesFor(pool, item, 8, index + 11),
-      exerciseType: "gate_audio",
-      skill: "audio",
-    });
-  });
-  pool.filter((_, index) => index % 2 === 0).slice(0, 10).forEach((item) => {
-    questions.push({
+  return pool.map((item, index): HiraganaQuizQuestion => {
+    if (index % 3 === 0) {
+      return {
+        id: "gate-recognition-" + item.id,
+        kind: "typing",
+        item,
+        prompt: "Recognition: ketik romaji.",
+        promptMode: "kana",
+        exerciseType: "gate_recognition",
+        skill: "visual",
+      };
+    }
+    if (index % 3 === 1) {
+      return {
+        id: "gate-audio-" + item.id,
+        kind: "choice",
+        item,
+        prompt: "Audio: pilih kana yang diucapkan.",
+        promptMode: "audio",
+        choices: choicesFor(pool, item, 8, index + 11),
+        exerciseType: "gate_audio",
+        skill: "audio",
+      };
+    }
+    return {
       id: "gate-writing-" + item.id,
       kind: "writing",
       item,
@@ -203,9 +202,8 @@ function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion
       promptMode: "audio",
       exerciseType: "gate_writing",
       skill: "writing",
-    });
+    };
   });
-  return questions;
 }
 
 function StageResult({
@@ -804,39 +802,48 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
     );
   }
 
+  if (bundle.stage.configuration.learningFlow === "legacy") {
+    switch (bundle.stage.code) {
+      case "F2":
+        return <TraceStage key={runKey} bundle={bundle} onComplete={finishStage} />;
+      case "F3":
+        return (
+          <HiraganaQuiz
+            key={runKey}
+            stageId={bundle.stage.id}
+            questions={recallQuestions}
+            onComplete={(result) => finishStage(result)}
+          />
+        );
+      case "F4":
+        return <BlitzStage key={runKey} bundle={bundle} onComplete={finishStage} />;
+      case "F5":
+        return (
+          <HiraganaQuiz
+            key={runKey}
+            stageId={bundle.stage.id}
+            questions={srsQuestions}
+            onComplete={(result) => finishStage(result)}
+          />
+        );
+    }
+  }
+
   switch (bundle.stage.code) {
     case "F1":
-      return <HiraganaLearningLab key={runKey} bundle={bundle} onComplete={finishStage} />;
     case "F2":
-      return <TraceStage key={runKey} bundle={bundle} onComplete={finishStage} />;
     case "F3":
-      return (
-        <HiraganaQuiz
-          key={runKey}
-          stageId={bundle.stage.id}
-          questions={recallQuestions}
-          onComplete={(result) => finishStage(result)}
-        />
-      );
     case "F4":
-      return <BlitzStage key={runKey} bundle={bundle} onComplete={finishStage} />;
     case "F5":
-      return (
-        <HiraganaQuiz
-          key={runKey}
-          stageId={bundle.stage.id}
-          questions={srsQuestions}
-          onComplete={(result) => finishStage(result)}
-        />
-      );
+      return <HiraganaLearningLab key={runKey} bundle={bundle} onComplete={finishStage} />;
     case "BOSS":
       return (
         <HiraganaQuiz
           key={runKey}
           stageId={bundle.stage.id}
           questions={gateQuestions}
-          timeLimitSeconds={numberFrom(bundle.stage.configuration.timeLimitSeconds, 300)}
-          onComplete={(result) => finishStage(result, { badge: result.correct / result.total >= 0.8 ? "Hiragana 20 Pioneer" : null })}
+          timeLimitSeconds={numberFrom(bundle.stage.configuration.timeLimitSeconds, 600)}
+          onComplete={(result) => finishStage(result, { badge: result.correct / result.total >= 0.8 ? "Hiragana 46 Pathfinder" : null })}
         />
       );
     default:

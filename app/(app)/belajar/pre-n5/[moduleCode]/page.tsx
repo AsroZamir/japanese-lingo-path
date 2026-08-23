@@ -6,13 +6,22 @@ import { PageHeader } from "../../../_components/PageHeader";
 export const dynamic = "force-dynamic";
 
 const STAGE_MARK: Record<string, string> = {
-  F1: "01",
-  F2: "02",
-  F3: "03",
-  F4: "60",
-  F5: "SRS",
+  F1: "10",
+  F2: "20",
+  F3: "30",
+  F4: "40",
+  F5: "46",
   BOSS: "GATE",
 };
+
+function configurationNumber(
+  configuration: Record<string, unknown>,
+  key: string,
+  fallback: number,
+): number {
+  const value = configuration[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
 
 export default async function PreN5ModulePage({
   params,
@@ -35,15 +44,17 @@ export default async function PreN5ModulePage({
       />
 
       <section className="pre-n5-module__hero">
-        <div className="pre-n5-module__glyph">{moduleOverview.icon}</div>
-        <div className="pre-n5-module__objective">
-          <span>Target akhir</span>
-          <h2>{moduleOverview.objective}</h2>
-          <p>Metode: {moduleOverview.methodName}</p>
+        <div className="pre-n5-module__hero-copy">
+          <div className="pre-n5-module__glyph">{moduleOverview.icon}</div>
+          <div className="pre-n5-module__objective">
+            <span>Target akhir</span>
+            <h2>{moduleOverview.objective}</h2>
+            <p>Metode: {moduleOverview.methodName}</p>
+          </div>
         </div>
         <div className="pre-n5-module__stats">
           <div><strong>{moduleOverview.estimatedHours}</strong><span>Estimasi</span></div>
-          <div><strong>{moduleOverview.completedStageCount}/6</strong><span>Tahap selesai</span></div>
+          <div><strong>{moduleOverview.completedStageCount}/{moduleOverview.stages.length}</strong><span>Tahap selesai</span></div>
           <div><strong>{moduleOverview.percentComplete}%</strong><span>Progress</span></div>
         </div>
       </section>
@@ -52,11 +63,27 @@ export default async function PreN5ModulePage({
         <span style={{ width: moduleOverview.percentComplete + "%" }} />
       </div>
 
+      <section className="pre-n5-module__rule">
+        <div>
+          <span>ATURAN PROGRES</span>
+          <strong>Belajar sedikit, lalu uji semua yang sudah dipelajari.</strong>
+          <p>Fase berikutnya terbuka setelah batch aktif dan checkpoint kumulatifnya lulus.</p>
+        </div>
+        <ol aria-label="Urutan jumlah Hiragana">
+          {[10, 20, 30, 40, 46].map((count, index) => (
+            <li key={count}>
+              <b>{count}</b>
+              <span>{index === 0 ? "huruf awal" : index === 4 ? "huruf lengkap" : "huruf kumulatif"}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <section className="pre-n5-stage-list">
         <header>
           <div>
             <span className="card-kicker dark">ACTIVE MASTERY PATH</span>
-            <h3>Enam tahap untuk menguasai 20 Hiragana pertama</h3>
+            <h3>Lima batch bertahap dan satu gerbang penguasaan</h3>
           </div>
           {moduleOverview.nextStageCode && (
             <Link
@@ -70,6 +97,16 @@ export default async function PreN5ModulePage({
 
         <div className="pre-n5-stage-list__grid">
           {moduleOverview.stages.map((stage) => {
+            const cumulativeCount = configurationNumber(
+              stage.configuration,
+              "cumulativeCharacterCount",
+              stage.code === "BOSS" ? 46 : 0,
+            );
+            const newCharacterCount = configurationNumber(
+              stage.configuration,
+              "newCharacterCount",
+              0,
+            );
             const body = (
               <>
                 <div className="pre-n5-stage-card__mark">
@@ -77,7 +114,11 @@ export default async function PreN5ModulePage({
                 </div>
                 <div className="pre-n5-stage-card__body">
                   <div>
-                    <span>{stage.code} - {stage.stageKind}</span>
+                    <span>
+                      {stage.code === "BOSS"
+                        ? "Ujian akhir - 46 huruf"
+                        : "+" + newCharacterCount + " baru - total " + cumulativeCount}
+                    </span>
                     <b>{stage.statusLabel}</b>
                   </div>
                   <h3>{stage.title}</h3>
