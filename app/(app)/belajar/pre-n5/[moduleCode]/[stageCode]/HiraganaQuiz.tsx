@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { AudioButton } from "@/components/kana/AudioButton";
-import {
-  WritingCanvas,
-  type WritingCanvasResult,
-} from "@/components/kana/WritingCanvas";
 import type { KanaStrokeData } from "@/components/kana/stroke-geometry";
+import {
+  KanaWritingCoach,
+  type KanaWritingOutcome,
+} from "@/components/kana/KanaWritingCoach";
 import type { HiraganaLearningItem } from "@/app/lib/pre-n5-01-query";
 import {
   recordHiraganaAttempt,
@@ -33,26 +33,11 @@ type HiraganaQuizProps = {
   stageId: number;
   questions: HiraganaQuizQuestion[];
   timeLimitSeconds?: number;
-  writingPassScore?: number;
   onComplete: (result: HiraganaQuizResult) => void;
 };
 
 function normalize(value: string): string {
   return value.trim().toLowerCase();
-}
-
-export function calculateWritingScore(result: WritingCanvasResult): number {
-  if (result.strokes.length === 0) return 0;
-  const shape =
-    result.strokes.reduce((sum, stroke) => sum + stroke.shapeScore, 0) /
-    result.strokes.length;
-  const order =
-    result.strokes.filter((stroke) => stroke.orderCorrect).length /
-    result.strokes.length;
-  const direction =
-    result.strokes.filter((stroke) => stroke.directionCorrect).length /
-    result.strokes.length;
-  return Math.round((shape * 0.7 + order * 0.15 + direction * 0.15) * 100);
 }
 
 function formatTime(seconds: number): string {
@@ -63,10 +48,10 @@ function formatTime(seconds: number): string {
 
 function StrokeQuestion({
   item,
-  onScore,
+  onOutcome,
 }: {
   item: HiraganaLearningItem;
-  onScore: (score: number) => void;
+  onOutcome: (outcome: KanaWritingOutcome) => void;
 }) {
   const [strokeData, setStrokeData] = useState<KanaStrokeData | null>(null);
   const [loading, setLoading] = useState(Boolean(item.strokeDataUrl));
@@ -96,12 +81,12 @@ function StrokeQuestion({
   }
 
   return (
-    <WritingCanvas
+    <KanaWritingCoach
       key={item.id}
       character={item.character}
       strokeData={strokeData}
-      mode="blind"
-      onResult={(result) => onScore(calculateWritingScore(result))}
+      mode="recall"
+      onComplete={onOutcome}
     />
   );
 }
@@ -110,13 +95,13 @@ export function HiraganaQuiz({
   stageId,
   questions,
   timeLimitSeconds,
-  writingPassScore = 80,
   onComplete,
 }: HiraganaQuizProps) {
   const [index, setIndex] = useState(0);
   const [typedValue, setTypedValue] = useState("");
   const [selectedKanaId, setSelectedKanaId] = useState<number | null>(null);
   const [currentWritingScore, setCurrentWritingScore] = useState<number | null>(null);
+  const [currentWritingPassed, setCurrentWritingPassed] = useState(false);
   const [checked, setChecked] = useState(false);
   const [attempts, setAttempts] = useState<boolean[]>([]);
   const [startedAt, setStartedAt] = useState(() => Date.now());
@@ -150,7 +135,7 @@ export function HiraganaQuiz({
         ? normalize(typedValue) === normalize(current.item.romaji)
         : current.kind === "choice"
           ? selectedKanaId === current.item.id
-          : (currentWritingScore ?? 0) >= writingPassScore;
+          : currentWritingPassed;
     const now = Date.now();
     const nextAttempts = [...attempts, isCorrect];
     setAttempts(nextAttempts);
@@ -164,6 +149,7 @@ export function HiraganaQuiz({
       answerText: current.kind === "typing" ? typedValue : null,
       selectedKanaId: current.kind === "choice" ? selectedKanaId : null,
       writingScore: current.kind === "writing" ? currentWritingScore : null,
+      writingMatched: current.kind === "writing" ? currentWritingPassed : null,
       responseTimeMs: now - startedAt,
     });
   }
@@ -178,6 +164,7 @@ export function HiraganaQuiz({
     setTypedValue("");
     setSelectedKanaId(null);
     setCurrentWritingScore(null);
+    setCurrentWritingPassed(false);
     setChecked(false);
     setStartedAt(Date.now());
   }
@@ -215,7 +202,7 @@ export function HiraganaQuiz({
       ? normalize(typedValue) === normalize(current.item.romaji)
       : current.kind === "choice"
         ? selectedKanaId === current.item.id
-        : (currentWritingScore ?? 0) >= writingPassScore;
+        : currentWritingPassed;
   const canCheck =
     current.kind === "typing"
       ? typedValue.trim().length > 0
@@ -300,10 +287,17 @@ export function HiraganaQuiz({
 
       {current.kind === "writing" && (
         <div className="hiragana-quiz__writing">
-          <StrokeQuestion key={current.id} item={current.item} onScore={setCurrentWritingScore} />
+          <StrokeQuestion
+            key={current.id}
+            item={current.item}
+            onOutcome={(outcome) => {
+              setCurrentWritingScore(outcome.score);
+              setCurrentWritingPassed(outcome.matched);
+            }}
+          />
           {currentWritingScore != null && (
-            <span className={currentWritingScore >= writingPassScore ? "is-good" : "is-weak"}>
-              Skor tulisan {currentWritingScore} · target {writingPassScore}
+            <span className={currentWritingPassed ? "is-good" : "is-weak"}>
+              Kemiripan {currentWritingScore}% · {currentWritingPassed ? "semua goresan cocok" : "belum cocok"}
             </span>
           )}
         </div>

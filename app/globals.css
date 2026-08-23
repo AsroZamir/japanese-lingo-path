@@ -1965,6 +1965,13 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .hiragana-lab__cues > div { padding: 13px; border: 1px solid var(--moji-line); border-radius: 12px; }
 .hiragana-lab__cues p { margin-top: 5px; }
 .hiragana-lab__animation { max-width: 340px; margin: 0 auto; }
+.kana-coach { width: min(100%, 360px); display: grid; justify-items: center; gap: 10px; }
+.kana-coach__surface { width: 100%; min-height: 220px; display: grid; place-items: center; }
+.kana-coach__surface svg { max-width: 100%; height: auto; }
+.kana-coach__status { color: var(--moji-muted); font-size: 10px; line-height: 1.45; text-align: center; }
+.kana-coach__status.is-error { color: #a0442e; }
+.kana-coach__replay { width: auto; margin: 0; padding: 9px 14px; }
+.kana-coach__empty { padding: 18px; border: 1px dashed var(--moji-line); border-radius: 12px; color: var(--moji-muted); font-size: 10px; text-align: center; }
 .hiragana-lab__anchor > .primary-button,
 .hiragana-lab__practice > .primary-button,
 .hiragana-lab__unlock > .primary-button { width: min(100%, 480px); justify-self: center; justify-content: center; }
@@ -1980,6 +1987,13 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .hiragana-lab__score span { font-size: 10px; font-weight: 800; }
 .hiragana-lab__score.is-pass { color: var(--moji-success); background: var(--moji-success-bg); }
 .hiragana-lab__score.is-retry { color: #a0442e; background: var(--moji-error-bg); }
+.hiragana-lab__hint { width: min(100%, 560px); display: grid; justify-items: center; gap: 10px; padding: 14px; border: 1px solid #e5b9a9; border-radius: 14px; background: var(--moji-accent-soft-bg); }
+.hiragana-lab__hint b { color: var(--moji-ink); font-size: 11px; }
+.hiragana-lab__hint p { margin: 0; color: var(--moji-muted); font-size: 10px; line-height: 1.5; }
+.hiragana-lab__hint .kana-coach { max-width: 300px; }
+.hiragana-lab__scoring-note { width: min(100%, 560px); padding: 12px 14px; border: 1px solid var(--moji-line); border-radius: 12px; color: var(--moji-muted); background: #fff; text-align: left; }
+.hiragana-lab__scoring-note summary { color: var(--moji-ink); cursor: pointer; font-size: 10px; font-weight: 800; }
+.hiragana-lab__scoring-note p { margin: 8px 0 0; font-size: 9.5px; line-height: 1.55; }
 .hiragana-lab__paper { width: min(100%, 520px); min-height: 310px; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; border: 1px dashed #c9b9ae; border-radius: 16px; background: repeating-linear-gradient(#fff, #fff 31px, #edf0f3 32px); }
 .hiragana-lab__paper > span { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--moji-accent); background: var(--moji-accent-soft-bg); font-weight: 900; }
 .hiragana-lab__paper h3 { margin: 0; color: var(--moji-ink); }

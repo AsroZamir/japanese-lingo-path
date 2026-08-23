@@ -1,4 +1,8 @@
-export type KanaStrokeData = { strokes: string[]; medians: number[][][] };
+export type KanaStrokeData = {
+  strokes: string[];
+  medians: number[][][];
+  strokeGroups?: number[][];
+};
 
 export function medianPathD(points: number[][]): string {
   if (points.length === 0) return "";

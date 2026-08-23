@@ -14,7 +14,7 @@ export type HiraganaWordUnlock = {
   meaning: string;
 };
 
-export const HIRAGANA_LAB_VERSION = "hiragana-lab-20-v1";
+export const HIRAGANA_LAB_VERSION = "hiragana-lab-20-v2";
 
 export const HIRAGANA_TRIAL_CHARACTERS = [
   "\u3042", "\u3044", "\u3046", "\u3048", "\u304a",

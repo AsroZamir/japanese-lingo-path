@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AudioButton } from "@/components/kana/AudioButton";
 import {
-  WritingCanvas,
-  type WritingCanvasMode,
-} from "@/components/kana/WritingCanvas";
+  KanaWritingCoach,
+  type KanaWritingOutcome,
+} from "@/components/kana/KanaWritingCoach";
 import type { KanaStrokeData } from "@/components/kana/stroke-geometry";
 import { HIRAGANA_LAB_VERSION } from "@/app/lib/hiragana-mnemonics";
 import type {
@@ -14,7 +14,6 @@ import type {
   HiraganaStageBundle,
 } from "@/app/lib/pre-n5-01-query";
 import {
-  calculateWritingScore,
   HiraganaQuiz,
   type HiraganaQuizQuestion,
   type HiraganaQuizResult,
@@ -479,11 +478,11 @@ export function LegacyDiscoverStage({
 function TraceCanvas({
   item,
   mode,
-  onScore,
+  onOutcome,
 }: {
   item: HiraganaLearningItem;
-  mode: WritingCanvasMode;
-  onScore: (score: number) => void;
+  mode: "guided" | "recall";
+  onOutcome: (outcome: KanaWritingOutcome) => void;
 }) {
   const [data, setData] = useState<KanaStrokeData | null>(null);
   useEffect(() => {
@@ -502,12 +501,12 @@ function TraceCanvas({
     return () => controller.abort();
   }, [item.strokeDataUrl]);
   return (
-    <WritingCanvas
+    <KanaWritingCoach
       key={item.id + "-" + mode}
       character={item.character}
       strokeData={data}
       mode={mode}
-      onResult={(result) => onScore(calculateWritingScore(result))}
+      onComplete={onOutcome}
     />
   );
 }
@@ -527,18 +526,21 @@ function TraceStage({
   );
   const [mode, setMode] = useState<"guided" | "ghost" | "countdown">("guided");
   const [score, setScore] = useState<number | null>(null);
+  const [matched, setMatched] = useState(false);
   const [attemptedIds, setAttemptedIds] = useState<number[]>(initialMastered);
   const requiredCount = numberFrom(bundle.stage.passCriteria.practiceCharacterCount, 20);
   const item = pool[activeIndex];
-  const canvasMode: WritingCanvasMode = mode === "guided" ? "guided" : "blind";
 
   if (!item) return <div className="hiragana-stage__empty">Data Trace tidak tersedia.</div>;
 
-  async function handleScore(nextScore: number) {
-    setScore(nextScore);
+  async function handleOutcome(outcome: KanaWritingOutcome) {
+    setScore(outcome.score);
+    setMatched(outcome.matched);
     const nextAttempted = [...new Set([...attemptedIds, item.id])];
     const nextMastered =
-      nextScore >= 80 ? [...new Set([...masteredIds, item.id])] : masteredIds;
+      outcome.matched && mode !== "guided"
+        ? [...new Set([...masteredIds, item.id])]
+        : masteredIds;
     setAttemptedIds(nextAttempted);
     setMasteredIds(nextMastered);
     void recordHiraganaAttempt({
@@ -546,7 +548,8 @@ function TraceStage({
       kanaId: item.id,
       exerciseType: "trace",
       skill: "writing",
-      writingScore: nextScore,
+      writingScore: outcome.score,
+      writingMatched: outcome.matched,
     });
     await saveHiraganaStageState({
       stageId: bundle.stage.id,
@@ -560,6 +563,7 @@ function TraceStage({
     );
     setActiveIndex(nextUnmastered >= 0 ? nextUnmastered : (activeIndex + 1) % pool.length);
     setScore(null);
+    setMatched(false);
   }
 
   return (
@@ -575,7 +579,7 @@ function TraceStage({
               type="button"
               key={candidate}
               className={mode === candidate ? "is-active" : ""}
-              onClick={() => { setMode(candidate); setScore(null); }}
+              onClick={() => { setMode(candidate); setScore(null); setMatched(false); }}
             >
               {candidate === "guided" ? "Guided Trace" : candidate === "ghost" ? "Ghost Trace" : "Countdown 5s"}
             </button>
@@ -588,11 +592,22 @@ function TraceStage({
               ? "Tulis dari ingatan tanpa bentuk transparan."
               : "Bangun bentuk secepat mungkin. Target latihan lima detik."}
         </p>
-        <TraceCanvas key={item.id + "-" + canvasMode} item={item} mode={canvasMode} onScore={handleScore} />
+        <TraceCanvas
+          key={item.id + "-" + mode}
+          item={item}
+          mode={mode === "guided" ? "guided" : "recall"}
+          onOutcome={handleOutcome}
+        />
         {score != null && (
-          <div className={"hiragana-trace__score " + (score >= 80 ? "is-mastered" : score >= 60 ? "is-weak" : "is-retry")}>
+          <div className={"hiragana-trace__score " + (matched ? "is-mastered" : "is-retry")}>
             <strong>{score}</strong>
-            <span>{score >= 80 ? "Mastered" : score >= 60 ? "Lanjut, masuk Weak Point" : "Wajib ulang"}</span>
+            <span>
+              {matched
+                ? mode === "guided"
+                  ? "Pola cocok; lanjutkan tanpa contoh"
+                  : "Tulisan mandiri cocok"
+                : "Ada goresan yang perlu diulang"}
+            </span>
           </div>
         )}
         <div className="hiragana-trace__actions">
@@ -800,7 +815,6 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
           key={runKey}
           stageId={bundle.stage.id}
           questions={recallQuestions}
-          writingPassScore={80}
           onComplete={(result) => finishStage(result)}
         />
       );
@@ -812,7 +826,6 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
           key={runKey}
           stageId={bundle.stage.id}
           questions={srsQuestions}
-          writingPassScore={80}
           onComplete={(result) => finishStage(result)}
         />
       );
@@ -823,7 +836,6 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
           stageId={bundle.stage.id}
           questions={gateQuestions}
           timeLimitSeconds={numberFrom(bundle.stage.configuration.timeLimitSeconds, 300)}
-          writingPassScore={80}
           onComplete={(result) => finishStage(result, { badge: result.correct / result.total >= 0.8 ? "Hiragana 20 Pioneer" : null })}
         />
       );

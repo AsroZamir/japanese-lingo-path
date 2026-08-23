@@ -45,13 +45,30 @@ const BASE_KATAKANA: Record<string, number> = {
 const SMALL_Y_HIRAGANA: Record<string, number> = { ゃ: 3, ゅ: 2, ょ: 2 };
 const SMALL_Y_KATAKANA: Record<string, number> = { ャ: 2, ュ: 2, ョ: 3 };
 
-type StrokeData = { strokes: string[] };
+type StrokeData = {
+  strokes: string[];
+  strokeGroups?: number[][];
+};
 
 async function readActual(script: string, character: string): Promise<number | null> {
   try {
     const raw = await fs.readFile(path.join(OUTPUT_DIR, script, `${character}.json`), "utf-8");
     const data = JSON.parse(raw) as StrokeData;
-    return data.strokes.length;
+    if (!data.strokeGroups) return data.strokes.length;
+
+    const indices = data.strokeGroups.flat();
+    const valid =
+      data.strokeGroups.length > 0 &&
+      indices.length === data.strokes.length &&
+      new Set(indices).size === data.strokes.length &&
+      indices.every(
+        (index) =>
+          Number.isInteger(index) &&
+          index >= 0 &&
+          index < data.strokes.length,
+      );
+    if (!valid) throw new Error(`strokeGroups tidak valid untuk ${character}.`);
+    return data.strokeGroups.length;
   } catch {
     return null;
   }

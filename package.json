@@ -12,6 +12,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .vercel",
     "seed:kana": "tsx scripts/seed-kana-characters.ts",
     "fetch:kana-strokes": "tsx scripts/fetch-kana-stroke-data.ts",
+    "sync:hiragana-strokes": "tsx scripts/sync-basic-hiragana-strokes.ts",
     "seed:first-lesson": "tsx scripts/seed-first-lesson.ts",
     "generate:kana-audio": "tsx scripts/generate-kana-audio.ts",
     "generate:kana-audio-voicevox": "tsx scripts/generate-audio-voicevox.ts",
@@ -23,9 +24,11 @@
     "e2e:auth-setup": "tsx scripts/auth-setup.ts"
   },
   "dependencies": {
+    "@k1low/kakitori": "0.21.0",
     "@supabase/ssr": "0.12.4",
     "@supabase/supabase-js": "2.112.3",
     "drizzle-orm": "0.45.2",
+    "hanzi-writer": "3.7.3",
     "next": "^16.2.6",
     "openai": "7.5.0",
     "postgres": "^3.4.9",

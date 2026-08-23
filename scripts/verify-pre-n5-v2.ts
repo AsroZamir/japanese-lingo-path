@@ -145,10 +145,12 @@ async function main() {
     const gate = hiraganaStageByCode.get("BOSS");
     assert(discover?.configuration.unitSize === 5, "Unit Kenali harus per lima karakter.");
     assert(discover.configuration.targetCharacterCount === 20, "Tahap Kenali harus mencakup 20 Hiragana.");
-    assert(discover.configuration.writingPassScore === 80, "Target tulisan Kenali harus 80.");
+    const writingValidator = discover.configuration.writingValidator as Record<string, unknown>;
+    assert(writingValidator.requireAllLogicalStrokes === true, "Kenali harus memeriksa seluruh goresan logis.");
+    assert(writingValidator.requireUnaidedRecall === true, "Kenali harus mewajibkan recall tanpa petunjuk.");
     assert(discover.passCriteria.accuracyPercent === 80, "Batas Discover harus 80%.");
     assert(trace?.passCriteria.practiceCharacterCount === 20, "Konsolidasi harus mencakup 20 Hiragana.");
-    assert(trace.passCriteria.scorePercent === 80, "Batas tulisan konsolidasi harus 80.");
+    assert(trace.passCriteria.accuracyPercent === 100, "Seluruh tulisan konsolidasi harus cocok.");
     assert(recall?.configuration.questionCount === 20, "Recall harus berisi 20 soal.");
     assert(blitz?.configuration.durationSeconds === 60, "Blitz harus berdurasi 60 detik.");
     assert(blitz.passCriteria.correctCount === 20, "Target Blitz harus 20 jawaban benar.");

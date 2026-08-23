@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AudioButton } from "@/components/kana/AudioButton";
-import { StrokeAnimation } from "@/components/kana/StrokeAnimation";
-import { WritingCanvas } from "@/components/kana/WritingCanvas";
+import {
+  KanaStrokeAnimator,
+  KanaWritingCoach,
+  type KanaWritingOutcome,
+} from "@/components/kana/KanaWritingCoach";
 import type { KanaStrokeData } from "@/components/kana/stroke-geometry";
 import {
   HIRAGANA_LAB_VERSION,
@@ -15,7 +18,6 @@ import type {
   HiraganaUnit,
 } from "@/app/lib/pre-n5-01-query";
 import {
-  calculateWritingScore,
   HiraganaQuiz,
   type HiraganaQuizQuestion,
   type HiraganaQuizResult,
@@ -188,7 +190,11 @@ export function HiraganaLearningLab({
   const [completedUnitCodes, setCompletedUnitCodes] = useState(initialCompleted);
   const [freeWrittenKanaIds, setFreeWrittenKanaIds] = useState(initialWritten);
   const [guidedScore, setGuidedScore] = useState<number | null>(null);
+  const [guidedPassed, setGuidedPassed] = useState(false);
   const [recallScore, setRecallScore] = useState<number | null>(null);
+  const [recallPassed, setRecallPassed] = useState(false);
+  const [recallFailures, setRecallFailures] = useState(0);
+  const [hintLevel, setHintLevel] = useState(0);
   const [writingSurface, setWritingSurface] = useState<WritingSurface>("screen");
   const [paperRevealed, setPaperRevealed] = useState(false);
   const [checkpointKey, setCheckpointKey] = useState(0);
@@ -227,7 +233,11 @@ export function HiraganaLearningLab({
     setItemIndex(nextIndex);
     setPhase("anchor");
     setGuidedScore(null);
+    setGuidedPassed(false);
     setRecallScore(null);
+    setRecallPassed(false);
+    setRecallFailures(0);
+    setHintLevel(0);
     setWritingSurface("screen");
     setPaperRevealed(false);
   }
@@ -252,7 +262,11 @@ export function HiraganaLearningLab({
     resetItem(nextItemIndex);
   }
 
-  function recordWritingAttempt(score: number, exerciseType: "trace" | "write_from_audio") {
+  function recordWritingAttempt(
+    score: number,
+    matched: boolean,
+    exerciseType: "trace" | "write_from_audio",
+  ) {
     if (!item) return;
     void recordHiraganaAttempt({
       stageId: bundle.stage.id,
@@ -260,20 +274,31 @@ export function HiraganaLearningLab({
       exerciseType,
       skill: "writing",
       writingScore: score,
+      writingMatched: matched,
     });
   }
 
-  function handleGuidedScore(score: number) {
-    setGuidedScore(score);
-    recordWritingAttempt(score, "trace");
+  function handleGuidedOutcome(outcome: KanaWritingOutcome) {
+    setGuidedScore(outcome.score);
+    setGuidedPassed(outcome.matched);
+    recordWritingAttempt(outcome.score, outcome.matched, "trace");
   }
 
-  async function acceptRecallScore(score: number) {
+  async function acceptRecallOutcome(outcome: KanaWritingOutcome) {
     if (!item) return;
-    setRecallScore(score);
-    recordWritingAttempt(score, "write_from_audio");
-    if (score < 80) return;
+    setRecallScore(outcome.score);
+    recordWritingAttempt(outcome.score, outcome.matched, "write_from_audio");
+    if (!outcome.matched) {
+      setRecallPassed(false);
+      setRecallFailures((value) => value + 1);
+      return;
+    }
+    if (hintLevel > 0) {
+      setRecallPassed(false);
+      return;
+    }
 
+    setRecallPassed(true);
     const nextWritten = [...new Set([...freeWrittenKanaIds, item.id])];
     setFreeWrittenKanaIds(nextWritten);
     await persistState(
@@ -284,7 +309,7 @@ export function HiraganaLearningLab({
   }
 
   function continueAfterRecall() {
-    if (!unit || recallScore == null || recallScore < 80) return;
+    if (!unit || !recallPassed) return;
     if (itemIndex + 1 < unit.items.length) {
       resetItem(itemIndex + 1);
       return;
@@ -296,14 +321,21 @@ export function HiraganaLearningLab({
 
   async function handlePaperAssessment(correct: boolean) {
     if (!paperRevealed || !item) return;
-    const score = correct ? 100 : 0;
+    const outcome: KanaWritingOutcome = {
+      score: correct ? 100 : 0,
+      matched: correct,
+      totalMistakes: correct ? 0 : 1,
+      attempts: 1,
+    };
     if (!correct) {
-      recordWritingAttempt(score, "write_from_audio");
-      setRecallScore(score);
+      recordWritingAttempt(outcome.score, outcome.matched, "write_from_audio");
+      setRecallScore(outcome.score);
+      setRecallPassed(false);
+      setRecallFailures((value) => value + 1);
       setPaperRevealed(false);
       return;
     }
-    await acceptRecallScore(score);
+    await acceptRecallOutcome(outcome);
   }
 
   async function finishCheckpoint(result: HiraganaQuizResult) {
@@ -361,7 +393,7 @@ export function HiraganaLearningLab({
         <div className="hiragana-lab__rail-head">
           <div>
             <span>TRIAL 20 HIRAGANA</span>
-            <strong>{learnedCharacterCount}/20 dikuasai</strong>
+            <strong>{learnedCharacterCount}/20 dipelajari</strong>
           </div>
           <div className="hiragana-lab__progress">
             <span style={{ width: Math.round((learnedCharacterCount / 20) * 100) + "%" }} />
@@ -386,7 +418,7 @@ export function HiraganaLearningLab({
                 <span>{complete ? "OK" : String(index + 1).padStart(2, "0")}</span>
                 <div>
                   <strong>{candidate.description}</strong>
-                  <small>{complete ? "Sudah lulus" : index === unitIndex ? "Sedang dipelajari" : "Terkunci"}</small>
+                  <small>{complete ? "Checkpoint awal lulus" : index === unitIndex ? "Sedang dipelajari" : "Terkunci"}</small>
                 </div>
               </button>
             );
@@ -394,8 +426,8 @@ export function HiraganaLearningLab({
         </div>
 
         <div className="hiragana-lab__principle">
-          <b>Kenapa urutannya seperti ini?</b>
-          <p>Petunjuk membantu saat kenalan. Ingatan diuji tanpa petunjuk, lalu diulang secara bertahap.</p>
+          <b>Workflow menuju 46 huruf</b>
+          <p>Belajar satu huruf, tulis terpandu, lalu ingat kembali. Setiap lima huruf diuji campuran; huruf lama tetap masuk pengulangan. Status dikuasai baru diperoleh setelah review tertunda.</p>
         </div>
       </aside>
 
@@ -447,11 +479,10 @@ export function HiraganaLearningLab({
               {stroke.loading ? (
                 <div className="hiragana-stage__loading">Memuat urutan goresan...</div>
               ) : (
-                <StrokeAnimation
+                <KanaStrokeAnimator
                   key={item.id}
                   character={item.character}
                   strokeData={stroke.data}
-                  showGrid
                 />
               )}
             </div>
@@ -464,31 +495,33 @@ export function HiraganaLearningLab({
 
         {phase === "guided" && (
           <div className="hiragana-lab__practice">
-            <p>Ikuti goresan samar satu per satu. Target awal 70 agar gerakannya cukup stabil.</p>
+            <p>Ikuti goresan samar satu per satu. Tahap ini melatih gerakan, jadi tidak memakai angka kelulusan yang menghukum.</p>
             {stroke.loading ? (
               <div className="hiragana-stage__loading">Memuat area menulis...</div>
             ) : (
-              <WritingCanvas
+              <KanaWritingCoach
                 key={"guided-" + item.id}
                 character={item.character}
                 strokeData={stroke.data}
                 mode="guided"
-                onResult={(result) => handleGuidedScore(calculateWritingScore(result))}
+                onComplete={handleGuidedOutcome}
               />
             )}
             {guidedScore != null && (
-              <div className={"hiragana-lab__score " + (guidedScore >= 70 ? "is-pass" : "is-retry")}>
+              <div className={"hiragana-lab__score " + (guidedPassed ? "is-pass" : "is-retry")}>
                 <strong>{guidedScore}</strong>
-                <span>{guidedScore >= 70 ? "Gerakan cukup stabil" : "Ulangi; perhatikan urutan dan arah"}</span>
+                <span>{guidedPassed ? "Latihan terpandu selesai" : "Coba lagi dengan pola samar"}</span>
               </div>
             )}
             <button
               type="button"
               className="primary-button"
-              disabled={(guidedScore ?? 0) < 70}
+              disabled={!guidedPassed}
               onClick={() => {
                 setPhase("recall");
                 setRecallScore(null);
+                setRecallPassed(false);
+                setHintLevel(0);
               }}
             >
               Lanjut: tulis tanpa contoh
@@ -499,9 +532,9 @@ export function HiraganaLearningLab({
         {phase === "recall" && (
           <div className="hiragana-lab__practice">
             <div className="hiragana-lab__recall-prompt">
-              <small>DENGARKAN - JANGAN BUKA PETUNJUK</small>
+              <small>COBA DARI INGATAN</small>
               <AudioButton url={item.audioUrl} autoplay />
-              <p>Tulis huruf yang baru dipelajari dari ingatan. Target kelulusan 80.</p>
+              <p>Tulis huruf yang baru dipelajari dari ingatan. Jika lupa, gunakan bantuan bertingkat lalu coba lagi tanpa bantuan.</p>
             </div>
 
             <div className="hiragana-lab__surface-switch" aria-label="Pilih media menulis">
@@ -511,6 +544,8 @@ export function HiraganaLearningLab({
                 onClick={() => {
                   setWritingSurface("screen");
                   setRecallScore(null);
+                  setRecallPassed(false);
+                  setHintLevel(0);
                 }}
               >
                 Tulis di layar
@@ -521,6 +556,8 @@ export function HiraganaLearningLab({
                 onClick={() => {
                   setWritingSurface("paper");
                   setRecallScore(null);
+                  setRecallPassed(false);
+                  setHintLevel(0);
                   setPaperRevealed(false);
                 }}
               >
@@ -528,16 +565,79 @@ export function HiraganaLearningLab({
               </button>
             </div>
 
+            {writingSurface === "screen" && (
+              <div className="hiragana-lab__hint">
+                {hintLevel === 0 ? (
+                  <>
+                    {recallFailures > 0 && (
+                      <p>Tidak apa-apa jika lupa. Ambil petunjuk, pelajari lagi, lalu ulangi tanpa bantuan.</p>
+                    )}
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => {
+                        setHintLevel(1);
+                        setRecallScore(null);
+                        setRecallPassed(false);
+                      }}
+                    >
+                      Saya lupa - beri petunjuk ringan
+                    </button>
+                  </>
+                ) : hintLevel === 1 ? (
+                  <>
+                    <b>Petunjuk ringan</b>
+                    <p>
+                      {stroke.data?.strokeGroups?.length ?? stroke.data?.strokes.length ?? 0} goresan.{" "}
+                      {item.mnemonic.strokeCue ?? "Ingat titik awal, urutan, dan arah gerakannya."}
+                    </p>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => {
+                        setHintLevel(2);
+                        setRecallScore(null);
+                        setRecallPassed(false);
+                      }}
+                    >
+                      Masih lupa - lihat gerakan lengkap
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <b>Gerakan lengkap</b>
+                    <p>Pelajari kembali urutannya. Hasil dengan bantuan tidak dihitung sebagai penguasaan.</p>
+                    <KanaStrokeAnimator
+                      character={item.character}
+                      strokeData={stroke.data}
+                    />
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={() => {
+                        setHintLevel(0);
+                        setRecallScore(null);
+                        setRecallPassed(false);
+                      }}
+                    >
+                      Tutup bantuan dan coba lagi
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
             {writingSurface === "screen" ? (
               stroke.loading ? (
                 <div className="hiragana-stage__loading">Memuat area menulis...</div>
               ) : (
-                <WritingCanvas
-                  key={"blind-" + item.id}
+                <KanaWritingCoach
+                  key={"blind-" + item.id + "-" + hintLevel}
                   character={item.character}
                   strokeData={stroke.data}
-                  mode="faint_grid"
-                  onResult={(result) => void acceptRecallScore(calculateWritingScore(result))}
+                  mode="recall"
+                  hintLevel={hintLevel}
+                  onComplete={(outcome) => void acceptRecallOutcome(outcome)}
                 />
               )
             ) : (
@@ -569,15 +669,30 @@ export function HiraganaLearningLab({
             )}
 
             {recallScore != null && (
-              <div className={"hiragana-lab__score " + (recallScore >= 80 ? "is-pass" : "is-retry")}>
-                <strong>{recallScore}</strong>
-                <span>{recallScore >= 80 ? "Lulus tanpa contoh" : "Belum 80; ulangi dari ingatan"}</span>
+              <div className={"hiragana-lab__score " + (recallPassed ? "is-pass" : "is-retry")}>
+                <strong>{recallScore}%</strong>
+                <span>
+                  {recallPassed
+                    ? "Lulus tanpa bantuan"
+                    : hintLevel > 0
+                      ? "Latihan dibantu selesai; ulangi tanpa petunjuk"
+                      : "Belum cocok; periksa bentuk, urutan, dan arah"}
+                </span>
               </div>
             )}
+
+            <details className="hiragana-lab__scoring-note">
+              <summary>Bagaimana tulisan diperiksa?</summary>
+              <p>
+                Sistem memeriksa jumlah goresan logis, urutan, arah, titik awal-akhir,
+                dan kemiripan bentuk. Angka persen hanya menunjukkan kemiripan;
+                kelulusan diberikan jika semua goresan cocok tanpa petunjuk.
+              </p>
+            </details>
             <button
               type="button"
               className="primary-button"
-              disabled={(recallScore ?? 0) < 80 || saving}
+              disabled={!recallPassed || saving}
               onClick={continueAfterRecall}
             >
               {itemIndex + 1 < unit.items.length ? "Lanjut ke huruf berikutnya" : "Mulai checkpoint"}
@@ -596,7 +711,6 @@ export function HiraganaLearningLab({
               key={checkpointKey}
               stageId={bundle.stage.id}
               questions={checkpointQuestions}
-              writingPassScore={80}
               onComplete={(result) => void finishCheckpoint(result)}
             />
           </div>

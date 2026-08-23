@@ -28,6 +28,7 @@ export type HiraganaAttemptInput = {
   answerText?: string | null;
   selectedKanaId?: number | null;
   writingScore?: number | null;
+  writingMatched?: boolean | null;
   responseTimeMs?: number | null;
 };
 
@@ -127,7 +128,8 @@ export async function recordHiraganaAttempt(
   if (choiceTypes.has(input.exerciseType)) {
     isCorrect = input.selectedKanaId === kana.id;
   } else if (writingTypes.has(input.exerciseType)) {
-    isCorrect = finiteNumber(input.writingScore, 0) >= 80;
+    isCorrect =
+      input.writingMatched ?? finiteNumber(input.writingScore, 0) >= 80;
   } else {
     isCorrect = normalizedAnswer(input.answerText) === normalizedAnswer(kana.romaji);
   }
