@@ -1,3 +1,19 @@
+> ## ⚠️ SUPERSEDED — jangan dipakai sebagai spesifikasi implementasi
+>
+> Dokumen ini diturunkan dari `rancangan_modul_pre_n5_sampai_n1.pdf`, rancangan
+> generasi sebelum V2.1. Pola F1–F5 seragam yang dijelaskan di sini **sudah
+> ditolak secara eksplisit** oleh V2.1 Bagian 2.
+>
+> Spesifikasi yang berlaku:
+> `docs/curriculum-v2.1/rancangan_modul_pre_n5_sampai_n1_v2_1_upgrade_lengkap.md`
+>
+> V2.1 Bagian 16 butir 2: "Jangan menganggap teks PDF lama sebagai spesifikasi
+> implementasi setelah ada konflik; keputusan V2.1 menang untuk metode belajar."
+>
+> Dokumen ini tetap disimpan sebagai catatan sejarah — berguna untuk memahami
+> **kenapa** kode yang ada sekarang berbentuk seperti ini, bukan untuk menentukan
+> bentuk kode berikutnya.
+
 # Kurikulum V2 — Kerangka Pre-N5
 
 Sumber produk: `rancangan_modul_pre_n5_sampai_n1.pdf`.
