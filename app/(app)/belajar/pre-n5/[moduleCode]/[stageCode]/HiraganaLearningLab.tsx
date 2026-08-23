@@ -441,6 +441,16 @@ export function HiraganaLearningLab({
 
   const phaseNumber =
     phase === "anchor" ? 1 : phase === "guided" ? 2 : phase === "recall" ? 3 : 4;
+  const phaseLabel = phase === "anchor"
+    ? "Kenali"
+    : phase === "guided"
+      ? "Ikuti"
+      : phase === "recall"
+        ? "Ingat"
+        : "Uji";
+  const currentCharacterPosition = phase === "checkpoint" || phase === "unlock"
+    ? unit.items.length
+    : itemIndex + 1;
 
   return (
     <div className="hiragana-lab">
@@ -452,6 +462,10 @@ export function HiraganaLearningLab({
           </div>
           <div className="hiragana-lab__progress">
             <span style={{ width: Math.round((learnedCharacterCount / phaseTarget) * 100) + "%" }} />
+          </div>
+          <div className="hiragana-lab__rail-summary">
+            <div><b>+{batchCharacterCount}</b><small>huruf baru</small></div>
+            <div><b>{phaseTarget}</b><small>bank aktif</small></div>
           </div>
         </div>
 
@@ -469,11 +483,12 @@ export function HiraganaLearningLab({
                   complete ? "is-complete" : "",
                 ].filter(Boolean).join(" ")}
                 onClick={() => openUnit(index)}
+                aria-current={index === unitIndex ? "step" : undefined}
               >
                 <span>{complete ? "OK" : String(index + 1).padStart(2, "0")}</span>
                 <div>
                   <strong>{candidate.description}</strong>
-                  <small>{complete ? "Checkpoint awal lulus" : index === unitIndex ? "Sedang dipelajari" : "Terkunci"}</small>
+                  <small>{complete ? "Selesai - masuk bank soal" : index === unitIndex ? "Sedang dipelajari" : "Terkunci"}</small>
                 </div>
               </button>
             );
@@ -498,19 +513,23 @@ export function HiraganaLearningLab({
               {phase === "unlock" && "Makna mulai terbuka"}
             </h2>
           </div>
-          <b>{phase === "checkpoint" || phase === "unlock" ? unit.items.length + "/" + unit.items.length + " huruf" : itemIndex + 1 + "/" + unit.items.length}</b>
+          <div className="hiragana-lab__header-meta">
+            <span>Langkah {phaseNumber}/4 - {phaseLabel}</span>
+            <b>Huruf {currentCharacterPosition}/{unit.items.length}</b>
+          </div>
         </header>
 
-        <div className="hiragana-lab__steps" aria-label={"Langkah belajar " + phaseNumber + " dari 4"}>
+        <ol className="hiragana-lab__steps" aria-label={"Langkah belajar " + phaseNumber + " dari 4"}>
           {["Kenali", "Ikuti", "Ingat", "Uji"].map((label, index) => (
-            <span
+            <li
               key={label}
               className={index + 1 === phaseNumber ? "is-active" : index + 1 < phaseNumber ? "is-done" : ""}
+              aria-current={index + 1 === phaseNumber ? "step" : undefined}
             >
-              <b>{index + 1}</b>{label}
-            </span>
+              <b>{index + 1 < phaseNumber ? "OK" : index + 1}</b><span>{label}</span>
+            </li>
           ))}
-        </div>
+        </ol>
 
         {phase === "anchor" && (
           <div className="hiragana-lab__anchor">

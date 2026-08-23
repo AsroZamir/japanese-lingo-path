@@ -32,6 +32,8 @@ export default async function PreN5ModulePage({
   const moduleOverview = await getPreN5ModuleOverview(moduleCode);
   if (!moduleOverview || moduleOverview.code !== "PRE-N5.01") notFound();
 
+  const phaseStages = moduleOverview.stages.filter((stage) => /^F[1-5]$/.test(stage.code));
+
   return (
     <div className="content pre-n5-module">
       <Link href="/belajar" className="back-button">
@@ -47,7 +49,10 @@ export default async function PreN5ModulePage({
         <div className="pre-n5-module__hero-copy">
           <div className="pre-n5-module__glyph">{moduleOverview.icon}</div>
           <div className="pre-n5-module__objective">
-            <span>Target akhir</span>
+            <div className="pre-n5-module__objective-topline">
+              <span>Target akhir</span>
+              <b>46 HIRAGANA DASAR</b>
+            </div>
             <h2>{moduleOverview.objective}</h2>
             <p>Metode: {moduleOverview.methodName}</p>
           </div>
@@ -59,8 +64,25 @@ export default async function PreN5ModulePage({
         </div>
       </section>
 
-      <div className="pre-n5-module__progress" aria-label={"Progress modul " + moduleOverview.percentComplete + "%"}>
-        <span style={{ width: moduleOverview.percentComplete + "%" }} />
+      <div className="pre-n5-module__progress-card">
+        <div>
+          <span>Perjalanan penguasaan</span>
+          <strong>
+            {moduleOverview.nextStageCode
+              ? "Berikutnya: " + moduleOverview.nextStageCode
+              : "Semua tahap selesai"}
+          </strong>
+        </div>
+        <div
+          className="pre-n5-module__progress"
+          role="progressbar"
+          aria-label="Progress modul"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={moduleOverview.percentComplete}
+        >
+          <span style={{ width: moduleOverview.percentComplete + "%" }} />
+        </div>
       </div>
 
       <section className="pre-n5-module__rule">
@@ -70,12 +92,21 @@ export default async function PreN5ModulePage({
           <p>Fase berikutnya terbuka setelah batch aktif dan checkpoint kumulatifnya lulus.</p>
         </div>
         <ol aria-label="Urutan jumlah Hiragana">
-          {[10, 20, 30, 40, 46].map((count, index) => (
-            <li key={count}>
+          {[10, 20, 30, 40, 46].map((count, index) => {
+            const stage = phaseStages[index];
+            const stateClass = stage?.progressStatus === "completed"
+              ? "is-complete"
+              : stage && !stage.locked
+                ? "is-current"
+                : "";
+
+            return (
+              <li key={count} className={stateClass}>
               <b>{count}</b>
               <span>{index === 0 ? "huruf awal" : index === 4 ? "huruf lengkap" : "huruf kumulatif"}</span>
             </li>
-          ))}
+            );
+          })}
         </ol>
       </section>
 
@@ -113,7 +144,7 @@ export default async function PreN5ModulePage({
                   {stage.progressStatus === "completed" ? "OK" : STAGE_MARK[stage.code] ?? stage.code}
                 </div>
                 <div className="pre-n5-stage-card__body">
-                  <div>
+                  <div className="pre-n5-stage-card__meta">
                     <span>
                       {stage.code === "BOSS"
                         ? "Ujian akhir - 46 huruf"
@@ -123,7 +154,10 @@ export default async function PreN5ModulePage({
                   </div>
                   <h3>{stage.title}</h3>
                   <p>{stage.description}</p>
-                  <small>{stage.mechanic}</small>
+                  <div className="pre-n5-stage-card__footer">
+                    <small>{stage.mechanic}</small>
+                    {!stage.locked && <span aria-hidden="true">&rarr;</span>}
+                  </div>
                   {stage.score != null && <em>Skor terbaik {Math.round(stage.score)}%</em>}
                 </div>
               </>
