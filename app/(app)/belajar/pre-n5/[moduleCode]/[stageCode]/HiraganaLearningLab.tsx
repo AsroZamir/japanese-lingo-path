@@ -593,6 +593,17 @@ export function HiraganaLearningLab({
                     </p>
                     <button
                       type="button"
+                      className="primary-button"
+                      onClick={() => {
+                        setHintLevel(0);
+                        setRecallScore(null);
+                        setRecallPassed(false);
+                      }}
+                    >
+                      Tutup petunjuk dan coba lagi
+                    </button>
+                    <button
+                      type="button"
                       className="secondary-button"
                       onClick={() => {
                         setHintLevel(2);
