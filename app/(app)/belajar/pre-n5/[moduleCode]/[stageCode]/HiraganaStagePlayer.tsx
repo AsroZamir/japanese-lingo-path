@@ -8,6 +8,7 @@ import {
   type WritingCanvasMode,
 } from "@/components/kana/WritingCanvas";
 import type { KanaStrokeData } from "@/components/kana/stroke-geometry";
+import { HIRAGANA_LAB_VERSION } from "@/app/lib/hiragana-mnemonics";
 import type {
   HiraganaLearningItem,
   HiraganaStageBundle,
@@ -24,6 +25,7 @@ import {
   saveHiraganaStageState,
   type StageCompletionResult,
 } from "./actions";
+import { HiraganaLearningLab } from "./HiraganaLearningLab";
 
 type StagePlayerProps = {
   bundle: HiraganaStageBundle;
@@ -128,24 +130,49 @@ function buildSrsQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion[
   ];
   const unique = [...new Map(prioritized.map((item) => [item.id, item])).values()];
   const session = unique.slice(0, 20);
-  return session.map((item): HiraganaQuizQuestion => ({
-    id: "srs-" + item.id,
-    kind: "typing",
-    item,
-    prompt:
-      item.mastery.due || item.mastery.weak
-        ? "Weak point aktif. Ingat kembali bunyinya."
-        : "Aktifkan jejak SRS untuk karakter ini.",
-    promptMode: "kana",
-    exerciseType: "srs",
-    skill: "recall",
-  }));
+  return session.map((item, index): HiraganaQuizQuestion => {
+    const prompt = item.mastery.due || item.mastery.weak
+      ? "Weak point aktif. Ambil kembali dari ingatan."
+      : "Bangun jejak review untuk karakter ini.";
+    if (index % 3 === 0) {
+      return {
+        id: "srs-audio-" + item.id,
+        kind: "choice",
+        item,
+        prompt,
+        promptMode: "audio",
+        choices: choicesFor(basic, item, 4, 4 + index),
+        exerciseType: "audio_visual",
+        skill: "audio",
+      };
+    }
+    if (index % 3 === 1) {
+      return {
+        id: "srs-writing-" + item.id,
+        kind: "writing",
+        item,
+        prompt,
+        promptMode: "audio",
+        exerciseType: "write_from_audio",
+        skill: "writing",
+      };
+    }
+    return {
+      id: "srs-recall-" + item.id,
+      kind: "typing",
+      item,
+      prompt,
+      promptMode: "kana",
+      exerciseType: "srs",
+      skill: "recall",
+    };
+  });
 }
 
 function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion[] {
   const pool = items.filter((item) => item.type === "basic");
   const questions: HiraganaQuizQuestion[] = [];
-  pool.slice(0, 20).forEach((item) => {
+  pool.slice(0, 10).forEach((item) => {
     questions.push({
       id: "gate-recognition-" + item.id,
       kind: "typing",
@@ -156,7 +183,7 @@ function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion
       skill: "visual",
     });
   });
-  pool.slice(20, 35).forEach((item, index) => {
+  pool.slice(10, 20).forEach((item, index) => {
     questions.push({
       id: "gate-audio-" + item.id,
       kind: "choice",
@@ -168,7 +195,7 @@ function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion
       skill: "audio",
     });
   });
-  pool.slice(31, 46).forEach((item) => {
+  pool.filter((_, index) => index % 2 === 0).slice(0, 10).forEach((item) => {
     questions.push({
       id: "gate-writing-" + item.id,
       kind: "writing",
@@ -231,7 +258,7 @@ function StageResult({
   );
 }
 
-function DiscoverStage({
+export function LegacyDiscoverStage({
   bundle,
   onComplete,
 }: {
@@ -501,7 +528,7 @@ function TraceStage({
   const [mode, setMode] = useState<"guided" | "ghost" | "countdown">("guided");
   const [score, setScore] = useState<number | null>(null);
   const [attemptedIds, setAttemptedIds] = useState<number[]>(initialMastered);
-  const requiredCount = numberFrom(bundle.stage.passCriteria.practiceCharacterCount, 46);
+  const requiredCount = numberFrom(bundle.stage.passCriteria.practiceCharacterCount, 20);
   const item = pool[activeIndex];
   const canvasMode: WritingCanvasMode = mode === "guided" ? "guided" : "blind";
 
@@ -511,7 +538,7 @@ function TraceStage({
     setScore(nextScore);
     const nextAttempted = [...new Set([...attemptedIds, item.id])];
     const nextMastered =
-      nextScore >= 60 ? [...new Set([...masteredIds, item.id])] : masteredIds;
+      nextScore >= 80 ? [...new Set([...masteredIds, item.id])] : masteredIds;
     setAttemptedIds(nextAttempted);
     setMasteredIds(nextMastered);
     void recordHiraganaAttempt({
@@ -588,7 +615,7 @@ function TraceStage({
         </div>
       </section>
       <aside className="hiragana-trace__picker">
-        <h3>46 Hiragana dasar</h3>
+        <h3>20 Hiragana trial</h3>
         <div>
           {pool.map((candidate, index) => (
             <button
@@ -742,7 +769,7 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
       stageId: bundle.stage.id,
       correct: result.correct,
       total: result.total,
-      state,
+      state: { ...state, labVersion: HIRAGANA_LAB_VERSION },
     });
     setCompletion(response);
     setSubmitting(false);
@@ -764,7 +791,7 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
 
   switch (bundle.stage.code) {
     case "F1":
-      return <DiscoverStage key={runKey} bundle={bundle} onComplete={finishStage} />;
+      return <HiraganaLearningLab key={runKey} bundle={bundle} onComplete={finishStage} />;
     case "F2":
       return <TraceStage key={runKey} bundle={bundle} onComplete={finishStage} />;
     case "F3":
@@ -773,6 +800,7 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
           key={runKey}
           stageId={bundle.stage.id}
           questions={recallQuestions}
+          writingPassScore={80}
           onComplete={(result) => finishStage(result)}
         />
       );
@@ -784,6 +812,7 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
           key={runKey}
           stageId={bundle.stage.id}
           questions={srsQuestions}
+          writingPassScore={80}
           onComplete={(result) => finishStage(result)}
         />
       );
@@ -794,7 +823,8 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
           stageId={bundle.stage.id}
           questions={gateQuestions}
           timeLimitSeconds={numberFrom(bundle.stage.configuration.timeLimitSeconds, 300)}
-          onComplete={(result) => finishStage(result, { badge: result.correct / result.total >= 0.8 ? "Hiragana Warrior" : null })}
+          writingPassScore={80}
+          onComplete={(result) => finishStage(result, { badge: result.correct / result.total >= 0.8 ? "Hiragana 20 Pioneer" : null })}
         />
       );
     default:

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { HIRAGANA_LAB_VERSION } from "@/app/lib/hiragana-mnemonics";
 
 const HIRAGANA_MODULE_CODE = "PRE-N5.01";
 const SRS_INTERVALS = [1, 3, 7, 14, 30] as const;
@@ -126,7 +127,7 @@ export async function recordHiraganaAttempt(
   if (choiceTypes.has(input.exerciseType)) {
     isCorrect = input.selectedKanaId === kana.id;
   } else if (writingTypes.has(input.exerciseType)) {
-    isCorrect = finiteNumber(input.writingScore, 0) >= 60;
+    isCorrect = finiteNumber(input.writingScore, 0) >= 80;
   } else {
     isCorrect = normalizedAnswer(input.answerText) === normalizedAnswer(kana.romaji);
   }
@@ -206,13 +207,14 @@ export async function saveHiraganaStageState(input: {
 
   const context = await getStageContext(supabase, input.stageId);
   if (!context) return { ok: false, error: "Stage Hiragana tidak ditemukan." };
-  if (JSON.stringify(input.state).length > 24_000) {
+  const nextState = { ...input.state, labVersion: HIRAGANA_LAB_VERSION };
+  if (JSON.stringify(nextState).length > 24_000) {
     return { ok: false, error: "State stage terlalu besar." };
   }
 
   const { data: existing, error: readError } = await supabase
     .from("user_learning_stage_progress")
-    .select("status, score, attempts, started_at")
+    .select("status, score, attempts, started_at, state")
     .eq("user_id", user.id)
     .eq("stage_id", context.id)
     .maybeSingle();
@@ -223,10 +225,20 @@ export async function saveHiraganaStageState(input: {
     {
       user_id: user.id,
       stage_id: context.id,
-      status: existing?.status === "completed" ? "completed" : "in_progress",
-      score: existing?.score ?? null,
-      attempts: existing?.attempts ?? 0,
-      state: input.state,
+      status:
+        existing?.status === "completed" &&
+        asObject(existing.state).labVersion === HIRAGANA_LAB_VERSION
+          ? "completed"
+          : "in_progress",
+      score:
+        asObject(existing?.state).labVersion === HIRAGANA_LAB_VERSION
+          ? existing?.score ?? null
+          : null,
+      attempts:
+        asObject(existing?.state).labVersion === HIRAGANA_LAB_VERSION
+          ? existing?.attempts ?? 0
+          : 0,
+      state: nextState,
       started_at: existing?.started_at ?? now,
       updated_at: now,
     },
@@ -292,7 +304,10 @@ export async function completeHiraganaStage(input: {
   if (progressReadError) return { ok: false, error: progressReadError.message };
 
   const now = new Date().toISOString();
-  const state = input.state ?? asObject(existing?.state);
+  const state = {
+    ...(input.state ?? asObject(existing?.state)),
+    labVersion: HIRAGANA_LAB_VERSION,
+  };
   const { error: stageProgressError } = await supabase
     .from("user_learning_stage_progress")
     .upsert(
@@ -324,7 +339,7 @@ export async function completeHiraganaStage(input: {
     readyStageIds.length > 0
       ? await supabase
           .from("user_learning_stage_progress")
-          .select("stage_id, status")
+          .select("stage_id, status, state")
           .eq("user_id", user.id)
           .in("stage_id", readyStageIds)
       : { data: [], error: null };
@@ -332,7 +347,11 @@ export async function completeHiraganaStage(input: {
 
   const completedIds = new Set(
     (allProgress ?? [])
-      .filter((progress) => progress.status === "completed")
+      .filter(
+        (progress) =>
+          progress.status === "completed" &&
+          asObject(progress.state).labVersion === HIRAGANA_LAB_VERSION,
+      )
       .map((progress) => progress.stage_id),
   );
   const percentComplete =
@@ -368,10 +387,9 @@ export async function completeHiraganaStage(input: {
     );
   if (moduleProgressError) return { ok: false, error: moduleProgressError.message };
 
-  const currentStage = (readyStages ?? []).find((stage) => stage.id === context.id);
   const nextStage =
-    evaluation.passed && currentStage
-      ? (readyStages ?? []).find((stage) => stage.order_index > currentStage.order_index) ?? null
+    evaluation.passed
+      ? (readyStages ?? []).find((stage) => stage.id !== context.id && !completedIds.has(stage.id)) ?? null
       : null;
   revalidatePath("/belajar");
   revalidatePath("/beranda");

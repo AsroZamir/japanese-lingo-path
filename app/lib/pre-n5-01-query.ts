@@ -1,7 +1,10 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
+  HIRAGANA_LAB_MNEMONICS,
+  HIRAGANA_LAB_VERSION,
   HIRAGANA_MNEMONICS,
+  HIRAGANA_TRIAL_CHARACTERS,
   type HiraganaMnemonic,
 } from "@/app/lib/hiragana-mnemonics";
 
@@ -165,13 +168,38 @@ export const getPreN5ModuleOverview = cache(
       (progressRows ?? []).map((progress) => [progress.stage_id, progress]),
     );
 
-    let previousCompleted = true;
+    const completedStageCodes = new Set(
+      (stageRows ?? [])
+        .filter((stage) => {
+          const progress = progressByStageId.get(stage.id);
+          const progressState = asObject(progress?.state);
+          return (
+            progressState.labVersion === HIRAGANA_LAB_VERSION &&
+            progress?.status === "completed"
+          );
+        })
+        .map((stage) => stage.code),
+    );
+
     const stages = (stageRows ?? []).map((stage): PreN5StageSummary => {
       const progress = progressByStageId.get(stage.id);
+      const progressState = asObject(progress?.state);
+      const progressIsCurrent =
+        progressState.labVersion === HIRAGANA_LAB_VERSION;
       const progressStatus =
-        (progress?.status as LearningProgressStatus | undefined) ?? "not_started";
+        progressIsCurrent
+          ? (progress?.status as LearningProgressStatus | undefined) ?? "not_started"
+          : "not_started";
       const contentStatus = stage.status as PreN5StageSummary["contentStatus"];
-      const locked = !previousCompleted || contentStatus !== "ready";
+      const prerequisites =
+        stage.code === "F2" ? ["F1"]
+          : stage.code === "F3" ? ["F2"]
+            : stage.code === "F4" ? ["F3"]
+              : stage.code === "BOSS" ? ["F1", "F2", "F3", "F4", "F5"]
+                : [];
+      const locked =
+        prerequisites.some((code) => !completedStageCodes.has(code)) ||
+        contentStatus !== "ready";
       const summary: PreN5StageSummary = {
         id: stage.id,
         code: stage.code,
@@ -184,9 +212,9 @@ export const getPreN5ModuleOverview = cache(
         configuration: asObject(stage.configuration),
         passCriteria: asObject(stage.pass_criteria),
         progressStatus,
-        score: progress?.score ?? null,
-        attempts: progress?.attempts ?? 0,
-        state: asObject(progress?.state),
+        score: progressIsCurrent ? progress?.score ?? null : null,
+        attempts: progressIsCurrent ? progress?.attempts ?? 0 : 0,
+        state: progressIsCurrent ? progressState : {},
         locked,
         statusLabel: locked
           ? contentStatus === "ready"
@@ -198,7 +226,6 @@ export const getPreN5ModuleOverview = cache(
               ? "Lanjutkan"
               : "Mulai",
       };
-      previousCompleted = progressStatus === "completed";
       return summary;
     });
 
@@ -370,7 +397,7 @@ export const getHiraganaStageBundle = cache(
         "id, character, romaji, type, group_code, order_in_group, base_character_id, audio_url, stroke_data_key",
       )
       .eq("script", "hiragana")
-      .in("type", [...HIRAGANA_TYPES]);
+      .in("character", [...HIRAGANA_TRIAL_CHARACTERS]);
     if (kanaError) throw new Error(kanaError.message);
 
     const sortedRows = [...(rows ?? [])].sort((a, b) => {
@@ -488,8 +515,8 @@ export const getHiraganaStageBundle = cache(
         baseCharacter,
         mnemonic:
           type === "basic"
-            ? HIRAGANA_MNEMONICS[row.character] ??
-              {
+            ? HIRAGANA_LAB_MNEMONICS[row.character] ??
+              HIRAGANA_MNEMONICS[row.character] ?? {
                 emoji: "✦",
                 title: "Bentuk dan bunyi " + row.character,
                 story: "Hubungkan bentuk " + row.character + " dengan bunyi '" + row.romaji + "'.",

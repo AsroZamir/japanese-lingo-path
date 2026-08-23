@@ -1917,6 +1917,112 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
   .hiragana-blitz__kana { font-size: 120px; }
 }
 
+
+/* Hiragana Lab 20: cue -> motor practice -> unaided recall -> mixed checkpoint. */
+.hiragana-lab { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 16px; }
+.hiragana-lab__rail,
+.hiragana-lab__main { border: 1px solid var(--moji-line); border-radius: var(--moji-radius-2xl); background: var(--moji-white); }
+.hiragana-lab__rail { display: flex; flex-direction: column; gap: 16px; padding: 18px; }
+.hiragana-lab__rail-head { display: grid; gap: 10px; }
+.hiragana-lab__rail-head > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.hiragana-lab__rail-head span { color: var(--moji-accent); font-size: 9px; font-weight: 900; letter-spacing: .1em; }
+.hiragana-lab__rail-head strong { color: var(--moji-ink); font-size: 11px; }
+.hiragana-lab__progress { height: 7px; overflow: hidden; border-radius: 999px; background: var(--moji-cream); }
+.hiragana-lab__progress span { height: 100%; display: block; border-radius: inherit; background: var(--moji-success); transition: width .25s ease; }
+.hiragana-lab__units { display: grid; gap: 8px; }
+.hiragana-lab__units button { width: 100%; display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 10px; padding: 10px; border: 1px solid transparent; border-radius: 12px; color: var(--moji-muted); background: transparent; text-align: left; }
+.hiragana-lab__units button > span { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: var(--moji-cream); font-size: 9px; font-weight: 900; }
+.hiragana-lab__units button > div { min-width: 0; display: grid; gap: 3px; }
+.hiragana-lab__units button strong { overflow: hidden; color: var(--moji-ink); font: 700 15px/1.2 var(--moji-font-jp); text-overflow: ellipsis; white-space: nowrap; }
+.hiragana-lab__units button small { color: var(--moji-faint); font-size: 9px; }
+.hiragana-lab__units button.is-active { border-color: #e5b9a9; background: var(--moji-accent-soft-bg); }
+.hiragana-lab__units button.is-complete > span { color: var(--moji-success); background: var(--moji-success-bg); }
+.hiragana-lab__principle { margin-top: auto; padding: 13px; border-radius: 12px; color: var(--moji-muted); background: var(--moji-cream); }
+.hiragana-lab__principle b { color: var(--moji-ink); font-size: 10px; }
+.hiragana-lab__principle p { margin: 5px 0 0; font-size: 9.5px; line-height: 1.5; }
+.hiragana-lab__main { min-width: 0; min-height: 680px; padding: 24px; }
+.hiragana-lab__header { display: flex; align-items: start; justify-content: space-between; gap: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--moji-line); }
+.hiragana-lab__header span { color: var(--moji-accent); font-size: 9px; font-weight: 900; letter-spacing: .08em; }
+.hiragana-lab__header h2 { margin: 5px 0 0; color: var(--moji-ink); font-size: 21px; }
+.hiragana-lab__header > b { color: var(--moji-faint); font-size: 11px; }
+.hiragana-lab__steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 16px 0 22px; }
+.hiragana-lab__steps > span { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 9px; color: var(--moji-faint); background: var(--moji-cream); font-size: 9px; font-weight: 800; }
+.hiragana-lab__steps b { width: 19px; height: 19px; display: grid; place-items: center; border-radius: 50%; background: #fff; font-size: 8px; }
+.hiragana-lab__steps > span.is-active { color: var(--moji-accent); background: var(--moji-accent-soft-bg); }
+.hiragana-lab__steps > span.is-done { color: var(--moji-success); background: var(--moji-success-bg); }
+.hiragana-lab__anchor { display: grid; gap: 14px; }
+.hiragana-lab__anchor-card { display: grid; grid-template-columns: minmax(150px, .8fr) 1.2fr; align-items: center; gap: 20px; padding: 18px; border-radius: 16px; background: linear-gradient(135deg, #fff8f4, #fff); }
+.hiragana-lab__kana { color: var(--moji-ink); font: 800 150px/1 var(--moji-font-jp); text-align: center; }
+.hiragana-lab__anchor-card > div:last-child { display: grid; justify-items: start; gap: 6px; }
+.hiragana-lab__emoji { font-size: 30px; }
+.hiragana-lab__anchor-card small,
+.hiragana-lab__cues small,
+.hiragana-lab__recall-prompt small { color: var(--moji-accent); font-size: 8px; font-weight: 900; letter-spacing: .11em; }
+.hiragana-lab__anchor-card h3 { margin: 0; color: var(--moji-ink); font-size: 19px; }
+.hiragana-lab__anchor-card p,
+.hiragana-lab__cues p { margin: 0; color: var(--moji-muted); font-size: 11px; line-height: 1.55; }
+.hiragana-lab__cues { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.hiragana-lab__cues > div { padding: 13px; border: 1px solid var(--moji-line); border-radius: 12px; }
+.hiragana-lab__cues p { margin-top: 5px; }
+.hiragana-lab__animation { max-width: 340px; margin: 0 auto; }
+.hiragana-lab__anchor > .primary-button,
+.hiragana-lab__practice > .primary-button,
+.hiragana-lab__unlock > .primary-button { width: min(100%, 480px); justify-self: center; justify-content: center; }
+.hiragana-lab__practice { max-width: 640px; display: grid; justify-items: center; gap: 13px; margin: 0 auto; text-align: center; }
+.hiragana-lab__practice > p,
+.hiragana-lab__recall-prompt p { margin: 0; color: var(--moji-muted); font-size: 11px; line-height: 1.55; }
+.hiragana-lab__recall-prompt { display: grid; justify-items: center; gap: 9px; padding: 14px 20px; border-radius: 14px; background: var(--moji-cream); }
+.hiragana-lab__surface-switch { display: flex; gap: 7px; padding: 4px; border-radius: 999px; background: var(--moji-cream); }
+.hiragana-lab__surface-switch button { padding: 8px 13px; border: 0; border-radius: 999px; color: var(--moji-muted); background: transparent; font-size: 10px; font-weight: 800; }
+.hiragana-lab__surface-switch button.is-active { color: var(--moji-accent); background: #fff; box-shadow: 0 2px 7px rgb(26 43 69 / 8%); }
+.hiragana-lab__score { display: flex; align-items: center; gap: 9px; padding: 7px 12px; border-radius: 999px; }
+.hiragana-lab__score strong { font-size: 17px; }
+.hiragana-lab__score span { font-size: 10px; font-weight: 800; }
+.hiragana-lab__score.is-pass { color: var(--moji-success); background: var(--moji-success-bg); }
+.hiragana-lab__score.is-retry { color: #a0442e; background: var(--moji-error-bg); }
+.hiragana-lab__paper { width: min(100%, 520px); min-height: 310px; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; border: 1px dashed #c9b9ae; border-radius: 16px; background: repeating-linear-gradient(#fff, #fff 31px, #edf0f3 32px); }
+.hiragana-lab__paper > span { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--moji-accent); background: var(--moji-accent-soft-bg); font-weight: 900; }
+.hiragana-lab__paper h3 { margin: 0; color: var(--moji-ink); }
+.hiragana-lab__paper p { max-width: 390px; margin: 0; color: var(--moji-muted); font-size: 11px; }
+.hiragana-lab__paper > div:last-child { display: flex; gap: 8px; }
+.hiragana-lab__paper .secondary-button { width: auto; margin: 0; padding: 11px 16px; }
+.hiragana-lab__paper-answer { color: var(--moji-ink); font: 800 130px/1 var(--moji-font-jp); }
+.hiragana-lab__checkpoint { display: grid; gap: 12px; }
+.hiragana-lab__checkpoint-note { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 14px; border-radius: 12px; color: var(--moji-muted); background: var(--moji-cream); }
+.hiragana-lab__checkpoint-note strong { color: var(--moji-ink); font-size: 11px; white-space: nowrap; }
+.hiragana-lab__checkpoint-note span { font-size: 9.5px; line-height: 1.45; text-align: right; }
+.hiragana-lab__checkpoint .hiragana-quiz { width: 100%; min-height: 520px; border: 0; padding: 8px 0 0; }
+.hiragana-lab__unlock { min-height: 500px; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; }
+.hiragana-lab__unlock-mark { padding: 7px 11px; border-radius: 999px; color: var(--moji-success); background: var(--moji-success-bg); font-size: 9px; font-weight: 900; letter-spacing: .1em; }
+.hiragana-lab__unlock h3 { margin: 4px 0 0; color: var(--moji-ink); font-size: 23px; }
+.hiragana-lab__unlock > p { max-width: 520px; margin: 0; color: var(--moji-muted); font-size: 11px; }
+.hiragana-lab__words { width: min(100%, 620px); display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin: 13px 0; }
+.hiragana-lab__words > div { display: grid; gap: 4px; padding: 15px 10px; border: 1px solid var(--moji-line); border-radius: 13px; background: #fff; }
+.hiragana-lab__words strong { color: var(--moji-ink); font: 800 31px/1.2 var(--moji-font-jp); }
+.hiragana-lab__words span { color: var(--moji-accent); font-size: 10px; font-weight: 800; }
+.hiragana-lab__words small { color: var(--moji-faint); font-size: 9px; }
+
+@media (max-width: 900px) {
+  .hiragana-lab { grid-template-columns: 1fr; }
+  .hiragana-lab__rail { padding: 13px; }
+  .hiragana-lab__units { display: flex; overflow-x: auto; }
+  .hiragana-lab__units button { min-width: 185px; }
+  .hiragana-lab__principle { display: none; }
+}
+
+@media (max-width: 680px) {
+  .hiragana-lab__main { min-height: 0; padding: 16px; }
+  .hiragana-lab__header h2 { font-size: 18px; }
+  .hiragana-lab__steps > span { padding: 7px 3px; font-size: 0; }
+  .hiragana-lab__steps > span b { font-size: 8px; }
+  .hiragana-lab__anchor-card { grid-template-columns: 1fr; gap: 8px; }
+  .hiragana-lab__kana { font-size: 115px; }
+  .hiragana-lab__cues { grid-template-columns: 1fr; }
+  .hiragana-lab__checkpoint-note { align-items: start; flex-direction: column; }
+  .hiragana-lab__checkpoint-note span { text-align: left; }
+  .hiragana-lab__words { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hiragana-morph__cue,
   .hiragana-morph__kana,

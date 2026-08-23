@@ -143,17 +143,20 @@ async function main() {
     const blitz = hiraganaStageByCode.get("F4");
     const retention = hiraganaStageByCode.get("F5");
     const gate = hiraganaStageByCode.get("BOSS");
-    assert(discover?.configuration.checkpointSize === 5, "Checkpoint Discover harus per lima karakter.");
+    assert(discover?.configuration.unitSize === 5, "Unit Kenali harus per lima karakter.");
+    assert(discover.configuration.targetCharacterCount === 20, "Tahap Kenali harus mencakup 20 Hiragana.");
+    assert(discover.configuration.writingPassScore === 80, "Target tulisan Kenali harus 80.");
     assert(discover.passCriteria.accuracyPercent === 80, "Batas Discover harus 80%.");
-    assert(trace?.passCriteria.practiceCharacterCount === 46, "Trace harus mencakup 46 hiragana dasar.");
+    assert(trace?.passCriteria.practiceCharacterCount === 20, "Konsolidasi harus mencakup 20 Hiragana.");
+    assert(trace.passCriteria.scorePercent === 80, "Batas tulisan konsolidasi harus 80.");
     assert(recall?.configuration.questionCount === 20, "Recall harus berisi 20 soal.");
     assert(blitz?.configuration.durationSeconds === 60, "Blitz harus berdurasi 60 detik.");
-    assert(blitz.passCriteria.correctCount === 25, "Target Blitz harus 25 jawaban benar.");
+    assert(blitz.passCriteria.correctCount === 20, "Target Blitz harus 20 jawaban benar.");
     assert(
       JSON.stringify(retention?.configuration.reviewIntervalsDays) === JSON.stringify([1, 3, 7, 14, 30]),
       "Interval SRS harus 1, 3, 7, 14, dan 30 hari.",
     );
-    assert(gate?.configuration.questionCount === 50, "Hiragana Gate harus berisi 50 soal.");
+    assert(gate?.configuration.questionCount === 30, "Hiragana Gate harus berisi 30 soal.");
     assert(gate.configuration.timeLimitSeconds === 300, "Hiragana Gate harus berdurasi lima menit.");
     assert(gate.passCriteria.accuracyPercent === 80, "Batas lulus Hiragana Gate harus 80%.");
     const grants = await sql.unsafe<{ tableName: string; privilege: string }[]>(
@@ -188,7 +191,7 @@ async function main() {
         "(select count(*)::int from kana_lessons) as lessons, " +
         "(select count(*)::int from kana_lesson_items) as \"lessonItems\"",
     );
-    console.log("Verifikasi JLP lulus: PRE-N5.01 ready, enam tahap aktif, resume state tersedia, dan 7/7 tabel V2 memakai RLS.");
+    console.log("Verifikasi JLP lulus: trial 20 Hiragana ready, enam tahap aktif, resume state tersedia, dan 7/7 tabel V2 memakai RLS.");
     console.log(
       "Data lama tetap utuh: " +
         legacy.modules +

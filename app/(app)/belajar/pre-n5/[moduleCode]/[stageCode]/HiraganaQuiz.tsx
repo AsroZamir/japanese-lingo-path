@@ -33,6 +33,7 @@ type HiraganaQuizProps = {
   stageId: number;
   questions: HiraganaQuizQuestion[];
   timeLimitSeconds?: number;
+  writingPassScore?: number;
   onComplete: (result: HiraganaQuizResult) => void;
 };
 
@@ -109,6 +110,7 @@ export function HiraganaQuiz({
   stageId,
   questions,
   timeLimitSeconds,
+  writingPassScore = 80,
   onComplete,
 }: HiraganaQuizProps) {
   const [index, setIndex] = useState(0);
@@ -148,7 +150,7 @@ export function HiraganaQuiz({
         ? normalize(typedValue) === normalize(current.item.romaji)
         : current.kind === "choice"
           ? selectedKanaId === current.item.id
-          : (currentWritingScore ?? 0) >= 60;
+          : (currentWritingScore ?? 0) >= writingPassScore;
     const now = Date.now();
     const nextAttempts = [...attempts, isCorrect];
     setAttempts(nextAttempts);
@@ -213,7 +215,7 @@ export function HiraganaQuiz({
       ? normalize(typedValue) === normalize(current.item.romaji)
       : current.kind === "choice"
         ? selectedKanaId === current.item.id
-        : (currentWritingScore ?? 0) >= 60;
+        : (currentWritingScore ?? 0) >= writingPassScore;
   const canCheck =
     current.kind === "typing"
       ? typedValue.trim().length > 0
@@ -300,8 +302,8 @@ export function HiraganaQuiz({
         <div className="hiragana-quiz__writing">
           <StrokeQuestion key={current.id} item={current.item} onScore={setCurrentWritingScore} />
           {currentWritingScore != null && (
-            <span className={currentWritingScore >= 60 ? "is-good" : "is-weak"}>
-              Skor tulisan {currentWritingScore}
+            <span className={currentWritingScore >= writingPassScore ? "is-good" : "is-weak"}>
+              Skor tulisan {currentWritingScore} · target {writingPassScore}
             </span>
           )}
         </div>
@@ -311,7 +313,11 @@ export function HiraganaQuiz({
         <div className={answerCorrect ? "hiragana-quiz__feedback is-correct" : "hiragana-quiz__feedback is-wrong"}>
           {answerCorrect
             ? "Benar. Pola ini masuk ke jadwal SRS."
-            : "Belum tepat. Jawaban yang benar: " + current.item.romaji + "."}
+            : "Belum tepat. Jawaban yang benar: " +
+              (current.kind === "writing"
+                ? current.item.character
+                : current.item.romaji) +
+              "."}
         </div>
       )}
 

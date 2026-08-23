@@ -56,7 +56,7 @@ export default async function PreN5ModulePage({
         <header>
           <div>
             <span className="card-kicker dark">ACTIVE MASTERY PATH</span>
-            <h3>Enam tahap menuju Hiragana Warrior</h3>
+            <h3>Enam tahap untuk menguasai 20 Hiragana pertama</h3>
           </div>
           {moduleOverview.nextStageCode && (
             <Link

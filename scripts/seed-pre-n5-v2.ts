@@ -33,17 +33,17 @@ type ModuleSeed = {
 const MODULES: ModuleSeed[] = [
   {
     code: "PRE-N5.01",
-    title: "Hiragana Master",
-    description: "Membaca dan menulis hiragana dasar, variasi bunyi, serta kombinasi kana dari ingatan.",
-    objective: "Menguasai 46 hiragana dasar, dakuten, handakuten, dan kombinasi kana tanpa bantuan.",
-    methodName: "Mnemonic Morph + Motor Memory",
+    title: "Hiragana Lab: 20 Huruf Pertama",
+    description: "Trial terukur untuk mengenali, menulis, dan mengingat 20 hiragana pertama tanpa bergantung pada romaji.",
+    objective: "Mengenali bunyi dan menulis 20 hiragana pertama dari ingatan dengan akurasi minimal 80%.",
+    methodName: "Sound-Shape Anchor + Active Writing + Spaced Recall",
     moduleType: "SCR",
     orderIndex: 1,
-    estimatedMinutesMin: 240,
-    estimatedMinutesMax: 360,
+    estimatedMinutesMin: 160,
+    estimatedMinutesMax: 240,
     icon: "あ",
     status: "ready",
-    bossTitle: "Hiragana Gate",
+    bossTitle: "Hiragana Gate 20",
   },
   {
     code: "PRE-N5.02",
@@ -259,6 +259,7 @@ const HIRAGANA_STAGE_OVERRIDES: Record<
   string,
   {
     status: ContentStatus;
+    title: string;
     mechanic: string;
     description: string;
     configuration: Record<string, unknown>;
@@ -267,35 +268,38 @@ const HIRAGANA_STAGE_OVERRIDES: Record<
 > = {
   F1: {
     status: "ready",
-    mechanic: "Mnemonic Morph + mini checkpoint",
-    description: "Visual konkret berubah menjadi kana, diikuti audio, contoh kata, dan checkpoint setiap maksimal lima karakter.",
+    title: "Kenali + Tulis 20",
+    mechanic: "Anchor bunyi-bentuk, guided writing, free recall, checkpoint",
+    description: "Empat kelompok berisi lima huruf; tiap huruf ditulis dengan panduan lalu dari ingatan.",
     configuration: {
       script: "hiragana",
-      itemTypes: ["basic", "dakuten", "handakuten", "youon", "sokuon"],
-      morphDurationMs: 3000,
-      examplesPerKana: 3,
-      checkpointSize: 5,
+      itemTypes: ["basic"],
+      targetCharacterCount: 20,
+      writingPassScore: 80,
+      unitSize: 5,
       checkpointQuestions: 10,
     },
     passCriteria: { accuracyPercent: 80, requireAllUnits: true },
   },
   F2: {
     status: "ready",
+    title: "Konsolidasi Tulisan",
     mechanic: "Guided, Ghost, dan Countdown Trace",
-    description: "Motor memory melalui bantuan stroke yang dikurangi sampai pengguna menulis mandiri dalam lima detik.",
+    description: "Konsolidasi 20 huruf sampai tulisan mandiri mencapai skor 80.",
     configuration: {
       script: "hiragana",
       modes: ["guided", "ghost", "countdown"],
       ghostPreviewMs: 1000,
       countdownSeconds: 5,
-      scoring: { retryBelow: 60, weakPointBelow: 80, masteredAt: 80 },
+      scoring: { retryBelow: 80, masteredAt: 80 },
     },
-    passCriteria: { scorePercent: 60, practiceCharacterCount: 46 },
+    passCriteria: { scorePercent: 80, practiceCharacterCount: 20 },
   },
   F3: {
     status: "ready",
+    title: "Recall Campuran",
     mechanic: "Active production empat arah",
-    description: "Type Romaji, Reverse Recall, Audio ke Visual, dan Write from Audio tanpa bergantung pada tebakan pasif.",
+    description: "Pengenalan, bunyi, recall, dan tulisan dicampur agar huruf tidak hanya hafal dalam urutan tabel.",
     configuration: {
       script: "hiragana",
       exerciseTypes: ["type_romaji", "reverse_recall", "audio_visual", "write_from_audio"],
@@ -307,8 +311,9 @@ const HIRAGANA_STAGE_OVERRIDES: Record<
   },
   F4: {
     status: "ready",
+    title: "Blitz 20",
     mechanic: "Hiragana Blitz 60",
-    description: "Latihan mengetik romaji selama 60 detik dengan streak, pengali XP, dan satu Second Chance.",
+    description: "Latihan mengambil bunyi dari 20 huruf secara cepat selama 60 detik.",
     configuration: {
       script: "hiragana",
       durationSeconds: 60,
@@ -316,16 +321,18 @@ const HIRAGANA_STAGE_OVERRIDES: Record<
       streakMultiplierAt: 5,
       xpMultiplier: 2,
       secondChanceCount: 1,
-      targetCorrect: 25,
+      targetCorrect: 20,
     },
-    passCriteria: { correctCount: 25 },
+    passCriteria: { correctCount: 20 },
   },
   F5: {
     status: "ready",
+    title: "Review Terjadwal",
     mechanic: "SRS Retention + Weak Point Radar",
-    description: "Review terjadwal pada interval 1, 3, 7, 14, dan 30 hari berdasarkan kesalahan per karakter.",
+    description: "Review tersedia sejak awal dan menjadwalkan ulang huruf pada hari ke-1, 3, 7, 14, dan 30.",
     configuration: {
       script: "hiragana",
+      availableFromStart: true,
       reviewIntervalsDays: [1, 3, 7, 14, 30],
       sessionQuestionCount: 20,
       weakPointThresholdPercent: 80,
@@ -334,14 +341,15 @@ const HIRAGANA_STAGE_OVERRIDES: Record<
   },
   BOSS: {
     status: "ready",
-    mechanic: "Hiragana Gate",
-    description: "Lima puluh soal campuran recognition, writing, dan audio dalam lima menit.",
+    title: "Hiragana Gate 20",
+    mechanic: "Gate 30 soal: lihat, dengar, tulis",
+    description: "Tiga puluh soal campuran untuk membuktikan penguasaan 20 huruf tanpa petunjuk.",
     configuration: {
       script: "hiragana",
-      questionCount: 50,
+      questionCount: 30,
       timeLimitSeconds: 300,
-      mix: { recognition: 20, audio: 15, writing: 15 },
-      rewardBadge: "Hiragana Warrior",
+      mix: { recognition: 10, audio: 10, writing: 10 },
+      rewardBadge: "Hiragana 20 Pioneer",
     },
     passCriteria: { accuracyPercent: 80 },
   },
