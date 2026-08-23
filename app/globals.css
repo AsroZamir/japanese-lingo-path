@@ -42,8 +42,8 @@
   --moji-radius-pill: 999px;
 
   /* Fonts: Plus Jakarta Sans for UI text, Noto Sans JP only for kana/kanji glyphs */
-  --moji-font-sans: var(--font-moji-sans), "Plus Jakarta Sans", sans-serif;
-  --moji-font-jp: var(--font-moji-jp), "Noto Sans JP", sans-serif;
+  --moji-font-sans: var(--font-moji-sans, "Plus Jakarta Sans"), "Plus Jakarta Sans", sans-serif;
+  --moji-font-jp: var(--font-moji-jp, "Noto Sans JP"), "Noto Sans JP", sans-serif;
 
   /* Motion (Component D/E from the .dc.html files) — verified identical
      across all 8 mockup files for the shared tokens; D.entrance/stagger

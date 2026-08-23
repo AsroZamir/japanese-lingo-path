@@ -23,7 +23,7 @@ export default async function HiraganaStagePage({
     <div className="content hiragana-stage-page">
       <header className="hiragana-stage-page__header">
         <Link href={"/belajar/pre-n5/" + moduleCode} className="back-button">
-          Kembali ke Hiragana Master
+          Kembali ke {bundle.module.title}
         </Link>
         <div className="hiragana-stage-page__heading">
           <div>
