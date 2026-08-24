@@ -1,15 +1,26 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-// PROMPT-7 Bagian 2 — halaman internal (tidak ada di navigasi) untuk
-// membandingkan kandidat suara VOICEVOX pengganti 四国めたん id=2 (yang
-// pemilik nilai terlalu bergaya anime). Sampel dihasilkan lewat
-// `npm run generate:voice-samples` (scripts/generate-voice-comparison-
-// samples.ts, VOICEVOX harus menyala saat itu) dan file WAV-nya disimpan
-// statis di public/dev-suara/ supaya halaman ini tetap jalan tanpa
-// VOICEVOX menyala setiap saat. Tidak mengganti suara produksi — pemilik
-// yang memilih pakai telinganya sendiri, lihat CLAUDE.md untuk cara
-// pindah setelah memilih.
+// PROMPT-7 Bagian 2 / PROMPT-8 Bagian 2 — halaman internal (tidak ada di
+// navigasi) untuk membandingkan kandidat suara VOICEVOX pengganti
+// 四国めたん id=2 (yang pemilik nilai terlalu bergaya anime). Awalnya
+// ditaruh di app/dev/suara — TERNYATA proxy.ts sengaja mem-block
+// SELURUH path /dev/* dengan 404 murni di production (lihat komentarnya
+// sendiri: dev pages tidak boleh bocor ke publik), jadi halaman itu
+// tidak akan PERNAH bisa dibuka di situs live, di mana pun isinya benar.
+// Dipindah ke sini (di bawah /pengaturan, sudah butuh login lewat
+// proxy.ts yang sama, TIDAK match pola /dev/*) supaya pemilik bisa
+// benar-benar membukanya di situs live seperti yang diminta. Sengaja
+// tidak ditambahkan ke menu navigasi (AppShell.tsx) — cuma bisa diakses
+// lewat URL langsung.
+//
+// Sampel dihasilkan lewat `npm run generate:voice-samples`
+// (scripts/generate-voice-comparison-samples.ts, VOICEVOX harus
+// menyala saat itu) dan file WAV-nya disimpan statis di
+// public/dev-suara/ supaya halaman ini tetap jalan tanpa VOICEVOX
+// menyala setiap saat. Tidak mengganti suara produksi — pemilik yang
+// memilih pakai telinganya sendiri, lihat CLAUDE.md untuk cara pindah
+// setelah memilih.
 export const dynamic = "force-dynamic";
 
 type ManifestEntry = {
@@ -19,7 +30,7 @@ type ManifestEntry = {
   files: { vowels: string; "ka-row": string; sentence: string };
 };
 
-export default async function DevSuaraPage() {
+export default async function SuaraComparisonPage() {
   const manifestPath = path.join(process.cwd(), "public", "dev-suara", "manifest.json");
   let candidates: ManifestEntry[] = [];
   let error: string | null = null;
@@ -27,12 +38,12 @@ export default async function DevSuaraPage() {
     const raw = await fs.readFile(manifestPath, "utf-8");
     candidates = JSON.parse(raw);
   } catch {
-    error = "manifest.json tidak ditemukan di public/dev-suara/ — jalankan scripts/tmp/gen-voice-samples.mjs dengan VOICEVOX menyala dulu.";
+    error = "manifest.json tidak ditemukan di public/dev-suara/ — jalankan npm run generate:voice-samples dengan VOICEVOX menyala dulu.";
   }
 
   return (
     <div style={{ padding: "24px", fontFamily: "monospace", fontSize: "13px", maxWidth: "900px" }}>
-      <h1 style={{ fontSize: "18px", marginBottom: "8px" }}>/dev/suara — perbandingan kandidat suara VOICEVOX</h1>
+      <h1 style={{ fontSize: "18px", marginBottom: "8px" }}>Perbandingan kandidat suara VOICEVOX</h1>
       <p style={{ marginBottom: "16px", maxWidth: "700px" }}>
         Suara sekarang di produksi: <strong>四国めたん (Shikoku Metan) — ノーマル, speaker id 2</strong> — dinilai
         terlalu bergaya anime. {candidates.length} kandidat di bawah dipilih dari daftar lengkap speaker yang

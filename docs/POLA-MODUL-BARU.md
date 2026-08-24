@@ -1,5 +1,13 @@
 # Pola membangun modul baru di atas mesin yang sudah ada
 
+> **PROMPT-8 (2026-08-25):** bagian di atas ditulis setelah katakana
+> (modul KEDUA, tipe SAMA — bentuk huruf). Bagian di bawah, "Modul dengan
+> TIPE BERBEDA — Vocabulary Engine", ditulis setelah PRE-N5.03 (modul
+> KETIGA, tipe BEDA — angka/waktu/harga, bukan bentuk huruf). Baca
+> keduanya: yang pertama bilang mana yang generik ANTAR-MODUL-SEJENIS,
+> yang kedua bilang mana yang generik ANTAR-TIPE-MODUL — dua pertanyaan
+> berbeda, jawabannya tidak selalu sama.
+
 Ditulis setelah membangun PRE-N5.02 (Katakana) di atas mesin yang sebelumnya
 hanya melayani PRE-N5.01 (Hiragana) — PROMPT-7 Bagian 9. Tujuannya: modul
 ketiga (PRE-N5.03, Angka & Waktu — beda KARAKTER dari kana, jadi sebagian
@@ -170,3 +178,141 @@ berikutnya tidak mengulang penemuan yang sama:
    Attempt/recordHiraganaAttempt) lewat pemanggilan server action langsung
    seperti sesi-sesi lalu — canvas tulisan tangan tetap di luar jangkauan
    otomatisasi, itu tidak berubah.
+
+## Modul dengan TIPE BERBEDA — Vocabulary Engine (lahir dari PRE-N5.03)
+
+Katakana (di atas) adalah modul kedua tapi TIPE YANG SAMA dengan hiragana
+— sama-sama "kenali/bedakan/tulis BENTUK huruf". PRE-N5.03 (Angka, Waktu,
+Harga & Counter Dasar) adalah modul pertama dengan TIPE BENAR-BENAR BEDA:
+tidak ada bentuk huruf yang dipelajari, yang dipelajari adalah kosakata +
+pola + pengecualian + aritmetika ringan. Dugaan awal PROMPT-8 ("mesin
+kana tidak akan pas") terbukti benar — bukan soal generalisasi kecil,
+tapi butuh MESIN BARU. Berikut peta mana yang tetap generik lintas TIPE
+modul, dan mana yang harus ditulis ulang.
+
+### Yang ternyata SUDAH generik lintas-tipe sebelum kode baru ditulis
+
+Dibuktikan lewat pemakaian TANPA PERUBAHAN, bukan cuma diklaim:
+
+- **`getPreN5ModuleOverview` (`pre-n5-01-query.ts`)** — lapisan daftar
+  modul/stage, status kunci, delayed-gate. `getVocabStageBundle`
+  (`vocab-engine-query.ts`) memanggilnya PERSIS TANPA UBAHAN. Ini
+  membuktikan lapisan "modul apa saja isinya, stage mana yang terbuka"
+  sudah lepas dari asumsi bentuk-huruf sejak sesi katakana, bukan cuma
+  lepas dari asumsi hiragana-vs-katakana.
+- **`gate-logic.ts`** (4 fungsi murni: checkpoint 80%, retention 85%+72
+  jam) dan **`app/lib/srs.ts`** — dipakai ulang persis oleh
+  `vocab-actions.ts`, nol perubahan.
+- **Tabel progres** `user_learning_stage_progress` /
+  `user_learning_module_progress` — skema sama sekali tidak tahu soal
+  "kana" atau "vocab", cuma `stage_id`/`module_id` + status/skor. Tidak
+  perlu tabel progres baru untuk tipe modul baru, hanya tabel KONTEN
+  (lihat di bawah) yang baru.
+- **Kelas CSS wadah** `.hiragana-lab` / `.hiragana-lab__rail` /
+  `.hiragana-lab__main` / `.hiragana-lab__header` / `.hiragana-lab__steps`
+  / `.hiragana-lab__checkpoint*` — dipakai ulang APA ADANYA (nama kelas
+  yang sama persis) oleh `VocabLearningLab.tsx`. Cuma konten PER-SOAL di
+  dalamnya yang perlu kelas baru (`.vocab-lab__step`, `.vocab-lab__choices`,
+  dst, ditulis di `app/globals.css`).
+
+### Yang TERNYATA TIDAK generik — harus ditulis ulang untuk PRE-N5.03
+
+- **Skema DB konten**: `kana_characters` tidak masuk akal untuk angka —
+  dibuat 3 tabel baru sengaja NETRAL-TIPE (`db/schema/vocab.ts`):
+  `vocab_items` (item + `is_irregular`/`irregular_of` untuk pasangan
+  kontras), `user_vocab_attempts` (termasuk kolom `error_type` khusus
+  untuk split bahasa/matematika, lihat di bawah), `user_vocab_mastery`
+  (skill: recognition/production/listening, terpisah dari
+  `user_kana_mastery`'s visual/audio/writing — himpunan skill BEDA per
+  tipe modul, jangan disamakan paksa).
+- **State machine fase belajar**: `HiraganaLearningLab.tsx` py fase (buka
+  kunci→anchor→isyarat→latihan→retrieval→baca→checkpoint) itu dirancang
+  untuk "kenali bentuk→ulang tanpa isyarat→baca dalam kata" — TIDAK pas
+  untuk kosakata. `VocabLearningLab.tsx` pakai state machine baru yang
+  lebih sederhana: dengar-pilih (recognition) → bangun-jawaban (production,
+  ketik romaji) → kontras-pengecualian (HANYA kalau unit itu punya item
+  irregular) → checkpoint. Ini BUKAN versi kana yang dipangkas — polanya
+  memang beda dari akarnya (V2.1 §6.3: dengar-bangun-ucap, bukan
+  kenali-bedakan-tulis).
+- **`KanaWritingCoach` / data goresan** — sama sekali tidak relevan;
+  modul vocab tidak (dan mungkin tidak akan pernah) punya komponen
+  tulisan tangan. Ini murni tipe-spesifik-kana, jangan dicoba
+  digeneralisasi.
+- **Kapsul ujian akhir (BOSS)**: hiragana/katakana pakai kuis 46-huruf
+  biasa untuk BOSS. PRE-N5.03 punya `KonbiniSimulation.tsx` — simulasi
+  belanja konbini 2-langkah (dengar total → hitung kembalian) yang V2.1
+  sebut sebagai kapsul modul ini secara eksplisit. Pola 2-langkahnya
+  (langkah 1 murni menguji DENGAR, langkah 2 selalu pakai harga yang
+  SUDAH terbukti benar dari langkah 1, jadi salah di langkah 2 pasti
+  salah HITUNG bukan salah DENGAR) dicatat sebagai `error_type: "language"
+  | "math"` di `user_vocab_attempts` — pola "pisahkan bukti-paham dari
+  bukti-hitung" ini bisa dipakai ulang modul lain yang butuh hal serupa
+  (bukan cuma konbini), tapi komponennya sendiri (`KonbiniSimulation.tsx`)
+  spesifik-konten, bukan spesifik-teknik.
+- **Halaman ringkasan modul** (`app/(app)/belajar/pre-n5/[moduleCode]/
+  page.tsx`) — TERNYATA masih ada string hardcode "46 HIRAGANA DASAR"/
+  "46 KATAKANA DASAR" dan rel progres huruf 10/20/30/40/46 yang
+  mengasumsikan kurikulum berbentuk huruf kumulatif. Ini lolos tak
+  kelihatan sampai PRE-N5.03 dibangun karena PRE-N5.02 (katakana) punya
+  bentuk kurikulum yang SAMA (46 huruf) — baru ketahuan tidak generik
+  begitu ada modul dengan bentuk kurikulum beda. Sudah dicabangkan per
+  `moduleOverview.code === "PRE-N5.03"` di file ini. **Modul keempat
+  dengan bentuk lain lagi kemungkinan akan menemukan celah serupa di
+  file yang sama — cek dulu, jangan asumsikan sudah aman.**
+
+### Yang SENGAJA belum diselesaikan — dicatat, bukan lupa
+
+- **`resolvePhaseCode`-style disambiguation BELUM diterapkan ke
+  `vocab-actions.ts`.** `completeVocabStage` saat ini pakai
+  `context.code` (F1, BOSS, dst.) LANGSUNG sebagai `phase_code`, tanpa
+  prefiks. Ini aman SEKARANG karena baru ada SATU modul vocab-engine.
+  Begitu modul kedua di jalur ini dibangun (04 sapaan / 05 kosakata / 10
+  listening), F1-nya modul itu akan bentrok `phase_code` dengan F1-nya
+  PRE-N5.03 di query RETENTION-check `completeVocabStage` (yang cuma
+  filter per `phase_code`+`exercise_type like 'v21_%'`, TIDAK per
+  `item_id`) — persis kelas masalah yang `resolvePhaseCode` selesaikan
+  untuk kana. **Modul vocab-engine kedua HARUS menambah skema prefiks
+  serupa sebelum di-deploy, bukan sesudah ketahuan datanya campur.**
+- **Simulasi konbini masih sederhana** (5 transaksi acak dari kategori
+  `price`, uang dibayar dipilih dari [1000,5000,10000] terdekat ke atas)
+  — belum ada variasi skenario (mis. minta kembalian dalam pecahan
+  koin/uang tertentu, dialog kasir yang lebih panjang). Fungsional dan
+  teruji, tapi kedalamannya sengaja minimal untuk PROMPT-8; V2.1 sendiri
+  menyebut ini kapsul, bukan menjabarkan detail wajib lain.
+- **QA linguistik penutur asli belum dilakukan** atas 98 item yang
+  di-seed `scripts/seed-pre-n5-03-vocab.ts` — skrip itu sendiri mencetak
+  peringatan ini di akhir jalannya (lihat V2.1 §16 butir 10). Kontennya
+  fakta buku teks standar dengan keyakinan tinggi, tapi belum direview
+  manusia penutur asli.
+- **Verifikasi visual/UI browser sungguhan tidak dilakukan sesi ini** —
+  classifier keamanan memblokir penyuntikan cookie sesi akun test ke tab
+  Chrome; pemilik memilih lewati langkah ini dan andalkan verifikasi
+  fungsional (server action asli via HTTP + query DB langsung, lihat
+  laporan akhir PROMPT-8) plus `tsc`/`lint`/`build` bersih. Modul ini
+  TIDAK punya canvas tulisan tangan (satu-satunya alasan sesi kana
+  selalu terpaksa pakai jalur server-action), jadi verifikasi visual
+  browser sungguhan SEBENARNYA memungkinkan di sini — tinggal
+  dilakukan pemilik sendiri, atau sesi berikutnya kalau classifier-nya
+  bisa dilewati dengan cara lain.
+
+### Checklist untuk modul vocab-engine berikutnya (04 sapaan / 05 kosakata / 10 listening)
+
+1. Pastikan dulu apakah modulnya BENAR-BENAR cocok dengan mesin ini
+   (dengar→bangun→kontras→checkpoint) atau perlu variasi lagi — jangan
+   asumsikan otomatis cocok hanya karena "sama-sama bukan kana".
+2. **Tambah entri prefiks `phase_code`** (lihat poin di atas) SEBELUM
+   modul kedua ini di-deploy bersamaan dengan PRE-N5.03 di production.
+3. Isi `vocab_items` untuk modul baru (kategori baru sesuai konten),
+   `learning_stages.configuration.categories` per fase.
+4. Kalau kontennya tidak punya pengecualian (`is_irregular`), fase
+   kontras otomatis dilewati (`VocabLearningLab` sudah cek
+   `unit.irregularItems.length > 0`) — tidak perlu kerja ekstra.
+5. Kalau BOSS-nya bukan skenario belanja, jangan paksa pakai
+   `KonbiniSimulation.tsx` — tulis komponen kapsul baru, tapi
+   pertimbangkan pakai ulang pola 2-langkah bahasa/matematika kalau
+   relevan.
+6. Jalankan `npx tsc --noEmit`, `npm run lint`, `npm run build`, lalu
+   verifikasi server action langsung (`recordVocabAttempt`/
+   `completeVocabStage` via `tests/support/serverActions.ts`) — dan kalau
+   memungkinkan, verifikasi visual browser sungguhan juga (modul
+   non-tulisan-tangan tidak punya alasan untuk melewatinya).

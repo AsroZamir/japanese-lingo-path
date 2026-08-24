@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
 
 const ACTIVE_CURRICULUM_CODE = "v2";
 const ACTIVE_LEVEL_CODE = "PRE-N5";
@@ -107,12 +108,13 @@ export const getCurriculumV2ModuleSummaries = cache(
     );
     const codeById = new Map(moduleRows.map((module) => [module.id, module.code]));
 
+    const devUnlock = isDevUnlockAllActive();
     return moduleRows.map((module): CurriculumModuleSummary => {
       const prerequisiteIds = prerequisiteIdsByModule.get(module.id) ?? [];
       const missingPrerequisites = prerequisiteIds.filter(
         (prerequisiteId) => !completedModuleIds.has(prerequisiteId),
       );
-      const locked = missingPrerequisites.length > 0;
+      const locked = !devUnlock && missingPrerequisites.length > 0;
       const progress = progressByModule.get(module.id);
       const percentComplete = progress?.percent_complete ?? 0;
       const contentStatus = module.status as CurriculumModuleSummary["contentStatus"];
@@ -164,3 +166,44 @@ export const getCurriculumV2ModuleSummaries = cache(
     });
   },
 );
+
+// PROMPT-8 Bagian 1 finding: the module-level lock on /belajar's cards
+// was PURELY a display lock — the module/stage pages themselves never
+// checked learning_module_prerequisites, so anyone who navigated to
+// /belajar/pre-n5/PRE-N5.0X directly bypassed it completely regardless
+// of dev-unlock. This is the real enforcement those pages now call,
+// mirroring the exact same prerequisite logic above (missing
+// prerequisite modules -> locked, unless dev-unlock is active) so the
+// card lock and the route lock finally agree with each other.
+export const isModuleLockedByPrerequisites = cache(async (moduleCode: string): Promise<boolean> => {
+  if (isDevUnlockAllActive()) return false;
+  const supabase = await createClient();
+
+  const { data: moduleRow } = await supabase
+    .from("learning_modules")
+    .select("id")
+    .eq("code", moduleCode)
+    .maybeSingle();
+  if (!moduleRow) return false;
+
+  const { data: prerequisiteRows } = await supabase
+    .from("learning_module_prerequisites")
+    .select("prerequisite_module_id")
+    .eq("module_id", moduleRow.id);
+  const prerequisiteIds = (prerequisiteRows ?? []).map((row) => row.prerequisite_module_id);
+  if (prerequisiteIds.length === 0) return false;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return true;
+
+  const { data: progressRows } = await supabase
+    .from("user_learning_module_progress")
+    .select("module_id, status")
+    .eq("user_id", user.id)
+    .in("module_id", prerequisiteIds)
+    .eq("status", "completed");
+  const completedIds = new Set((progressRows ?? []).map((row) => row.module_id));
+  return prerequisiteIds.some((id) => !completedIds.has(id));
+});

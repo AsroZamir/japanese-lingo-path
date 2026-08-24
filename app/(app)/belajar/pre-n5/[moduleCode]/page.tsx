@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getPreN5ModuleOverview } from "@/app/lib/pre-n5-01-query";
 import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
+import { isModuleLockedByPrerequisites } from "@/app/lib/curriculum-v2";
 import { PageHeader } from "../../../_components/PageHeader";
 import { DevUnlockBanner } from "../../../_components/DevUnlockBanner";
 
@@ -32,7 +33,8 @@ export default async function PreN5ModulePage({
   params: Promise<{ moduleCode: string }>;
 }) {
   const { moduleCode } = await params;
-  if (!["PRE-N5.01", "PRE-N5.02"].includes(moduleCode)) notFound();
+  if (!["PRE-N5.01", "PRE-N5.02", "PRE-N5.03"].includes(moduleCode)) notFound();
+  if (await isModuleLockedByPrerequisites(moduleCode)) redirect("/belajar");
   const moduleOverview = await getPreN5ModuleOverview(moduleCode);
   if (!moduleOverview) notFound();
 
@@ -56,7 +58,13 @@ export default async function PreN5ModulePage({
           <div className="pre-n5-module__objective">
             <div className="pre-n5-module__objective-topline">
               <span>Target akhir</span>
-              <b>{moduleOverview.code === "PRE-N5.02" ? "46 KATAKANA DASAR" : "46 HIRAGANA DASAR"}</b>
+              <b>
+                {moduleOverview.code === "PRE-N5.02"
+                  ? "46 KATAKANA DASAR"
+                  : moduleOverview.code === "PRE-N5.03"
+                    ? "ANGKA, WAKTU, HARGA & COUNTER DASAR"
+                    : "46 HIRAGANA DASAR"}
+              </b>
             </div>
             <h2>{moduleOverview.objective}</h2>
             <p>Metode: {moduleOverview.methodName}</p>
@@ -96,23 +104,25 @@ export default async function PreN5ModulePage({
           <strong>Belajar sedikit, lalu uji semua yang sudah dipelajari.</strong>
           <p>Fase berikutnya terbuka setelah batch aktif dan checkpoint kumulatifnya lulus.</p>
         </div>
-        <ol aria-label="Urutan jumlah huruf">
-          {[10, 20, 30, 40, 46].map((count, index) => {
-            const stage = phaseStages[index];
-            const stateClass = stage?.progressStatus === "completed"
-              ? "is-complete"
-              : stage && !stage.locked
-                ? "is-current"
-                : "";
+        {moduleOverview.code !== "PRE-N5.03" && (
+          <ol aria-label="Urutan jumlah huruf">
+            {[10, 20, 30, 40, 46].map((count, index) => {
+              const stage = phaseStages[index];
+              const stateClass = stage?.progressStatus === "completed"
+                ? "is-complete"
+                : stage && !stage.locked
+                  ? "is-current"
+                  : "";
 
-            return (
-              <li key={count} className={stateClass}>
-              <b>{count}</b>
-              <span>{index === 0 ? "huruf awal" : index === 4 ? "huruf lengkap" : "huruf kumulatif"}</span>
-            </li>
-            );
-          })}
-        </ol>
+              return (
+                <li key={count} className={stateClass}>
+                <b>{count}</b>
+                <span>{index === 0 ? "huruf awal" : index === 4 ? "huruf lengkap" : "huruf kumulatif"}</span>
+              </li>
+              );
+            })}
+          </ol>
+        )}
       </section>
 
       <section className="pre-n5-stage-list">
@@ -133,6 +143,7 @@ export default async function PreN5ModulePage({
 
         <div className="pre-n5-stage-list__grid">
           {moduleOverview.stages.map((stage) => {
+            const isVocabModule = moduleOverview.code === "PRE-N5.03";
             const cumulativeCount = configurationNumber(
               stage.configuration,
               "cumulativeCharacterCount",
@@ -143,6 +154,9 @@ export default async function PreN5ModulePage({
               "newCharacterCount",
               0,
             );
+            const categoryCount = Array.isArray(stage.configuration.categories)
+              ? (stage.configuration.categories as string[]).length
+              : 0;
             const body = (
               <>
                 <div className="pre-n5-stage-card__mark">
@@ -152,10 +166,14 @@ export default async function PreN5ModulePage({
                   <div className="pre-n5-stage-card__meta">
                     <span>
                       {stage.code === "BOSS"
-                        ? "Ujian akhir - 46 huruf"
+                        ? isVocabModule
+                          ? "Simulasi konbini - ujian akhir"
+                          : "Ujian akhir - 46 huruf"
                         : stage.code === "RETENTION"
                           ? "Gerbang tertunda - buka 72 jam setelah Gate"
-                          : "+" + newCharacterCount + " baru - total " + cumulativeCount}
+                          : isVocabModule
+                            ? categoryCount + " kelompok kosakata"
+                            : "+" + newCharacterCount + " baru - total " + cumulativeCount}
                     </span>
                     <b>{stage.statusLabel}</b>
                   </div>

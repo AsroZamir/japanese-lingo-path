@@ -57,6 +57,13 @@
       "when": 1787556292422,
       "tag": "0007_add_stage_progress_first_completed_at",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787594755052,
+      "tag": "0008_mysterious_scream",
+      "breakpoints": true
     }
   ]
 }

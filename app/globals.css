@@ -2255,3 +2255,30 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
   .hiragana-morph__kana,
   .modul-card-link .modul-card { animation: none; transition: none; }
 }
+
+/* PROMPT-8 Bagian 4/6 — Vocabulary Engine (PRE-N5.03). Reuses
+   .hiragana-lab / .hiragana-lab__rail / .hiragana-lab__main /
+   .hiragana-lab__header / .hiragana-lab__steps / .hiragana-lab__checkpoint*
+   as-is (see VocabLearningLab.tsx) — only the per-item step content below
+   is genuinely new. */
+.vocab-lab__step { display: grid; justify-items: center; gap: 14px; padding: 20px 0; text-align: center; }
+.vocab-lab__step p { max-width: 430px; margin: 0; color: var(--moji-muted); font-size: 12px; }
+.vocab-lab__kana { color: var(--moji-ink); font: 700 90px/1 var(--moji-font-jp); }
+.vocab-lab__choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; width: 100%; max-width: 560px; }
+.vocab-lab__choices button { min-height: 62px; padding: 10px; border: 1.5px solid var(--moji-line); border-radius: 13px; color: var(--moji-ink); background: #fff; font: 700 20px/1.2 var(--moji-font-jp); }
+.vocab-lab__choices button.is-selected { border-color: var(--moji-accent); background: var(--moji-accent-soft-bg); }
+.vocab-lab__choices button.is-correct { border-color: var(--moji-success); background: var(--moji-success-bg); }
+.vocab-lab__choices button.is-wrong { border-color: var(--moji-accent); background: var(--moji-error-bg); }
+.vocab-lab__step--contrast { padding-top: 8px; }
+.vocab-lab__contrast-badge { padding: 5px 10px; border-radius: 999px; color: #a0442e; background: var(--moji-error-bg); font-size: 9px; font-weight: 900; letter-spacing: .04em; }
+
+.konbini-sim { max-width: 620px; min-height: 420px; display: flex; flex-direction: column; margin: 0 auto; padding: 25px; border: 1px solid var(--moji-line); border-radius: var(--moji-radius-2xl); background: var(--moji-white); }
+.konbini-sim__header { color: var(--moji-faint); font-size: 11px; font-weight: 800; }
+.konbini-sim__step { display: grid; justify-items: center; gap: 14px; padding: 24px 0; text-align: center; }
+.konbini-sim__step p { max-width: 430px; margin: 0; color: var(--moji-muted); font-size: 13px; line-height: 1.5; }
+.konbini-sim__step .hiragana-quiz__input { width: min(100%, 320px); }
+
+@media (max-width: 680px) {
+  .vocab-lab__kana { font-size: 60px; }
+  .vocab-lab__choices { grid-template-columns: 1fr; }
+}

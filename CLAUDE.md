@@ -17,15 +17,25 @@ Layar pembuka vokal (`VocalBridgeIntro.tsx`) muncul sekali sebelum F1
 batch 1 pertama kali, tidak persisten ke database.
 
 **Bagian 2 (VOICEVOX) — selesai belakangan** (25 Agustus 2026, setelah
-pemilik menyalakan VOICEVOX sendiri). Halaman perbandingan **`/dev/suara`**
-(tidak ada di navigasi) menampilkan 12 kandidat suara pengganti
+pemilik menyalakan VOICEVOX sendiri). Halaman awalnya ditaruh di
+`/dev/suara` — TERNYATA `proxy.ts` sengaja mem-block SELURUH path
+`/dev/*` dengan 404 murni di production (lihat komentar di dalamnya
+sendiri: halaman dev tidak boleh bocor ke publik) — jadi halaman itu
+tidak akan PERNAH bisa dibuka di situs live, berapa pun lama ditunggu.
+**Bukan bug deploy.** Dipindah ke **`/pengaturan/suara`** (tidak ada di
+navigasi, tapi tetap butuh login seperti halaman lain) supaya benar-benar
+bisa dibuka di situs live. Kalau ada halaman internal serupa di masa
+depan, jangan taruh di bawah `/dev/` kalau memang perlu diakses dari
+situs live — pola ini akan berulang.
+
+Halaman itu menampilkan 12 kandidat suara pengganti
 四国めたん id=2 (dinilai terlalu anime), masing-masing dengan 3 sampel
 audio nyata (あいうえお, かきくけこ, kalimat). File WAV-nya disimpan statis
 di `public/dev-suara/` (~2 MB, sudah di-commit) supaya halaman tetap
 jalan tanpa VOICEVOX menyala terus-menerus — regenerasi lewat
 `npm run generate:voice-samples` (`scripts/generate-voice-comparison-
 samples.ts`), VOICEVOX harus menyala saat itu. **Suara produksi belum
-diganti** — pemilik yang memilih dulu lewat `/dev/suara`, baru speaker id
+diganti** — pemilik yang memilih dulu lewat `/pengaturan/suara`, baru speaker id
 dipindah (satu env var `VOICEVOX_SPEAKER_ID`, sudah tersentralisasi sejak
 sebelumnya) di `scripts/generate-audio-voicevox.ts` dan
 `scripts/generate-audio-remaining-kana.ts`, lalu audio kana yang sudah

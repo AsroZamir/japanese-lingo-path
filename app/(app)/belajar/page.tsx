@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getCurriculumV2ModuleSummaries } from "@/app/lib/curriculum-v2";
+import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
 import { PageHeader } from "../_components/PageHeader";
+import { DevUnlockBanner } from "../_components/DevUnlockBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +11,7 @@ export default async function LearnPage() {
 
   return (
     <>
+      {isDevUnlockAllActive() && <DevUnlockBanner />}
       <PageHeader
         eyebrow="KURIKULUM V2 · PRE-N5"
         title="Fondasi Active Mastery"
