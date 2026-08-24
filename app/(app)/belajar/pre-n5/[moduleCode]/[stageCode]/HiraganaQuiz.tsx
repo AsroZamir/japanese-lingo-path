@@ -105,6 +105,10 @@ export function HiraganaQuiz({
   const [currentWritingScore, setCurrentWritingScore] = useState<number | null>(null);
   const [currentWritingPassed, setCurrentWritingPassed] = useState(false);
   const [checked, setChecked] = useState(false);
+  // Prompt 4 Bagian 3: recordHiraganaAttempt used to be fire-and-forget
+  // here too — "Lanjutkan"/"Selesai" now waits for the save to actually
+  // land before it's clickable, same fix as HiraganaLearningLab.tsx.
+  const [savingAttempt, setSavingAttempt] = useState(false);
   const [attempts, setAttempts] = useState<boolean[]>([]);
   const [startedAt, setStartedAt] = useState(() => Date.now());
   const [remaining, setRemaining] = useState(timeLimitSeconds ?? 0);
@@ -130,7 +134,7 @@ export function HiraganaQuiz({
     });
   }
 
-  function gradeCurrent() {
+  async function gradeCurrent() {
     if (!current || checked || remaining === 0 && Boolean(timeLimitSeconds)) return;
     const isCorrect =
       current.kind === "typing"
@@ -142,8 +146,9 @@ export function HiraganaQuiz({
     const nextAttempts = [...attempts, isCorrect];
     setAttempts(nextAttempts);
     setChecked(true);
+    setSavingAttempt(true);
 
-    void recordHiraganaAttempt({
+    await recordHiraganaAttempt({
       stageId,
       kanaId: current.item.id,
       exerciseType: current.exerciseType,
@@ -163,6 +168,7 @@ export function HiraganaQuiz({
       assisted: false,
       firstAttemptCorrect: isCorrect,
     });
+    setSavingAttempt(false);
   }
 
   function continueQuiz() {
@@ -258,7 +264,7 @@ export function HiraganaQuiz({
             if (event.key === "Enter") {
               event.preventDefault();
               if (checked) continueQuiz();
-              else if (canCheck) gradeCurrent();
+              else if (canCheck) void gradeCurrent();
             }
           }}
           placeholder="Ketik romaji..."
@@ -329,10 +335,13 @@ export function HiraganaQuiz({
       <button
         type="button"
         className="primary-button hiragana-quiz__action"
-        disabled={!checked && !canCheck}
-        onClick={checked ? continueQuiz : gradeCurrent}
+        disabled={(!checked && !canCheck) || savingAttempt}
+        onClick={() => {
+          if (checked) continueQuiz();
+          else void gradeCurrent();
+        }}
       >
-        {checked ? "Lanjutkan" : "Periksa"}
+        {savingAttempt ? "Menyimpan..." : checked ? "Lanjutkan" : "Periksa"}
       </button>
     </section>
   );

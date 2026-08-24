@@ -251,10 +251,12 @@ function requeueAfterHint(remainingQueue: number[], itemId: number): number[] {
 function DiscriminateStep({
   item,
   pool,
+  saving,
   onOutcome,
 }: {
   item: HiraganaLearningItem;
   pool: HiraganaLearningItem[];
+  saving: boolean;
   onOutcome: (correct: boolean, selectedId: number) => void;
 }) {
   const choices = useMemo(() => discriminateChoices(item, pool), [item, pool]);
@@ -294,7 +296,7 @@ function DiscriminateStep({
       <button
         type="button"
         className="primary-button"
-        disabled={selected == null}
+        disabled={selected == null || saving}
         onClick={() => {
           if (!checked) {
             setChecked(true);
@@ -303,7 +305,7 @@ function DiscriminateStep({
           onOutcome(selected === item.id, selected as number);
         }}
       >
-        {checked ? "Lanjut" : "Periksa"}
+        {saving ? "Menyimpan..." : checked ? "Lanjut" : "Periksa"}
       </button>
     </div>
   );
@@ -498,6 +500,10 @@ export function HiraganaLearningLab({
   const [lastCheckpointResult, setLastCheckpointResult] =
     useState<HiraganaQuizResult | null>(null);
   const [saving, setSaving] = useState(false);
+  // Bagian 3: disables the relevant continue control while an attempt
+  // save is in flight, so the item/phase can't change (and the tab can't
+  // meaningfully be closed on a "done" screen) before it lands.
+  const [savingAttempt, setSavingAttempt] = useState(false);
 
   const unit = bundle.units[unitIndex];
   const phaseCode = V21_PHASE_CODE_BY_STAGE[bundle.stage.code] ?? bundle.stage.code;
@@ -576,7 +582,15 @@ export function HiraganaLearningLab({
     setRetrievalPassed(false);
   }
 
-  function recordAttempt(input: {
+  // Prompt 4 Bagian 3: this used to be void recordHiraganaAttempt(...) —
+  // fire-and-forget, not awaited. If the user closed the tab right after
+  // their last click, the save could still be in flight and never land
+  // (reproduced by hand: confirmed the UI can advance through all of a
+  // unit's items while only 1 of 5 attempt rows actually reaches the
+  // server). Now awaited by every caller before they advance the UI, so
+  // the save is guaranteed to have finished — or to have surfaced its own
+  // error — before the item that depended on it changes.
+  async function recordAttempt(input: {
     item: HiraganaLearningItem;
     exerciseType: "discriminate" | "trace" | "short_memory" | "write_from_audio";
     skill: "audio" | "writing";
@@ -587,8 +601,8 @@ export function HiraganaLearningLab({
     selectedKanaId?: number | null;
     writingScore?: number | null;
     writingMatched?: boolean | null;
-  }) {
-    void recordHiraganaAttempt({
+  }): Promise<void> {
+    await recordHiraganaAttempt({
       stageId: bundle.stage.id,
       kanaId: input.item.id,
       exerciseType: input.exerciseType,
@@ -616,9 +630,10 @@ export function HiraganaLearningLab({
     setItemIndex(0);
   }
 
-  function handleDiscriminateOutcome(correct: boolean, selectedId: number) {
+  async function handleDiscriminateOutcome(correct: boolean, selectedId: number) {
     if (!discriminateItem) return;
-    recordAttempt({
+    setSavingAttempt(true);
+    await recordAttempt({
       item: discriminateItem,
       exerciseType: "discriminate",
       skill: "audio",
@@ -628,6 +643,7 @@ export function HiraganaLearningLab({
       hintLevelUsed: 0,
       selectedKanaId: selectedId,
     });
+    setSavingAttempt(false);
     if (!unit) return;
     if (itemIndex + 1 < unit.items.length) {
       setItemIndex((value) => value + 1);
@@ -639,11 +655,13 @@ export function HiraganaLearningLab({
     setGuidedPassed(false);
   }
 
-  function handleGuidedOutcome(outcome: KanaWritingOutcome) {
+  async function handleGuidedOutcome(outcome: KanaWritingOutcome) {
     setGuidedScore(outcome.score);
-    setGuidedPassed(outcome.matched);
     if (!guidedItem) return;
-    recordAttempt({
+    // guidedPassed (which enables "Lanjut") is set only after the save
+    // lands, not before — matched-but-unsaved must not look continuable.
+    if (outcome.matched) setSavingAttempt(true);
+    await recordAttempt({
       item: guidedItem,
       exerciseType: "trace",
       skill: "writing",
@@ -654,6 +672,8 @@ export function HiraganaLearningLab({
       writingScore: outcome.score,
       writingMatched: outcome.matched,
     });
+    if (outcome.matched) setSavingAttempt(false);
+    setGuidedPassed(outcome.matched);
   }
 
   function advanceGuided() {
@@ -685,7 +705,9 @@ export function HiraganaLearningLab({
     const isFirstAttempt = !attemptedOnceRef.current.has(retrievalItem.id);
     attemptedOnceRef.current.add(retrievalItem.id);
 
-    recordAttempt({
+    // Awaited before anything below touches retrievalQueue/phase — this
+    // item must not disappear from view until its save has landed.
+    await recordAttempt({
       item: retrievalItem,
       exerciseType: cueMode === "flash" ? "short_memory" : "write_from_audio",
       skill: "writing",
@@ -912,7 +934,8 @@ export function HiraganaLearningLab({
             key={discriminateItem.id}
             item={discriminateItem}
             pool={bundle.items}
-            onOutcome={handleDiscriminateOutcome}
+            saving={savingAttempt}
+            onOutcome={(correct, selectedId) => void handleDiscriminateOutcome(correct, selectedId)}
           />
         )}
 
@@ -927,7 +950,7 @@ export function HiraganaLearningLab({
                 character={guidedItem.character}
                 strokeData={stroke.data}
                 mode="guided"
-                onComplete={handleGuidedOutcome}
+                onComplete={(outcome) => void handleGuidedOutcome(outcome)}
               />
             )}
             {guidedScore != null && (
@@ -939,10 +962,10 @@ export function HiraganaLearningLab({
             <button
               type="button"
               className="primary-button"
-              disabled={!guidedPassed}
+              disabled={!guidedPassed || savingAttempt}
               onClick={advanceGuided}
             >
-              Lanjut
+              {savingAttempt ? "Menyimpan..." : "Lanjut"}
             </button>
           </div>
         )}
