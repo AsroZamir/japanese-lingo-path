@@ -13,9 +13,9 @@ export default async function HiraganaStagePage({
   params: Promise<{ moduleCode: string; stageCode: string }>;
 }) {
   const { moduleCode, stageCode } = await params;
-  if (moduleCode !== "PRE-N5.01") notFound();
+  if (!["PRE-N5.01", "PRE-N5.02"].includes(moduleCode)) notFound();
 
-  const bundle = await getHiraganaStageBundle(stageCode.toUpperCase());
+  const bundle = await getHiraganaStageBundle(stageCode.toUpperCase(), moduleCode);
   if (!bundle) notFound();
   if (bundle.stage.locked && !bundle.stage.delayedGateAvailableAt) {
     redirect("/belajar/pre-n5/" + moduleCode);

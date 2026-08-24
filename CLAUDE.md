@@ -19,6 +19,26 @@ dilewati — server `localhost:50021` tidak jalan di komputer ini saat
 sesi berjalan, tidak ditemukan `.exe` untuk menyalakannya (cuma folder
 data `%LOCALAPPDATA%\voicevox-engine` tanpa engine-nya sendiri).
 
+PROMPT-7 Bagian 7-9 (katakana): **PRE-N5.02 aktif** — status modul
+`ready` (dulu `scaffold`), 7 baris `learning_stages` (F1-F5, BOSS,
+RETENTION) diisi konten V2.1 nyata, memakai ULANG mesin hiragana
+sepenuhnya (routing, 7 fase, gate-logic, SRS) setelah beberapa titik
+yang ternyata masih terikat hiragana dinetralkan — daftar lengkap +
+alasan di **`docs/POLA-MODUL-BARU.md`** (baca itu dulu sebelum membangun
+modul kana berikutnya, jangan menemukan ulang hal yang sama). Titik
+paling penting untuk diingat: `V21_PHASE_CODE_BY_STAGE` akan BENTROK
+kalau dipakai mentah oleh modul kedua (F1 hiragana dan F1 katakana
+sama-sama jadi phase_code "P1") — selalu lewat `resolvePhaseCode()`
+(`app/lib/katakana-data.ts`), dan modul ketiga harus menambah cabangnya
+sendiri di situ, bukan menimpa map yang sama. Mnemonik katakana **belum
+ditulis** (fallback generik aktif, sesuai instruksi "belum wajib").
+9 pasangan huruf katakana yang sering tertukar ditambahkan ke
+`kana_confusion_pairs` (ク/ワ, ク/タ, ノ/メ, ノ/ヌ, メ/ヌ, フ/ラ, ワ/ラ,
+コ/ユ, チ/テ) — total 14 pasangan katakana sekarang. `/ulangi` dan
+`/progres` sudah menampilkan katakana (dibuktikan lewat data nyata, bukan
+cuma baca kode) — `/latihan` (speed drill) **belum**, masih hiragana-only,
+lihat gap list di `docs/POLA-MODUL-BARU.md`.
+
 Nama produk yang **terlihat pengguna** sekarang **"BaraJapan"** (diganti dari
 "Japanese Lingo Path" per permintaan pemilik). Repo, folder, domain Vercel,
 nama tabel database, dan nama variabel kode **sengaja tidak diubah** —

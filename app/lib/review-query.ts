@@ -177,7 +177,11 @@ export const getReviewQueue = cache(async (limit = DAILY_REVIEW_CAP): Promise<Re
       .eq("user_id", user.id)
       .in("kana_id", candidateIds)
       .eq("assisted", false)
-      .eq("phase_code", "RETENTION"),
+      // Candidate ids here mix hiragana and katakana on purpose (SRS is
+      // per-character, not per-script) — match either module's RETENTION
+      // phase_code rather than just hiragana's, or a failed katakana
+      // retention check would never boost that character's review priority.
+      .in("phase_code", ["RETENTION", "K_RETENTION"]),
   ]);
   if (kanaResult.error) throw new Error(kanaResult.error.message);
   if (recentAttemptsResult.error) throw new Error(recentAttemptsResult.error.message);
@@ -315,15 +319,20 @@ export const getReviewCounts = cache(async (): Promise<ReviewCounts> => {
 // exercise_type prefix always comes from the explicit phaseCode a review
 // question passes ("review"), not from this stage's own code. Any ready
 // stage works; F1 is just a stable, always-present anchor.
-export type DistractorKana = { id: number; character: string };
+export type DistractorKana = { id: number; character: string; script: string };
 
 // Broad pool for building multiple-choice distractors on review questions
-// — every hiragana row, any type (basic/dakuten/handakuten/youon), so a
-// due F9 (youon) character still gets plausible same-script distractors
-// even outside its own small batch.
+// — every hiragana AND katakana row, any type (basic/dakuten/handakuten/
+// youon), so a due character always gets plausible same-script
+// distractors even outside its own small batch. Caller filters by
+// `script` so a katakana question never shows hiragana distractors (or
+// vice versa) mixed into its choices.
 export const getHiraganaDistractorPool = cache(async (): Promise<DistractorKana[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("kana_characters").select("id, character").eq("script", "hiragana");
+  const { data, error } = await supabase
+    .from("kana_characters")
+    .select("id, character, script")
+    .in("script", ["hiragana", "katakana"]);
   if (error) throw new Error(error.message);
   return data ?? [];
 });

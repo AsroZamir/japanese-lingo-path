@@ -32,8 +32,9 @@ export default async function PreN5ModulePage({
   params: Promise<{ moduleCode: string }>;
 }) {
   const { moduleCode } = await params;
+  if (!["PRE-N5.01", "PRE-N5.02"].includes(moduleCode)) notFound();
   const moduleOverview = await getPreN5ModuleOverview(moduleCode);
-  if (!moduleOverview || moduleOverview.code !== "PRE-N5.01") notFound();
+  if (!moduleOverview) notFound();
 
   const phaseStages = moduleOverview.stages.filter((stage) => /^F[1-5]$/.test(stage.code));
 
@@ -55,7 +56,7 @@ export default async function PreN5ModulePage({
           <div className="pre-n5-module__objective">
             <div className="pre-n5-module__objective-topline">
               <span>Target akhir</span>
-              <b>46 HIRAGANA DASAR</b>
+              <b>{moduleOverview.code === "PRE-N5.02" ? "46 KATAKANA DASAR" : "46 HIRAGANA DASAR"}</b>
             </div>
             <h2>{moduleOverview.objective}</h2>
             <p>Metode: {moduleOverview.methodName}</p>
@@ -95,7 +96,7 @@ export default async function PreN5ModulePage({
           <strong>Belajar sedikit, lalu uji semua yang sudah dipelajari.</strong>
           <p>Fase berikutnya terbuka setelah batch aktif dan checkpoint kumulatifnya lulus.</p>
         </div>
-        <ol aria-label="Urutan jumlah Hiragana">
+        <ol aria-label="Urutan jumlah huruf">
           {[10, 20, 30, 40, 46].map((count, index) => {
             const stage = phaseStages[index];
             const stateClass = stage?.progressStatus === "completed"

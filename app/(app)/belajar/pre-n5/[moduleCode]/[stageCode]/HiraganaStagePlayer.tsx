@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import {
   CURRICULUM_VERSION_V21,
   HIRAGANA_LAB_VERSION,
-  V21_PHASE_CODE_BY_STAGE,
 } from "@/app/lib/hiragana-mnemonics";
+import { resolvePhaseCode } from "@/app/lib/katakana-data";
 import type {
   HiraganaLearningItem,
   HiraganaStageBundle,
@@ -146,7 +146,11 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
   const [completion, setCompletion] = useState<StageCompletionResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [runKey, setRunKey] = useState(0);
-  const phaseCode = V21_PHASE_CODE_BY_STAGE[bundle.stage.code] ?? bundle.stage.code;
+  const stageScript =
+    typeof bundle.stage.configuration.script === "string"
+      ? bundle.stage.configuration.script
+      : "hiragana";
+  const phaseCode = resolvePhaseCode(bundle.stage.code, stageScript);
   const gateQuestions = useMemo(
     () => buildGateQuestions(bundle.items, phaseCode),
     [bundle.items, phaseCode],
@@ -197,6 +201,7 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
   // checkpoint — passing it only means "may proceed", not "mastered".
   if (bundle.stage.code === "BOSS" || bundle.stage.code === "RETENTION") {
     const isRetention = bundle.stage.code === "RETENTION";
+    const scriptLabel = stageScript === "katakana" ? "Katakana 46" : "Hiragana 46";
     return (
       <HiraganaQuiz
         key={runKey}
@@ -207,8 +212,8 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
           finishStage(
             result,
             isRetention
-              ? { badge: result.correct / result.total >= 0.85 ? "Hiragana 46 Durable" : null }
-              : { badge: result.correct / result.total >= 0.8 ? "Hiragana 46 Pathfinder" : null },
+              ? { badge: result.correct / result.total >= 0.85 ? scriptLabel + " Durable" : null }
+              : { badge: result.correct / result.total >= 0.8 ? scriptLabel + " Pathfinder" : null },
           )
         }
       />

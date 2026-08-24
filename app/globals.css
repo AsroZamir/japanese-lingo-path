@@ -1895,7 +1895,9 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 }
 
 /* Bagian 6.5 — mastery map (/progres) */
-.mastery-map { display: grid; gap: 20px; }
+.mastery-map__section-title { margin: 28px 0 14px; color: var(--moji-ink); font-size: 15px; font-weight: 800; }
+.mastery-map__section-title:first-of-type { margin-top: 4px; }
+.mastery-map { display: grid; gap: 20px; margin-bottom: 8px; }
 .mastery-map__legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 14px 18px; border: 1px solid var(--moji-line); border-radius: 14px; background: #fff; }
 .mastery-map__legend-item { display: inline-flex; align-items: center; gap: 6px; color: var(--moji-muted); font-size: 10.5px; font-weight: 700; }
 .mastery-map__legend-item i { width: 10px; height: 10px; border-radius: 3px; }

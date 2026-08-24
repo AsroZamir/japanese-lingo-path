@@ -9,6 +9,7 @@ import {
 } from "@/app/lib/hiragana-mnemonics";
 import { evaluateDelayedGateEligibility } from "@/app/(app)/belajar/pre-n5/[moduleCode]/[stageCode]/gate-logic";
 import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
+import { KATAKANA_BASIC_CHARACTERS } from "@/app/lib/katakana-data";
 
 const CURRICULUM_CODE = "v2";
 const LEVEL_CODE = "PRE-N5";
@@ -354,7 +355,8 @@ function chunk<T>(items: T[], size: number): T[][] {
   return result;
 }
 
-function buildUnits(items: HiraganaLearningItem[]): HiraganaUnit[] {
+function buildUnits(items: HiraganaLearningItem[], script: string): HiraganaUnit[] {
+  const scriptLabel = script === "katakana" ? "Katakana Dasar" : "Hiragana Dasar";
   const units: HiraganaUnit[] = [];
 
   // V2.1 §7 chunks every phase's new characters into exactly two lessons
@@ -372,7 +374,7 @@ function buildUnits(items: HiraganaLearningItem[]): HiraganaUnit[] {
     lessons.forEach((lessonItems, index) => {
       units.push({
         code: "basic-" + (index + 1),
-        title: "Hiragana Dasar · Kelompok " + (index + 1),
+        title: scriptLabel + " · Kelompok " + (index + 1),
         description: lessonItems.map((item) => item.character).join(" · "),
         items: lessonItems,
       });
@@ -508,24 +510,41 @@ const YOUON_CHARACTERS = [
   "みゃ", "みゅ", "みょ", // みゃみゅみょ
   "りゃ", "りゅ", "りょ", // りゃりゅりょ
 ] as const;
-const CHARACTER_TRACKS: Record<string, readonly string[]> = {
-  core46: HIRAGANA_BASIC_CHARACTERS,
-  dakuten_handakuten: DAKUTEN_HANDAKUTEN_CHARACTERS,
-  youon: YOUON_CHARACTERS,
+const CHARACTER_TRACKS: Record<string, Record<string, readonly string[]>> = {
+  hiragana: {
+    core46: HIRAGANA_BASIC_CHARACTERS,
+    dakuten_handakuten: DAKUTEN_HANDAKUTEN_CHARACTERS,
+    youon: YOUON_CHARACTERS,
+  },
+  katakana: {
+    core46: KATAKANA_BASIC_CHARACTERS,
+  },
 };
 
+// PROMPT-7 Bagian 7 — generalized to any PRE-N5 module built on this same
+// engine (moduleCode, defaulting to hiragana for every existing caller).
+// `script` is read from the stage's own configuration.script (set to
+// "katakana" on PRE-N5.02's rows, "hiragana" — or unset, same default —
+// on PRE-N5.01's) rather than hardcoded, so CHARACTER_TRACKS and the
+// kana_characters query resolve to the right script automatically.
 export const getHiraganaStageBundle = cache(
-  async (stageCode: string): Promise<HiraganaStageBundle | null> => {
-    const moduleOverview = await getPreN5ModuleOverview(HIRAGANA_MODULE_CODE);
+  async (
+    stageCode: string,
+    moduleCode: string = HIRAGANA_MODULE_CODE,
+  ): Promise<HiraganaStageBundle | null> => {
+    const moduleOverview = await getPreN5ModuleOverview(moduleCode);
     if (!moduleOverview) return null;
     const stage = moduleOverview.stages.find((candidate) => candidate.code === stageCode);
     if (!stage) return null;
 
+    const script =
+      typeof stage.configuration.script === "string" ? stage.configuration.script : "hiragana";
     const trackKey =
       typeof stage.configuration.characterSet === "string"
         ? stage.configuration.characterSet
         : "core46";
-    const trackCharacters = CHARACTER_TRACKS[trackKey] ?? HIRAGANA_BASIC_CHARACTERS;
+    const trackCharacters =
+      CHARACTER_TRACKS[script]?.[trackKey] ?? CHARACTER_TRACKS.hiragana.core46;
 
     const supabase = await createClient();
     const { data: rows, error: kanaError } = await supabase
@@ -533,7 +552,7 @@ export const getHiraganaStageBundle = cache(
       .select(
         "id, character, romaji, type, group_code, order_in_group, base_character_id, audio_url, stroke_data_key",
       )
-      .eq("script", "hiragana")
+      .eq("script", script)
       .in("character", [...trackCharacters]);
     if (kanaError) throw new Error(kanaError.message);
 
@@ -730,7 +749,7 @@ export const getHiraganaStageBundle = cache(
       module: moduleOverview,
       stage,
       items,
-      units: buildUnits(newItems),
+      units: buildUnits(newItems, script),
       readWords,
     };
   },

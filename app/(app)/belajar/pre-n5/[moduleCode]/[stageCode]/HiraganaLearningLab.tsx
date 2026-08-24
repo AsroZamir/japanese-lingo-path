@@ -12,8 +12,8 @@ import {
   CURRICULUM_VERSION_V21,
   HIRAGANA_LAB_VERSION,
   HIRAGANA_WORD_UNLOCKS,
-  V21_PHASE_CODE_BY_STAGE,
 } from "@/app/lib/hiragana-mnemonics";
+import { resolvePhaseCode } from "@/app/lib/katakana-data";
 import type {
   HiraganaLearningItem,
   HiraganaReadWord,
@@ -253,7 +253,7 @@ function requeueAfterHint(remainingQueue: number[], itemId: number): number[] {
   ];
 }
 
-const READ_WORDS_PER_ROUND = 3;
+const DEFAULT_READ_WORDS_PER_ROUND = 3;
 
 // Bagian 6.4 — prefer words that actually contain one of THIS unit's new
 // characters (reading feels connected to what was just learned), falling
@@ -344,17 +344,24 @@ function normalizeRomaji(value: string): string {
 // a display layer, not content).
 function ReadStep({
   word,
+  script,
   saving,
   onOutcome,
 }: {
   word: HiraganaReadWord;
+  script: string;
   saving: boolean;
   onOutcome: (typedRomaji: string) => void;
 }) {
   const [value, setValue] = useState("");
   const [checked, setChecked] = useState(false);
   const isCorrect = normalizeRomaji(value) === normalizeRomaji(word.romaji);
-  const preview = value.trim().length > 0 ? wanakana.toHiragana(value) : "";
+  const preview =
+    value.trim().length > 0
+      ? script === "katakana"
+        ? wanakana.toKatakana(value)
+        : wanakana.toHiragana(value)
+      : "";
 
   return (
     <div className="hiragana-lab__read">
@@ -569,11 +576,18 @@ export function HiraganaLearningLab({
   const [unitIndex, setUnitIndex] = useState(startingUnitIndex);
   // PROMPT-7 Bagian 5 — vocal bridge intro, only ever relevant right
   // before F1's very first batch (startingUnitIndex 0, nothing completed
-  // yet). A learner resuming mid-way through F1, or any later stage,
-  // never sees it — it's a one-time "you already know half of this"
-  // moment, not a recurring banner.
+  // yet) of the HIRAGANA module specifically — "vokal Indonesia = vokal
+  // Jepang" isn't a katakana-onboarding point. A learner resuming mid-way
+  // through F1, or any later stage, never sees it either — it's a
+  // one-time "you already know half of this" moment, not a recurring banner.
+  const isHiraganaScript =
+    typeof bundle.stage.configuration.script !== "string" ||
+    bundle.stage.configuration.script === "hiragana";
   const [showVocalBridge, setShowVocalBridge] = useState(
-    bundle.stage.code === "F1" && startingUnitIndex === 0 && initialCompleted.length === 0,
+    isHiraganaScript &&
+      bundle.stage.code === "F1" &&
+      startingUnitIndex === 0 &&
+      initialCompleted.length === 0,
   );
   const [phase, setPhase] = useState<LearningPhase>("anchor");
   const [itemIndex, setItemIndex] = useState(0);
@@ -603,7 +617,15 @@ export function HiraganaLearningLab({
   const [savingAttempt, setSavingAttempt] = useState(false);
 
   const unit = bundle.units[unitIndex];
-  const phaseCode = V21_PHASE_CODE_BY_STAGE[bundle.stage.code] ?? bundle.stage.code;
+  const stageScript =
+    typeof bundle.stage.configuration.script === "string"
+      ? bundle.stage.configuration.script
+      : "hiragana";
+  const phaseCode = resolvePhaseCode(bundle.stage.code, stageScript);
+  const readWordsPerRound =
+    typeof bundle.stage.configuration.readWordsPerRound === "number"
+      ? bundle.stage.configuration.readWordsPerRound
+      : DEFAULT_READ_WORDS_PER_ROUND;
   const phaseTarget = bundle.items.length;
   const batchCharacterCount = bundle.units.reduce(
     (total, candidate) => total + candidate.items.length,
@@ -835,7 +857,7 @@ export function HiraganaLearningLab({
           attemptedOnceRef.current = new Set();
         } else {
           const unitItemIds = new Set(unit?.items.map((candidate) => candidate.id) ?? []);
-          const words = selectReadWords(bundle.readWords, unitItemIds, READ_WORDS_PER_ROUND);
+          const words = selectReadWords(bundle.readWords, unitItemIds, readWordsPerRound);
           if (words.length > 0) {
             setPhase("read");
             setReadQueue(words);
@@ -1149,6 +1171,7 @@ export function HiraganaLearningLab({
           <ReadStep
             key={readQueue[0].id}
             word={readQueue[0]}
+            script={stageScript}
             saving={savingAttempt}
             onOutcome={(typedRomaji) => void handleReadOutcome(readQueue[0], typedRomaji)}
           />

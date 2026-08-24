@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { HIRAGANA_LAB_VERSION, V21_PHASE_CODE_BY_STAGE } from "@/app/lib/hiragana-mnemonics";
+import { HIRAGANA_LAB_VERSION } from "@/app/lib/hiragana-mnemonics";
+import { resolvePhaseCode } from "@/app/lib/katakana-data";
 import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
 import { nextSrsInterval as sharedNextSrsInterval, nextSrsEase } from "@/app/lib/srs";
 import {
@@ -14,6 +15,11 @@ import {
 } from "./gate-logic";
 
 const HIRAGANA_MODULE_CODE = "PRE-N5.01";
+// PROMPT-7 Bagian 7 — this actions.ts file already lived under the
+// generic [moduleCode]/[stageCode] route (nothing hardcoded there), it
+// just had one hardcoded gate keeping it hiragana-only. Any module built
+// on the same engine gets added here.
+const SUPPORTED_MODULE_CODES = [HIRAGANA_MODULE_CODE, "PRE-N5.02"];
 const SRS_INTERVALS = [1, 3, 7, 14, 30] as const;
 
 type KanaSkill = "visual" | "audio" | "recall" | "writing" | "reading" | "typing";
@@ -67,6 +73,7 @@ type StageContext = {
   id: number;
   code: string;
   moduleId: number;
+  moduleCode: string;
   orderIndex: number;
   passCriteria: Record<string, unknown>;
   configuration: Record<string, unknown>;
@@ -98,12 +105,13 @@ async function getStageContext(
     .select("code")
     .eq("id", stage.module_id)
     .maybeSingle();
-  if (moduleError || module?.code !== HIRAGANA_MODULE_CODE) return null;
+  if (moduleError || !module || !SUPPORTED_MODULE_CODES.includes(module.code)) return null;
 
   return {
     id: stage.id,
     code: stage.code,
     moduleId: stage.module_id,
+    moduleCode: module.code,
     orderIndex: stage.order_index,
     passCriteria: asObject(stage.pass_criteria),
     configuration: asObject(stage.configuration),
@@ -129,13 +137,18 @@ export async function recordHiraganaAttempt(
   const context = await getStageContext(supabase, input.stageId);
   if (!context) return { ok: false, error: "Stage Hiragana tidak ditemukan." };
 
+  // stageId only proves "this call belongs to a supported PRE-N5 module"
+  // (getStageContext above) — it does NOT constrain which script kanaId
+  // must belong to. That matters for /ulangi's review sessions, which
+  // deliberately mix hiragana and katakana due items under one quiz
+  // session (one stageId, many scripts) — a per-script filter here would
+  // reject half of a mixed review session's saves.
   const { data: kana, error: kanaError } = await supabase
     .from("kana_characters")
     .select("id, romaji, script")
     .eq("id", input.kanaId)
-    .eq("script", "hiragana")
     .maybeSingle();
-  if (kanaError || !kana) return { ok: false, error: "Karakter Hiragana tidak valid." };
+  if (kanaError || !kana) return { ok: false, error: "Karakter tidak valid." };
 
   const choiceTypes = new Set(["reverse_recall", "audio_visual", "gate_audio", "discriminate"]);
   const writingTypes = new Set(["trace", "write_from_audio", "gate_writing", "short_memory"]);
@@ -270,7 +283,7 @@ export async function saveHiraganaStageState(input: {
   );
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/belajar/pre-n5/" + HIRAGANA_MODULE_CODE);
+  revalidatePath("/belajar/pre-n5/" + context.moduleCode);
   return { ok: true };
 }
 
@@ -339,7 +352,9 @@ export async function completeHiraganaStage(input: {
   // unaided recall, not just "the last screen said pass".
   let evaluation: { passed: boolean; score: number; requiredLabel: string };
   if (context.configuration.retentionGate === true) {
-    const phaseCode = V21_PHASE_CODE_BY_STAGE[context.code] ?? context.code;
+    const stageScript =
+      typeof context.configuration.script === "string" ? context.configuration.script : "hiragana";
+    const phaseCode = resolvePhaseCode(context.code, stageScript);
     const { data: recentAttempts, error: recentAttemptsError } = await supabase
       .from("user_kana_attempts")
       .select("first_attempt_correct, created_at")
@@ -468,7 +483,7 @@ export async function completeHiraganaStage(input: {
       : null;
   revalidatePath("/belajar");
   revalidatePath("/beranda");
-  revalidatePath("/belajar/pre-n5/" + HIRAGANA_MODULE_CODE);
+  revalidatePath("/belajar/pre-n5/" + context.moduleCode);
 
   return {
     ok: true,

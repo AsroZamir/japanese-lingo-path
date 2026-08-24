@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { HIRAGANA_BASIC_CHARACTERS } from "@/app/lib/hiragana-mnemonics";
+import { KATAKANA_BASIC_CHARACTERS } from "@/app/lib/katakana-data";
 import { deriveMasteryTier, type MasteryTier } from "@/app/lib/mastery-tier";
 
 export type MasteryMapEntry = {
@@ -26,7 +27,11 @@ export type MasteryMapEntry = {
 // character has been tested), streak/srsIntervalDays taken as the max
 // across skills (the character's single strongest piece of evidence,
 // since mastery-tier.ts's derivation wants one number per axis, not five).
-export const getHiraganaMasteryMap = cache(async (): Promise<MasteryMapEntry[]> => {
+// PROMPT-7 Bagian 7.4 — parameterized by script so /progres can show a
+// katakana map alongside the hiragana one, not just hiragana forever.
+export const getHiraganaMasteryMap = cache(async (
+  script: "hiragana" | "katakana" = "hiragana",
+): Promise<MasteryMapEntry[]> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,11 +40,12 @@ export const getHiraganaMasteryMap = cache(async (): Promise<MasteryMapEntry[]> 
   const { data: charRows, error: charError } = await supabase
     .from("kana_characters")
     .select("id, character, romaji, group_code")
-    .eq("script", "hiragana")
+    .eq("script", script)
     .eq("type", "basic");
   if (charError) throw new Error(charError.message);
 
-  const orderIndex = new Map(HIRAGANA_BASIC_CHARACTERS.map((character, index) => [character, index]));
+  const canonicalOrder = script === "katakana" ? KATAKANA_BASIC_CHARACTERS : HIRAGANA_BASIC_CHARACTERS;
+  const orderIndex = new Map(canonicalOrder.map((character, index) => [character, index]));
   const sortedChars = [...(charRows ?? [])].sort(
     (a, b) => (orderIndex.get(a.character) ?? 99) - (orderIndex.get(b.character) ?? 99),
   );
@@ -60,7 +66,7 @@ export const getHiraganaMasteryMap = cache(async (): Promise<MasteryMapEntry[]> 
           .select("kana_id, is_correct")
           .eq("user_id", user.id)
           .in("kana_id", charIds)
-          .eq("phase_code", "RETENTION")
+          .eq("phase_code", script === "katakana" ? "K_RETENTION" : "RETENTION")
           .eq("assisted", false)
       : Promise.resolve({ data: [], error: null }),
     supabase

@@ -5,14 +5,28 @@ import type { HiraganaQuizQuestion } from "../belajar/pre-n5/[moduleCode]/[stage
 const CURRICULUM_VERSION_REVIEW = "v2.1";
 const PHASE_CODE_REVIEW = "review";
 
+// PROMPT-7 Bagian 7.4 — the review queue mixes hiragana and katakana due
+// items together on purpose (per-character SRS, not per-curriculum), but
+// a "hear it, pick the kana" question must never show cross-script
+// distractors — the target's own script is derived from its Unicode
+// block rather than threading a new field through HiraganaLearningItem
+// everywhere.
+function scriptOf(character: string): "hiragana" | "katakana" | "other" {
+  const codePoint = character.codePointAt(0) ?? 0;
+  if (codePoint >= 0x3040 && codePoint <= 0x309f) return "hiragana";
+  if (codePoint >= 0x30a0 && codePoint <= 0x30ff) return "katakana";
+  return "other";
+}
+
 function pickDistractors(
   target: HiraganaLearningItem,
   pool: DistractorKana[],
   count: number,
 ): DistractorKana[] {
-  const others = pool.filter((k) => k.id !== target.id);
-  const confusable = others.filter((k) => target.confusableIds.includes(k.id));
-  const rest = others.filter((k) => !target.confusableIds.includes(k.id));
+  const targetScript = scriptOf(target.character);
+  const sameScript = pool.filter((k) => k.id !== target.id && k.script === targetScript);
+  const confusable = sameScript.filter((k) => target.confusableIds.includes(k.id));
+  const rest = sameScript.filter((k) => !target.confusableIds.includes(k.id));
   const shuffledRest = [...rest].sort(() => Math.random() - 0.5);
   return [...confusable, ...shuffledRest].slice(0, count);
 }
