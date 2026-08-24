@@ -67,3 +67,31 @@ test("F5 no longer carries a delayed gate — opens as soon as F4 is passed, reg
   await expect(page.getByText("Langkah 1/6 - Kenali")).toBeVisible();
   await expect(page.getByText("Belum waktunya kembali")).not.toBeVisible();
 });
+
+test("F6 requires RETENTION passed, not just BOSS — Bagian 5's other half of the gate move", async ({ page, baseURL }) => {
+  const userId = await testUserId();
+  const f6StageId = await stageIdByCode("F6");
+  await resetStageProgress(userId, f6StageId);
+  const retentionStageId = await stageIdByCode("RETENTION");
+  await resetStageProgress(userId, retentionStageId);
+
+  // F1-F5 and BOSS completed, RETENTION deliberately left untouched —
+  // under the old (pre-Prompt-4) rule this alone unlocked F6.
+  await unlockThroughStage(userId, "RETENTION");
+
+  const cookieHeader = cookieHeaderFromStorageState(".auth/storageState.json");
+  // F6 is deliberately locked right now (307 redirect) and will never
+  // warm up to 200 in that state — warm up the module overview page
+  // instead, just to make sure Turbopack has compiled *something* on
+  // this route tree before the real navigation below.
+  await warmUpRoute(baseURL!, "/belajar/pre-n5/PRE-N5.01", cookieHeader);
+  await page.goto("/belajar/pre-n5/PRE-N5.01/F6");
+  await expect(page.getByText("Langkah 1/6 - Kenali")).not.toBeVisible();
+
+  // Now pass RETENTION too (well in the past, so its own 72h gate to
+  // whatever comes after it doesn't interfere with this check) — F6 must
+  // open immediately.
+  await markStageCompletedAt(userId, retentionStageId, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+  await page.goto("/belajar/pre-n5/PRE-N5.01/F6");
+  await expect(page.getByText("Langkah 1/6 - Kenali")).toBeVisible();
+});
