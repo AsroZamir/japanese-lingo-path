@@ -164,24 +164,21 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
     );
   }
 
-  switch (bundle.stage.code) {
-    case "F1":
-    case "F2":
-    case "F3":
-    case "F4":
-    case "F5":
-      return <HiraganaLearningLab key={runKey} bundle={bundle} onComplete={finishStage} />;
-    case "BOSS":
-      return (
-        <HiraganaQuiz
-          key={runKey}
-          stageId={bundle.stage.id}
-          questions={gateQuestions}
-          timeLimitSeconds={numberFrom(bundle.stage.configuration.timeLimitSeconds, 600)}
-          onComplete={(result) => finishStage(result, { badge: result.correct / result.total >= 0.8 ? "Hiragana 46 Pathfinder" : null })}
-        />
-      );
-    default:
-      return <div className="hiragana-stage__empty">Stage ini belum memiliki player.</div>;
+  // BOSS is the only stage with a dedicated player (the 46-item gate
+  // quiz); every other stage — F1-F5 and any Bagian 5 extension stage
+  // (dakuten/handakuten, youon, ...) — reuses HiraganaLearningLab exactly
+  // as-is, just pointed at whatever character track its own
+  // configuration.characterSet selects (see pre-n5-01-query.ts).
+  if (bundle.stage.code === "BOSS") {
+    return (
+      <HiraganaQuiz
+        key={runKey}
+        stageId={bundle.stage.id}
+        questions={gateQuestions}
+        timeLimitSeconds={numberFrom(bundle.stage.configuration.timeLimitSeconds, 600)}
+        onComplete={(result) => finishStage(result, { badge: result.correct / result.total >= 0.8 ? "Hiragana 46 Pathfinder" : null })}
+      />
+    );
   }
+  return <HiraganaLearningLab key={runKey} bundle={bundle} onComplete={finishStage} />;
 }

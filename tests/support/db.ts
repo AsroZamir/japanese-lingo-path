@@ -72,8 +72,9 @@ export async function markStageCompletedAt(
 // coupled to Bagian 3's F5 gate — that gate gets its own dedicated spec
 // (f5-retention-gate.spec.ts) that deliberately controls this timestamp.
 export async function unlockThroughStage(userId: string, targetCode: string): Promise<void> {
-  const order = ["F1", "F2", "F3", "F4", "F5", "BOSS"];
+  const order = ["F1", "F2", "F3", "F4", "F5", "BOSS", "F6", "F7", "F8", "F9", "F10", "F11", "F12"];
   const targetIndex = order.indexOf(targetCode);
+  if (targetIndex < 0) throw new Error("unlockThroughStage: unknown stage code " + targetCode);
   const wellInThePast = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   for (const code of order.slice(0, targetIndex)) {
     const id = await stageIdByCode(code);

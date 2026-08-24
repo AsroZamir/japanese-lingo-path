@@ -414,12 +414,52 @@ function modifiedMnemonic(
       " adalah っ kecil. Ia menahan napas sesaat lalu menggandakan konsonan kata berikutnya.",
   };
 }
+// Bagian 5 (V2.1 §7 "Extensions"): dakuten/handakuten and youon open only
+// after the core 46 checkpoint, each as its own small-set track — never
+// mixed into one session with the other, or with the core 46. A stage
+// opts into one of these via configuration.characterSet; anything unset
+// (F1-F5, BOSS) keeps behaving exactly as before (core46 is the default).
+// Canonical order here is hand-picked gojuon order, not the DB's
+// group_code/order_in_group — those columns turned out not to be in a
+// clean row order for these types (verified by querying them directly).
+const DAKUTEN_HANDAKUTEN_CHARACTERS = [
+  "が", "ぎ", "ぐ", "げ", "ご", // がぎぐげご
+  "ざ", "じ", "ず", "ぜ", "ぞ", // ざじずぜぞ
+  "だ", "ぢ", "づ", "で", "ど", // だぢづでど
+  "ば", "び", "ぶ", "べ", "ぼ", // ばびぶべぼ
+  "ぱ", "ぴ", "ぷ", "ぺ", "ぽ", // ぱぴぷぺぽ
+] as const;
+const YOUON_CHARACTERS = [
+  "きゃ", "きゅ", "きょ", // きゃきゅきょ
+  "ぎゃ", "ぎゅ", "ぎょ", // ぎゃぎゅぎょ
+  "しゃ", "しゅ", "しょ", // しゃしゅしょ
+  "じゃ", "じゅ", "じょ", // じゃじゅじょ
+  "ちゃ", "ちゅ", "ちょ", // ちゃちゅちょ
+  "にゃ", "にゅ", "にょ", // にゃにゅにょ
+  "ひゃ", "ひゅ", "ひょ", // ひゃひゅひょ
+  "びゃ", "びゅ", "びょ", // びゃびゅびょ
+  "ぴゃ", "ぴゅ", "ぴょ", // ぴゃぴゅぴょ
+  "みゃ", "みゅ", "みょ", // みゃみゅみょ
+  "りゃ", "りゅ", "りょ", // りゃりゅりょ
+] as const;
+const CHARACTER_TRACKS: Record<string, readonly string[]> = {
+  core46: HIRAGANA_BASIC_CHARACTERS,
+  dakuten_handakuten: DAKUTEN_HANDAKUTEN_CHARACTERS,
+  youon: YOUON_CHARACTERS,
+};
+
 export const getHiraganaStageBundle = cache(
   async (stageCode: string): Promise<HiraganaStageBundle | null> => {
     const moduleOverview = await getPreN5ModuleOverview(HIRAGANA_MODULE_CODE);
     if (!moduleOverview) return null;
     const stage = moduleOverview.stages.find((candidate) => candidate.code === stageCode);
     if (!stage) return null;
+
+    const trackKey =
+      typeof stage.configuration.characterSet === "string"
+        ? stage.configuration.characterSet
+        : "core46";
+    const trackCharacters = CHARACTER_TRACKS[trackKey] ?? HIRAGANA_BASIC_CHARACTERS;
 
     const supabase = await createClient();
     const { data: rows, error: kanaError } = await supabase
@@ -428,7 +468,7 @@ export const getHiraganaStageBundle = cache(
         "id, character, romaji, type, group_code, order_in_group, base_character_id, audio_url, stroke_data_key",
       )
       .eq("script", "hiragana")
-      .in("character", [...HIRAGANA_BASIC_CHARACTERS]);
+      .in("character", [...trackCharacters]);
     if (kanaError) throw new Error(kanaError.message);
 
     const defaultScopes: Record<string, {
@@ -460,7 +500,7 @@ export const getHiraganaStageBundle = cache(
       defaultScope.cumulativeCharacterCount,
     );
     const characterOrder = new Map(
-      HIRAGANA_BASIC_CHARACTERS.map((character, index) => [character, index]),
+      trackCharacters.map((character, index) => [character, index]),
     );
     const sortedRows = [...(rows ?? [])]
       .sort(
