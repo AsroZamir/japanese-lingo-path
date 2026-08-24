@@ -245,6 +245,11 @@ export const userLearningStageProgress = pgTable(
     state: jsonb("state").$type<Record<string, unknown>>().notNull().default({}),
     startedAt: timestamp("started_at", { withTimezone: true }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
+    // Bagian 3 (delayed retention gate). completedAt above is overwritten
+    // on every re-pass, so it can't answer "when did this user FIRST pass
+    // this stage" — the question the 72h gate needs. Nullable, additive,
+    // set once and never touched again.
+    firstCompletedAt: timestamp("first_completed_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

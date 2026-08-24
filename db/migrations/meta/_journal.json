@@ -50,6 +50,13 @@
       "when": 1787530061474,
       "tag": "0006_add_v21_mastery_evidence_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787556292422,
+      "tag": "0007_add_stage_progress_first_completed_at",
+      "breakpoints": true
     }
   ]
 }

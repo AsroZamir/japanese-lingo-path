@@ -1,0 +1,1 @@
+ALTER TABLE "user_learning_stage_progress" ADD COLUMN "first_completed_at" timestamp with time zone;
