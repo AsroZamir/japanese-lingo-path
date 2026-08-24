@@ -48,22 +48,36 @@ export async function resetStageProgress(userId: string, stageId: number): Promi
 // Marks one stage "completed" for the test account so a spec can jump
 // straight to testing a later stage (F3, BOSS, ...) without actually
 // playing through every earlier one via the UI first — the same unlock
-// check the real page uses (labVersion + status==='completed').
-export async function markStageCompleted(userId: string, stageId: number): Promise<void> {
+// check the real page uses (labVersion + status==='completed'). Also
+// sets first_completed_at, so the 72h delayed-gate window (Bagian 3) can
+// be tested at both edges (just now / 73h ago) without waiting 72 real
+// hours, and so callers who don't care about that gate can just pass a
+// comfortably old timestamp (see unlockThroughStage below).
+export async function markStageCompletedAt(
+  userId: string,
+  stageId: number,
+  firstCompletedAt: Date,
+): Promise<void> {
   await sql`
-    insert into user_learning_stage_progress (user_id, stage_id, status, score, attempts, state, started_at, completed_at, updated_at)
-    values (${userId}, ${stageId}, 'completed', 100, 1, ${sql.json({ labVersion: HIRAGANA_LAB_VERSION })}, now(), now(), now())
+    insert into user_learning_stage_progress (user_id, stage_id, status, score, attempts, state, started_at, completed_at, first_completed_at, updated_at)
+    values (${userId}, ${stageId}, 'completed', 100, 1, ${sql.json({ labVersion: HIRAGANA_LAB_VERSION })}, now(), now(), ${firstCompletedAt}, now())
     on conflict (user_id, stage_id) do update set
-      status = 'completed', score = 100, state = ${sql.json({ labVersion: HIRAGANA_LAB_VERSION })}, updated_at = now()
+      status = 'completed', score = 100, state = ${sql.json({ labVersion: HIRAGANA_LAB_VERSION })},
+      first_completed_at = ${firstCompletedAt}, updated_at = now()
   `;
 }
 
+// Marks every prerequisite stage completed well outside any 72h delayed
+// gate (30 days back), so specs about batch content/other stages aren't
+// coupled to Bagian 3's F5 gate — that gate gets its own dedicated spec
+// (f5-retention-gate.spec.ts) that deliberately controls this timestamp.
 export async function unlockThroughStage(userId: string, targetCode: string): Promise<void> {
   const order = ["F1", "F2", "F3", "F4", "F5", "BOSS"];
   const targetIndex = order.indexOf(targetCode);
+  const wellInThePast = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   for (const code of order.slice(0, targetIndex)) {
     const id = await stageIdByCode(code);
-    await markStageCompleted(userId, id);
+    await markStageCompletedAt(userId, id, wellInThePast);
   }
 }
 

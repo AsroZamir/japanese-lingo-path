@@ -2,8 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { HIRAGANA_LAB_VERSION } from "@/app/lib/hiragana-mnemonics";
-import { clamp, evaluateCheckpointPass, finiteNumber } from "./gate-logic";
+import { HIRAGANA_LAB_VERSION, V21_PHASE_CODE_BY_STAGE } from "@/app/lib/hiragana-mnemonics";
+import {
+  clamp,
+  evaluateCheckpointPass,
+  evaluateRetentionScore,
+  finiteNumber,
+} from "./gate-logic";
 
 const HIRAGANA_MODULE_CODE = "PRE-N5.01";
 const SRS_INTERVALS = [1, 3, 7, 14, 30] as const;
@@ -59,7 +64,9 @@ type StageContext = {
   id: number;
   code: string;
   moduleId: number;
+  orderIndex: number;
   passCriteria: Record<string, unknown>;
+  configuration: Record<string, unknown>;
 };
 
 function asObject(value: unknown): Record<string, unknown> {
@@ -78,7 +85,7 @@ async function getStageContext(
 ): Promise<StageContext | null> {
   const { data: stage, error: stageError } = await supabase
     .from("learning_stages")
-    .select("id, code, module_id, pass_criteria")
+    .select("id, code, module_id, order_index, pass_criteria, configuration")
     .eq("id", stageId)
     .maybeSingle();
   if (stageError || !stage) return null;
@@ -94,7 +101,9 @@ async function getStageContext(
     id: stage.id,
     code: stage.code,
     moduleId: stage.module_id,
+    orderIndex: stage.order_index,
     passCriteria: asObject(stage.pass_criteria),
+    configuration: asObject(stage.configuration),
   };
 }
 
@@ -279,11 +288,42 @@ export async function completeHiraganaStage(input: {
 
   const correct = Math.max(0, Math.round(finiteNumber(input.correct, 0)));
   const total = Math.max(1, Math.round(finiteNumber(input.total, 1)));
-  const evaluation = evaluateCheckpointPass(context.passCriteria, correct, total);
+
+  // V2.1 §4.1 retention gate: a stage flagged retentionGate re-derives its
+  // score from persisted first_attempt_correct evidence instead of the
+  // client-reported correct/total that every other stage trusts — a
+  // stronger guarantee for the one gate that's supposed to prove real
+  // unaided recall, not just "the last screen said pass".
+  let evaluation: { passed: boolean; score: number; requiredLabel: string };
+  if (context.configuration.retentionGate === true) {
+    const phaseCode = V21_PHASE_CODE_BY_STAGE[context.code] ?? context.code;
+    const { data: recentAttempts, error: recentAttemptsError } = await supabase
+      .from("user_kana_attempts")
+      .select("first_attempt_correct, created_at")
+      .eq("user_id", user.id)
+      .eq("phase_code", phaseCode)
+      .like("exercise_type", "v21_%")
+      .order("created_at", { ascending: false })
+      .limit(total);
+    if (recentAttemptsError) return { ok: false, error: recentAttemptsError.message };
+    const accuracyRequired = finiteNumber(context.passCriteria.accuracyPercent, 85);
+    const retention = evaluateRetentionScore(
+      (recentAttempts ?? []).map((row) => ({ firstAttemptCorrect: row.first_attempt_correct })),
+      total,
+      accuracyRequired,
+    );
+    evaluation = {
+      passed: retention.passed,
+      score: retention.score,
+      requiredLabel: "minimal " + Math.round(accuracyRequired) + "% benar tanpa bantuan pada percobaan pertama",
+    };
+  } else {
+    evaluation = evaluateCheckpointPass(context.passCriteria, correct, total);
+  }
 
   const { data: existing, error: progressReadError } = await supabase
     .from("user_learning_stage_progress")
-    .select("attempts, started_at, state")
+    .select("attempts, started_at, state, first_completed_at")
     .eq("user_id", user.id)
     .eq("stage_id", context.id)
     .maybeSingle();
@@ -306,6 +346,7 @@ export async function completeHiraganaStage(input: {
         state,
         started_at: existing?.started_at ?? now,
         completed_at: evaluation.passed ? now : null,
+        first_completed_at: existing?.first_completed_at ?? (evaluation.passed ? now : null),
         updated_at: now,
       },
       { onConflict: "user_id,stage_id" },

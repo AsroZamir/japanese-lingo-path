@@ -40,3 +40,42 @@ export function evaluateCheckpointPass(
     requiredLabel: "minimal " + Math.round(accuracyRequired) + "%",
   };
 }
+
+// V2.1 §4.1: "Retention gate: >=85% first-attempt tanpa hint setelah jeda
+// minimal 72 jam." Two independent checks: is enough time elapsed since
+// the prerequisite stage was first passed (below), and does the retry
+// score clear the higher bar (evaluateRetentionScore further down).
+export function evaluateDelayedGateEligibility(
+  prerequisiteFirstCompletedAt: Date | null,
+  now: Date,
+  delayHours: number,
+): { eligible: boolean; availableAt: Date | null } {
+  if (!prerequisiteFirstCompletedAt) {
+    return { eligible: false, availableAt: null };
+  }
+  const availableAt = new Date(
+    prerequisiteFirstCompletedAt.getTime() + delayHours * 60 * 60 * 1000,
+  );
+  return { eligible: now >= availableAt, availableAt };
+}
+
+// The retention gate's scoring half: unlike evaluateCheckpointPass (which
+// trusts a client-reported correct/total), this re-derives the score from
+// persisted per-attempt evidence — firstAttemptCorrect is only true when
+// an item was answered right the very first time it was tried, with no
+// hint open (see HiraganaLearningLab.tsx's recordAttempt / actions.ts).
+// Requires every expected item to have real evidence, not just a
+// percentage over whatever rows happen to exist — an empty or partial
+// attempt list must not look like a pass.
+export function evaluateRetentionScore(
+  attempts: { firstAttemptCorrect: boolean | null }[],
+  expectedCount: number,
+  accuracyRequired: number,
+): { passed: boolean; score: number } {
+  if (attempts.length < expectedCount || expectedCount === 0) {
+    return { passed: false, score: 0 };
+  }
+  const correct = attempts.filter((attempt) => attempt.firstAttemptCorrect === true).length;
+  const score = clamp((correct / attempts.length) * 100, 0, 100);
+  return { passed: score >= accuracyRequired, score };
+}

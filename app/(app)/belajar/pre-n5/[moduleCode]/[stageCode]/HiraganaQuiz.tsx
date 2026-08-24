@@ -155,6 +155,13 @@ export function HiraganaQuiz({
       responseTimeMs: now - startedAt,
       phaseCode: current.phaseCode ?? null,
       curriculumVersion: current.curriculumVersion ?? null,
+      // A quiz question here has no hint mechanic and is graded on one
+      // try, so "correct" and "first-attempt, unaided, correct" are the
+      // same fact — this is what lets the retention gate (Bagian 3) trust
+      // these rows without a separate hint-tracking UI in the quiz itself.
+      hintLevel: 0,
+      assisted: false,
+      firstAttemptCorrect: isCorrect,
     });
   }
 

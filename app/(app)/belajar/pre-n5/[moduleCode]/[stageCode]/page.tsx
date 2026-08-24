@@ -15,8 +15,33 @@ export default async function HiraganaStagePage({
 
   const bundle = await getHiraganaStageBundle(stageCode.toUpperCase());
   if (!bundle) notFound();
-  if (bundle.stage.locked) {
+  if (bundle.stage.locked && !bundle.stage.delayedGateAvailableAt) {
     redirect("/belajar/pre-n5/" + moduleCode);
+  }
+  if (bundle.stage.delayedGateAvailableAt) {
+    const availableAt = new Date(bundle.stage.delayedGateAvailableAt);
+    const formatted = new Intl.DateTimeFormat("id-ID", {
+      dateStyle: "full",
+      timeStyle: "short",
+    }).format(availableAt);
+    return (
+      <div className="content hiragana-stage-page">
+        <Link href={"/belajar/pre-n5/" + moduleCode} className="back-button">
+          Kembali ke {bundle.module.title}
+        </Link>
+        <div className="hiragana-stage__result">
+          <span className="hiragana-stage__result-icon">JEDA</span>
+          <h3>Belum waktunya kembali</h3>
+          <p>
+            {bundle.stage.code} menguji ingatan jangka panjang, jadi sengaja
+            dibuka lagi setelah jeda. Kembali lagi setelah {formatted}.
+          </p>
+          <Link href={"/belajar/pre-n5/" + moduleCode} className="primary-button">
+            Kembali ke {bundle.module.title}
+          </Link>
+        </div>
+      </div>
+    );
   }
   const newCharacterCount = bundle.units.reduce(
     (total, unit) => total + unit.items.length,

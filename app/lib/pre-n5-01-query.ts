@@ -7,6 +7,7 @@ import {
   HIRAGANA_MNEMONICS,
   type HiraganaMnemonic,
 } from "@/app/lib/hiragana-mnemonics";
+import { evaluateDelayedGateEligibility } from "@/app/(app)/belajar/pre-n5/[moduleCode]/[stageCode]/gate-logic";
 
 const CURRICULUM_CODE = "v2";
 const LEVEL_CODE = "PRE-N5";
@@ -31,6 +32,9 @@ export type PreN5StageSummary = {
   state: Record<string, unknown>;
   locked: boolean;
   statusLabel: string;
+  // Bagian 3: set only for a stage configured with delayedGateHours whose
+  // wait isn't over yet — null otherwise, including once it opens.
+  delayedGateAvailableAt: string | null;
 };
 
 export type PreN5ModuleOverview = {
@@ -162,7 +166,7 @@ export const getPreN5ModuleOverview = cache(
       user && stageIds.length > 0
         ? await supabase
             .from("user_learning_stage_progress")
-            .select("stage_id, status, score, attempts, state")
+            .select("stage_id, status, score, attempts, state, first_completed_at")
             .eq("user_id", user.id)
             .in("stage_id", stageIds)
         : { data: [], error: null };
@@ -198,9 +202,21 @@ export const getPreN5ModuleOverview = cache(
       const stageIndex = (stageRows ?? []).findIndex((candidate) => candidate.id === stage.id);
       const previousStage = stageIndex > 0 ? (stageRows ?? [])[stageIndex - 1] : null;
       const prerequisites = previousStage ? [previousStage.code] : [];
+      const configuration = asObject(stage.configuration);
+      const delayedGateHours =
+        typeof configuration.delayedGateHours === "number" ? configuration.delayedGateHours : null;
+      const previousProgress = previousStage ? progressByStageId.get(previousStage.id) : null;
+      const previousFirstCompletedAt = previousProgress?.first_completed_at
+        ? new Date(previousProgress.first_completed_at)
+        : null;
+      const delayedGate =
+        delayedGateHours != null
+          ? evaluateDelayedGateEligibility(previousFirstCompletedAt, new Date(), delayedGateHours)
+          : null;
       const locked =
         prerequisites.some((code) => !completedStageCodes.has(code)) ||
-        contentStatus !== "ready";
+        contentStatus !== "ready" ||
+        (delayedGate != null && !delayedGate.eligible);
       const summary: PreN5StageSummary = {
         id: stage.id,
         code: stage.code,
@@ -210,17 +226,23 @@ export const getPreN5ModuleOverview = cache(
         description: stage.description,
         orderIndex: stage.order_index,
         contentStatus,
-        configuration: asObject(stage.configuration),
+        configuration,
         passCriteria: asObject(stage.pass_criteria),
         progressStatus,
         score: progressIsCurrent ? progress?.score ?? null : null,
         attempts: progressIsCurrent ? progress?.attempts ?? 0 : 0,
         state: progressIsCurrent ? progressState : {},
         locked,
+        delayedGateAvailableAt:
+          delayedGate != null && !delayedGate.eligible
+            ? (delayedGate.availableAt?.toISOString() ?? null)
+            : null,
         statusLabel: locked
-          ? contentStatus === "ready"
-            ? "Selesaikan tahap sebelumnya"
-            : "Sedang dibangun"
+          ? delayedGate != null && !delayedGate.eligible
+            ? "Menunggu jeda waktu"
+            : contentStatus === "ready"
+              ? "Selesaikan tahap sebelumnya"
+              : "Sedang dibangun"
           : progressStatus === "completed"
             ? "Selesai"
             : progressStatus === "in_progress"
