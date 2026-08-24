@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { HIRAGANA_LAB_VERSION } from "@/app/lib/hiragana-mnemonics";
+import { clamp, evaluateCheckpointPass, finiteNumber } from "./gate-logic";
 
 const HIRAGANA_MODULE_CODE = "PRE-N5.01";
 const SRS_INTERVALS = [1, 3, 7, 14, 30] as const;
@@ -65,14 +66,6 @@ function asObject(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
-}
-
-function finiteNumber(value: unknown, fallback: number): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
 }
 
 function normalizedAnswer(value: string | null | undefined): string {
@@ -269,32 +262,6 @@ export async function saveHiraganaStageState(input: {
   return { ok: true };
 }
 
-function evaluatePass(
-  passCriteria: Record<string, unknown>,
-  correct: number,
-  total: number,
-): { passed: boolean; score: number; requiredLabel: string } {
-  const score = total > 0 ? clamp((correct / total) * 100, 0, 100) : 0;
-  const accuracyRequired = finiteNumber(
-    passCriteria.accuracyPercent ?? passCriteria.scorePercent,
-    0,
-  );
-  const correctRequired = finiteNumber(passCriteria.correctCount, 0);
-
-  if (correctRequired > 0) {
-    return {
-      passed: correct >= correctRequired,
-      score,
-      requiredLabel: "minimal " + correctRequired + " jawaban benar",
-    };
-  }
-  return {
-    passed: score >= accuracyRequired,
-    score,
-    requiredLabel: "minimal " + Math.round(accuracyRequired) + "%",
-  };
-}
-
 export async function completeHiraganaStage(input: {
   stageId: number;
   correct: number;
@@ -312,7 +279,7 @@ export async function completeHiraganaStage(input: {
 
   const correct = Math.max(0, Math.round(finiteNumber(input.correct, 0)));
   const total = Math.max(1, Math.round(finiteNumber(input.total, 1)));
-  const evaluation = evaluatePass(context.passCriteria, correct, total);
+  const evaluation = evaluateCheckpointPass(context.passCriteria, correct, total);
 
   const { data: existing, error: progressReadError } = await supabase
     .from("user_learning_stage_progress")
