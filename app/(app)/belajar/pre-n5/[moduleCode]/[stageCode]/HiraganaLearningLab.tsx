@@ -31,6 +31,7 @@ import {
   saveHiraganaStageState,
 } from "./actions";
 import * as wanakana from "wanakana";
+import { VocalBridgeIntro } from "./VocalBridgeIntro";
 
 // V2.1 §6.1 Kana Script Engine: lihat-dengar -> bedakan -> ikuti stroke ->
 // tulis dari memori singkat -> tulis dari audio -> campuran kumulatif.
@@ -566,6 +567,14 @@ export function HiraganaLearningLab({
     firstIncompleteIndex >= 0 ? firstIncompleteIndex : Math.max(bundle.units.length - 1, 0);
 
   const [unitIndex, setUnitIndex] = useState(startingUnitIndex);
+  // PROMPT-7 Bagian 5 — vocal bridge intro, only ever relevant right
+  // before F1's very first batch (startingUnitIndex 0, nothing completed
+  // yet). A learner resuming mid-way through F1, or any later stage,
+  // never sees it — it's a one-time "you already know half of this"
+  // moment, not a recurring banner.
+  const [showVocalBridge, setShowVocalBridge] = useState(
+    bundle.stage.code === "F1" && startingUnitIndex === 0 && initialCompleted.length === 0,
+  );
   const [phase, setPhase] = useState<LearningPhase>("anchor");
   const [itemIndex, setItemIndex] = useState(0);
   const [completedUnitCodes, setCompletedUnitCodes] = useState(initialCompleted);
@@ -911,6 +920,15 @@ export function HiraganaLearningLab({
 
   if (!unit) {
     return <div className="hiragana-stage__empty">Data batch Hiragana belum tersedia.</div>;
+  }
+
+  if (showVocalBridge) {
+    return (
+      <VocalBridgeIntro
+        vowels={bundle.items.slice(0, 5)}
+        onContinue={() => setShowVocalBridge(false)}
+      />
+    );
   }
 
   const phaseSteps: { key: LearningPhase; label: string }[] = [

@@ -1,31 +1,42 @@
-"use client";
-
 import { PageHeader } from "../_components/PageHeader";
-import { EmptySlot } from "../_components/EmptySlot";
-import { useToast } from "../_components/toast-provider";
+import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
+import { DevUnlockBanner } from "../_components/DevUnlockBanner";
+import { getSpeedDrillSession } from "@/app/lib/speed-drill-query";
+import { SpeedDrillRunner } from "./SpeedDrillRunner";
 
-const modes = [
-  ["語", "Vocabulary", "Words and meanings", "12 due"],
-  ["文", "Grammar", "Patterns and particles", "6 sets"],
-  ["漢", "Kanji", "Meaning and readings", "8 due"],
-  ["聴", "Listening", "Comprehension drills", "Coming next"],
-];
+export const dynamic = "force-dynamic";
 
-export default function PracticePage() {
-  const notify = useToast();
+// PROMPT-7 Bagian 1 audit: this page was previously 100% mock, same
+// pattern /progres and /ulangi were in before PROMPT-6 — a fixed
+// "Vocabulary 12 due / Grammar 6 sets / Kanji 8 due / Listening Coming
+// next" grid where every button just fired a toast, for systems (kanji,
+// grammar, listening) that don't exist in the app at all yet. Replaced
+// wholesale with Bagian 4's real speed drill rather than left standing
+// next to it.
+export default async function PracticePage() {
+  const session = await getSpeedDrillSession();
 
   return (
     <>
-      <PageHeader eyebrow="BUILD YOUR SKILLS" title="Practice" copy="Short, focused sessions that reinforce what you learn." />
-      <section className="focus-banner"><div><span>✦ RECOMMENDED FOR YOU</span><h2>Practice your weak points</h2><p>A short mixed set based on recent mistakes.</p></div><button className="primary-button" onClick={() => notify("Practice session shell is ready. Questions will be added in the next content phase.")}>Start 5-minute session →</button></section>
-      <section className="mode-grid">
-        {modes.map(([icon, title, copy, meta]) => (
-          <button className="mode-card" key={title} onClick={() => notify(`${title} module is ready for content.`)}>
-            <span className="mode-icon">{icon}</span><small>{meta}</small><h3>{title}</h3><p>{copy}</p><b>Open module →</b>
-          </button>
-        ))}
-      </section>
-      <EmptySlot label="CUSTOM PRACTICE" title="Question sets will live here" copy="Filters for level, skill, topic, and session length are reserved in this space." />
+      {isDevUnlockAllActive() && <DevUnlockBanner />}
+      <PageHeader
+        eyebrow="LATIHAN KECEPATAN"
+        title="Latihan"
+        copy="Pertajam huruf yang sudah kamu kenal supaya benar-benar hafal di luar kepala, bukan sekadar cukup akurat."
+      />
+      {!session.unlocked ? (
+        <section className="speed-drill__locked">
+          <h3>Belum terbuka</h3>
+          <p>
+            Latihan kecepatan baru terbuka setelah ada minimal 10 huruf berstatus
+            &quot;Bisa diingat&quot; ke atas — sekarang baru {session.eligibleCount}. Selesaikan
+            beberapa tahap dulu di{" "}
+            <a href="/belajar/pre-n5/PRE-N5.01">PRE-N5.01</a>, lalu cek lagi di sini.
+          </p>
+        </section>
+      ) : (
+        <SpeedDrillRunner items={session.items} baselineMs={session.baselineMs} />
+      )}
     </>
   );
 }

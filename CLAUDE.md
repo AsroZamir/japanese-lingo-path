@@ -1,6 +1,23 @@
 # CLAUDE.md — Japanese Lingo Path
 
-Panduan kerja untuk Claude Code di repo ini. Diperbarui 24 Agustus 2026 (PROMPT-6).
+Panduan kerja untuk Claude Code di repo ini. Diperbarui 24 Agustus 2026 (PROMPT-7).
+
+PROMPT-7 Bagian 1-5 (hiragana): `/latihan` diganti total dari mock jadi
+latihan kecepatan nyata (`app/lib/speed-drill-query.ts`,
+`app/(app)/latihan/`) — hanya huruf "Bisa diingat" ke atas, terbuka
+setelah minimal 10 huruf capai tingkat itu, `exercise_type` berprefix
+`v21_speed_`, membedakan salah-karena-waktu-habis (`typed_value:
+"timeout"`, lewat tombol "Belum ingat, lewati" — tidak ada timer paksa)
+dari salah-karena-jawaban-salah. `app/lib/hiragana-mnemonics.ts`'s
+`HIRAGANA_LAB_MNEMONICS` ditulis ulang penuh untuk 46 huruf inti dengan
+jangkar bunyi Indonesia asli (bukan jangkar kata Jepang seperti versi
+lama) — **perlu ditinjau pemilik repo**, lihat komentar di file itu.
+Langkah "Baca" bertambah jadi langkah ke-7 di label UI ("Langkah X/7").
+Layar pembuka vokal (`VocalBridgeIntro.tsx`) muncul sekali sebelum F1
+batch 1 pertama kali, tidak persisten ke database. Bagian 2 (VOICEVOX)
+dilewati — server `localhost:50021` tidak jalan di komputer ini saat
+sesi berjalan, tidak ditemukan `.exe` untuk menyalakannya (cuma folder
+data `%LOCALAPPDATA%\voicevox-engine` tanpa engine-nya sendiri).
 
 Nama produk yang **terlihat pengguna** sekarang **"BaraJapan"** (diganti dari
 "Japanese Lingo Path" per permintaan pemilik). Repo, folder, domain Vercel,
