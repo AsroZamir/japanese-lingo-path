@@ -6,6 +6,7 @@ import { HIRAGANA_LAB_VERSION, V21_PHASE_CODE_BY_STAGE } from "@/app/lib/hiragan
 import {
   clamp,
   evaluateCheckpointPass,
+  evaluateDelayedGateEligibility,
   evaluateRetentionScore,
   finiteNumber,
 } from "./gate-logic";
@@ -285,6 +286,46 @@ export async function completeHiraganaStage(input: {
 
   const context = await getStageContext(supabase, input.stageId);
   if (!context) return { ok: false, error: "Stage Hiragana tidak ditemukan." };
+
+  // Prompt 4 Bagian 4 finding: the 72h delayed gate was only ever checked
+  // by the page (pre-n5-01-query.ts's `locked` computation) before
+  // rendering the stage's UI at all — this action itself trusted any
+  // caller who reached it. Since it's callable directly (that's the whole
+  // point of testing "at the data pipe level"), it must enforce its own
+  // eligibility rather than relying on the UI never having offered a way
+  // in. Mirrors the page's own check: the immediately-preceding stage
+  // (by order_index) must have been first-passed >=delayedGateHours ago.
+  if (typeof context.configuration.delayedGateHours === "number") {
+    const { data: previousStage, error: previousStageError } = await supabase
+      .from("learning_stages")
+      .select("id")
+      .eq("module_id", context.moduleId)
+      .eq("order_index", context.orderIndex - 1)
+      .maybeSingle();
+    if (previousStageError) return { ok: false, error: previousStageError.message };
+    const { data: previousProgress, error: previousProgressError } = previousStage
+      ? await supabase
+          .from("user_learning_stage_progress")
+          .select("first_completed_at")
+          .eq("user_id", user.id)
+          .eq("stage_id", previousStage.id)
+          .maybeSingle()
+      : { data: null, error: null };
+    if (previousProgressError) return { ok: false, error: previousProgressError.message };
+    const gate = evaluateDelayedGateEligibility(
+      previousProgress?.first_completed_at ? new Date(previousProgress.first_completed_at) : null,
+      new Date(),
+      context.configuration.delayedGateHours,
+    );
+    if (!gate.eligible) {
+      return {
+        ok: false,
+        error: gate.availableAt
+          ? "Belum waktunya. Kembali lagi setelah " + gate.availableAt.toISOString() + "."
+          : "Selesaikan tahap sebelumnya dulu.",
+      };
+    }
+  }
 
   const correct = Math.max(0, Math.round(finiteNumber(input.correct, 0)));
   const total = Math.max(1, Math.round(finiteNumber(input.total, 1)));

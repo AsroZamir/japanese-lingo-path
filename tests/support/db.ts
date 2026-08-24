@@ -110,18 +110,62 @@ export function cookieHeaderFromStorageState(storageStatePath: string): string {
   return state.cookies.map((c: { name: string; value: string }) => c.name + "=" + c.value).join("; ");
 }
 
+// The 46 core hiragana character ids in canonical (gojuon) order — used
+// by Bagian 4's RETENTION seeding, which needs one row per core item.
+export async function coreHiraganaIds(): Promise<number[]> {
+  const rows = await sql<{ id: number }[]>`
+    select id from kana_characters where script = 'hiragana' and type = 'basic' order by order_in_group
+  `;
+  return rows.map((row) => row.id);
+}
+
+// Directly inserts attempt rows tagged with a given firstAttemptCorrect
+// per item — for proving completeHiraganaStage's RETENTION branch reads
+// real persisted evidence rather than trusting the client's claimed
+// correct/total (Prompt 4 Bagian 4's "all correct but all hint-assisted
+// must still fail" case can't be produced any other way without actually
+// drawing 46 characters with a hint open on each).
+export async function seedAttempts(
+  userId: string,
+  kanaIds: number[],
+  phaseCode: string,
+  firstAttemptCorrectByIndex: (index: number) => boolean,
+): Promise<void> {
+  for (const [index, kanaId] of kanaIds.entries()) {
+    const correct = firstAttemptCorrectByIndex(index);
+    // user_kana_attempts_wrong_needs_selection requires typed_value (or a
+    // selection) on any row where is_correct is false.
+    await sql`
+      insert into user_kana_attempts (user_id, kana_id, exercise_type, is_correct, typed_value, phase_code, curriculum_version, first_attempt_correct, hint_level, assisted)
+      values (${userId}, ${kanaId}, ${"v21_" + phaseCode.toLowerCase() + "_gate_recognition"}, ${correct}, ${correct ? null : "seeded-wrong"}, ${phaseCode}, 'v2.1', ${correct}, ${correct ? 0 : 1}, ${!correct})
+    `;
+  }
+}
+
 // Filters by "since a marker timestamp taken right before the test's
 // actions" rather than "most recent N" — a spec re-run (or a prior debug
 // run) leaves old rows behind since this only clears stage *progress*,
 // not attempt history, and "most recent N" would silently mix them in.
+export type AttemptRow = {
+  exerciseType: string;
+  phaseCode: string | null;
+  curriculumVersion: string | null;
+  isCorrect: boolean;
+  firstAttemptCorrect: boolean | null;
+  hintLevel: number | null;
+  createdAt: Date;
+};
+
 export async function attemptsSince(
   userId: string,
   exerciseTypeLike: string,
   since: Date,
-): Promise<{ exerciseType: string; phaseCode: string | null; curriculumVersion: string | null; createdAt: Date }[]> {
-  return sql<{ exerciseType: string; phaseCode: string | null; curriculumVersion: string | null; createdAt: Date }[]>`
+): Promise<AttemptRow[]> {
+  return sql<AttemptRow[]>`
     select exercise_type as "exerciseType", phase_code as "phaseCode",
-      curriculum_version as "curriculumVersion", created_at as "createdAt"
+      curriculum_version as "curriculumVersion", is_correct as "isCorrect",
+      first_attempt_correct as "firstAttemptCorrect", hint_level as "hintLevel",
+      created_at as "createdAt"
     from user_kana_attempts
     where user_id = ${userId} and exercise_type like ${exerciseTypeLike} and created_at >= ${since}
     order by created_at asc
