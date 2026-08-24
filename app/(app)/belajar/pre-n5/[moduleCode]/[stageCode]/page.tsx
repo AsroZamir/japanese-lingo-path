@@ -63,7 +63,7 @@ export default async function HiraganaStagePage({
           <aside>
             <strong>{bundle.stage.mechanic}</strong>
             <small>
-              {bundle.stage.code === "BOSS"
+              {bundle.stage.code === "BOSS" || bundle.stage.code === "RETENTION"
                 ? "Bank lengkap 46 huruf"
                 : "+" + newCharacterCount + " huruf baru - bank " + bundle.items.length + " huruf"} - attempt {bundle.stage.attempts + 1}
             </small>

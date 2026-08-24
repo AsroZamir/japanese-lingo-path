@@ -12,6 +12,7 @@ const STAGE_MARK: Record<string, string> = {
   F4: "40",
   F5: "46",
   BOSS: "GATE",
+  RETENTION: "72H",
 };
 
 function configurationNumber(
@@ -148,7 +149,9 @@ export default async function PreN5ModulePage({
                     <span>
                       {stage.code === "BOSS"
                         ? "Ujian akhir - 46 huruf"
-                        : "+" + newCharacterCount + " baru - total " + cumulativeCount}
+                        : stage.code === "RETENTION"
+                          ? "Gerbang tertunda - buka 72 jam setelah Gate"
+                          : "+" + newCharacterCount + " baru - total " + cumulativeCount}
                     </span>
                     <b>{stage.statusLabel}</b>
                   </div>

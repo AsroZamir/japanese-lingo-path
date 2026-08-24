@@ -385,8 +385,13 @@ export async function completeHiraganaStage(input: {
     readyStageIds.length > 0
       ? Math.round((completedIds.size / readyStageIds.length) * 100)
       : 0;
-  const moduleCompleted =
-    readyStageIds.length > 0 && completedIds.size === readyStageIds.length;
+  // "dikuasai"/completed is defined by the RETENTION gate specifically
+  // (V2.1 §7: the core-46 outcome, reached before extensions even open),
+  // not by every ready stage in the module — F6-F12 are additive content
+  // that opens AFTER mastery, so requiring them too would mean the module
+  // could never show "completed" until every extension was also done.
+  const retentionStage = (readyStages ?? []).find((stage) => stage.code === "RETENTION");
+  const moduleCompleted = retentionStage != null && completedIds.has(retentionStage.id);
 
   const { data: moduleProgress, error: moduleProgressReadError } = await supabase
     .from("user_learning_module_progress")

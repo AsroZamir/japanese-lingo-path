@@ -69,10 +69,12 @@ export async function markStageCompletedAt(
 
 // Marks every prerequisite stage completed well outside any 72h delayed
 // gate (30 days back), so specs about batch content/other stages aren't
-// coupled to Bagian 3's F5 gate — that gate gets its own dedicated spec
-// (f5-retention-gate.spec.ts) that deliberately controls this timestamp.
+// coupled to Bagian 2's retention gate — that gate gets its own dedicated
+// spec (retention-gate.spec.ts) that deliberately controls this timestamp.
+// Order matches learning_stages.order_index exactly (Prompt 4 Bagian 2
+// moved the gate: RETENTION now sits between BOSS and F6, not before F5).
 export async function unlockThroughStage(userId: string, targetCode: string): Promise<void> {
-  const order = ["F1", "F2", "F3", "F4", "F5", "BOSS", "F6", "F7", "F8", "F9", "F10", "F11", "F12"];
+  const order = ["F1", "F2", "F3", "F4", "F5", "BOSS", "RETENTION", "F6", "F7", "F8", "F9", "F10", "F11", "F12"];
   const targetIndex = order.indexOf(targetCode);
   if (targetIndex < 0) throw new Error("unlockThroughStage: unknown stage code " + targetCode);
   const wellInThePast = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);

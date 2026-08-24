@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { HIRAGANA_LAB_VERSION } from "@/app/lib/hiragana-mnemonics";
+import {
+  CURRICULUM_VERSION_V21,
+  HIRAGANA_LAB_VERSION,
+  V21_PHASE_CODE_BY_STAGE,
+} from "@/app/lib/hiragana-mnemonics";
 import type {
   HiraganaLearningItem,
   HiraganaStageBundle,
@@ -42,7 +46,10 @@ function choicesFor(
   return options.slice(shift).concat(options.slice(0, shift));
 }
 
-function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion[] {
+function buildGateQuestions(
+  items: HiraganaLearningItem[],
+  phaseCode: string,
+): HiraganaQuizQuestion[] {
   const pool = items.filter((item) => item.type === "basic");
   return pool.map((item, index): HiraganaQuizQuestion => {
     if (index % 3 === 0) {
@@ -54,6 +61,8 @@ function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion
         promptMode: "kana",
         exerciseType: "gate_recognition",
         skill: "visual",
+        phaseCode,
+        curriculumVersion: CURRICULUM_VERSION_V21,
       };
     }
     if (index % 3 === 1) {
@@ -66,6 +75,8 @@ function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion
         choices: choicesFor(pool, item, 8, index + 11),
         exerciseType: "gate_audio",
         skill: "audio",
+        phaseCode,
+        curriculumVersion: CURRICULUM_VERSION_V21,
       };
     }
     return {
@@ -76,6 +87,8 @@ function buildGateQuestions(items: HiraganaLearningItem[]): HiraganaQuizQuestion
       promptMode: "audio",
       exerciseType: "gate_writing",
       skill: "writing",
+      phaseCode,
+      curriculumVersion: CURRICULUM_VERSION_V21,
     };
   });
 }
@@ -133,7 +146,11 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
   const [completion, setCompletion] = useState<StageCompletionResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [runKey, setRunKey] = useState(0);
-  const gateQuestions = useMemo(() => buildGateQuestions(bundle.items), [bundle.items]);
+  const phaseCode = V21_PHASE_CODE_BY_STAGE[bundle.stage.code] ?? bundle.stage.code;
+  const gateQuestions = useMemo(
+    () => buildGateQuestions(bundle.items, phaseCode),
+    [bundle.items, phaseCode],
+  );
 
   async function finishStage(
     result: HiraganaQuizResult,
@@ -164,19 +181,36 @@ export function HiraganaStagePlayer({ bundle }: StagePlayerProps) {
     );
   }
 
-  // BOSS is the only stage with a dedicated player (the 46-item gate
-  // quiz); every other stage — F1-F5 and any Bagian 5 extension stage
-  // (dakuten/handakuten, youon, ...) — reuses HiraganaLearningLab exactly
-  // as-is, just pointed at whatever character track its own
-  // configuration.characterSet selects (see pre-n5-01-query.ts).
-  if (bundle.stage.code === "BOSS") {
+  // BOSS and RETENTION are the only stages with a dedicated player — both
+  // sample from the whole 46-item bank instead of teaching anything new,
+  // so they reuse the same gate quiz. Every other stage — F1-F5 and any
+  // Bagian 5 extension stage (dakuten/handakuten, youon, ...) — reuses
+  // HiraganaLearningLab exactly as-is, just pointed at whatever character
+  // track its own configuration.characterSet selects (pre-n5-01-query.ts).
+  //
+  // RETENTION (Bagian 2 of Prompt 4) is the actual delayed retention gate
+  // — the one V2.1 §4.1/§9.2 describes, opened >=72h after BOSS (see
+  // pre-n5-01-query.ts's delayedGateHours check) and scored at >=85%
+  // first-attempt-unaided by completeHiraganaStage's retentionGate branch
+  // (actions.ts), which reads phase_code='RETENTION' rows back out of
+  // user_kana_attempts. BOSS itself stays an ordinary >=80% immediate
+  // checkpoint — passing it only means "may proceed", not "mastered".
+  if (bundle.stage.code === "BOSS" || bundle.stage.code === "RETENTION") {
+    const isRetention = bundle.stage.code === "RETENTION";
     return (
       <HiraganaQuiz
         key={runKey}
         stageId={bundle.stage.id}
         questions={gateQuestions}
         timeLimitSeconds={numberFrom(bundle.stage.configuration.timeLimitSeconds, 600)}
-        onComplete={(result) => finishStage(result, { badge: result.correct / result.total >= 0.8 ? "Hiragana 46 Pathfinder" : null })}
+        onComplete={(result) =>
+          finishStage(
+            result,
+            isRetention
+              ? { badge: result.correct / result.total >= 0.85 ? "Hiragana 46 Durable" : null }
+              : { badge: result.correct / result.total >= 0.8 ? "Hiragana 46 Pathfinder" : null },
+          )
+        }
       />
     );
   }
