@@ -1,0 +1,122 @@
+[
+  {
+    "id": 30,
+    "speaker": "No.7",
+    "style": "アナウンス",
+    "files": {
+      "vowels": "30-vowels.wav",
+      "ka-row": "30-ka-row.wav",
+      "sentence": "30-sentence.wav"
+    }
+  },
+  {
+    "id": 29,
+    "speaker": "No.7",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "29-vowels.wav",
+      "ka-row": "29-ka-row.wav",
+      "sentence": "29-sentence.wav"
+    }
+  },
+  {
+    "id": 11,
+    "speaker": "玄野武宏",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "11-vowels.wav",
+      "ka-row": "11-ka-row.wav",
+      "sentence": "11-sentence.wav"
+    }
+  },
+  {
+    "id": 13,
+    "speaker": "青山龍星",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "13-vowels.wav",
+      "ka-row": "13-ka-row.wav",
+      "sentence": "13-sentence.wav"
+    }
+  },
+  {
+    "id": 20,
+    "speaker": "もち子さん",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "20-vowels.wav",
+      "ka-row": "20-ka-row.wav",
+      "sentence": "20-sentence.wav"
+    }
+  },
+  {
+    "id": 74,
+    "speaker": "琴詠ニア",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "74-vowels.wav",
+      "ka-row": "74-ka-row.wav",
+      "sentence": "74-sentence.wav"
+    }
+  },
+  {
+    "id": 9,
+    "speaker": "波音リツ",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "9-vowels.wav",
+      "ka-row": "9-ka-row.wav",
+      "sentence": "9-sentence.wav"
+    }
+  },
+  {
+    "id": 99,
+    "speaker": "離途",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "99-vowels.wav",
+      "ka-row": "99-ka-row.wav",
+      "sentence": "99-sentence.wav"
+    }
+  },
+  {
+    "id": 108,
+    "speaker": "東北きりたん",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "108-vowels.wav",
+      "ka-row": "108-ka-row.wav",
+      "sentence": "108-sentence.wav"
+    }
+  },
+  {
+    "id": 21,
+    "speaker": "剣崎雌雄",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "21-vowels.wav",
+      "ka-row": "21-ka-row.wav",
+      "sentence": "21-sentence.wav"
+    }
+  },
+  {
+    "id": 8,
+    "speaker": "春日部つむぎ",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "8-vowels.wav",
+      "ka-row": "8-ka-row.wav",
+      "sentence": "8-sentence.wav"
+    }
+  },
+  {
+    "id": 100,
+    "speaker": "黒沢冴白",
+    "style": "ノーマル",
+    "files": {
+      "vowels": "100-vowels.wav",
+      "ka-row": "100-ka-row.wav",
+      "sentence": "100-sentence.wav"
+    }
+  }
+]

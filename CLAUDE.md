@@ -14,10 +14,22 @@ jangkar bunyi Indonesia asli (bukan jangkar kata Jepang seperti versi
 lama) — **perlu ditinjau pemilik repo**, lihat komentar di file itu.
 Langkah "Baca" bertambah jadi langkah ke-7 di label UI ("Langkah X/7").
 Layar pembuka vokal (`VocalBridgeIntro.tsx`) muncul sekali sebelum F1
-batch 1 pertama kali, tidak persisten ke database. Bagian 2 (VOICEVOX)
-dilewati — server `localhost:50021` tidak jalan di komputer ini saat
-sesi berjalan, tidak ditemukan `.exe` untuk menyalakannya (cuma folder
-data `%LOCALAPPDATA%\voicevox-engine` tanpa engine-nya sendiri).
+batch 1 pertama kali, tidak persisten ke database.
+
+**Bagian 2 (VOICEVOX) — selesai belakangan** (25 Agustus 2026, setelah
+pemilik menyalakan VOICEVOX sendiri). Halaman perbandingan **`/dev/suara`**
+(tidak ada di navigasi) menampilkan 12 kandidat suara pengganti
+四国めたん id=2 (dinilai terlalu anime), masing-masing dengan 3 sampel
+audio nyata (あいうえお, かきくけこ, kalimat). File WAV-nya disimpan statis
+di `public/dev-suara/` (~2 MB, sudah di-commit) supaya halaman tetap
+jalan tanpa VOICEVOX menyala terus-menerus — regenerasi lewat
+`npm run generate:voice-samples` (`scripts/generate-voice-comparison-
+samples.ts`), VOICEVOX harus menyala saat itu. **Suara produksi belum
+diganti** — pemilik yang memilih dulu lewat `/dev/suara`, baru speaker id
+dipindah (satu env var `VOICEVOX_SPEAKER_ID`, sudah tersentralisasi sejak
+sebelumnya) di `scripts/generate-audio-voicevox.ts` dan
+`scripts/generate-audio-remaining-kana.ts`, lalu audio kana yang sudah
+ada perlu digenerasi ulang dengan speaker baru itu.
 
 PROMPT-7 Bagian 7-9 (katakana): **PRE-N5.02 aktif** — status modul
 `ready` (dulu `scaffold`), 7 baris `learning_stages` (F1-F5, BOSS,

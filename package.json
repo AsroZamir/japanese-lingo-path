@@ -21,6 +21,7 @@
     "seed:pre-n5-v2": "tsx scripts/seed-pre-n5-v2.ts",
     "verify:pre-n5-v2": "tsx scripts/verify-pre-n5-v2.ts",
     "generate:narration": "tsx scripts/generate-narration.ts",
+    "generate:voice-samples": "tsx scripts/generate-voice-comparison-samples.ts",
     "e2e:auth-setup": "tsx scripts/auth-setup.ts"
   },
   "dependencies": {
