@@ -35,16 +35,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const imageUrl = new URL("/og.png", `${protocol}://${host}`);
 
   return {
-    title: "Japanese Lingo Path",
+    title: "BaraJapan",
     description: "Your personalized path to learning Japanese.",
     openGraph: {
-      title: "Japanese Lingo Path",
+      title: "BaraJapan",
       description: "Your personalized path to learning Japanese.",
-      images: [{ url: imageUrl, width: 1660, height: 948, alt: "Japanese Lingo Path" }],
+      images: [{ url: imageUrl, width: 1660, height: 948, alt: "BaraJapan" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Japanese Lingo Path",
+      title: "BaraJapan",
       description: "Your personalized path to learning Japanese.",
       images: [imageUrl],
     },

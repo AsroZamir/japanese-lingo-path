@@ -8,6 +8,7 @@ import {
   type HiraganaMnemonic,
 } from "@/app/lib/hiragana-mnemonics";
 import { evaluateDelayedGateEligibility } from "@/app/(app)/belajar/pre-n5/[moduleCode]/[stageCode]/gate-logic";
+import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
 
 const CURRICULUM_CODE = "v2";
 const LEVEL_CODE = "PRE-N5";
@@ -91,12 +92,75 @@ export type HiraganaUnit = {
   items: HiraganaLearningItem[];
 };
 
+export type HiraganaReadWord = {
+  id: number;
+  wordKana: string;
+  romaji: string;
+  meaning: string;
+  audioUrl: string | null;
+  kanaIds: number[];
+};
+
 export type HiraganaStageBundle = {
   module: PreN5ModuleOverview;
   stage: PreN5StageSummary;
   items: HiraganaLearningItem[];
   units: HiraganaUnit[];
+  readWords: HiraganaReadWord[];
 };
+
+// Bagian 6.4 (the missing "Baca" step) — a word only counts as readable
+// with the bank learned so far if EVERY character in it is already in
+// that bank, not just the character the word happens to be linked to via
+// kana_word_characters' primary link. Fetches full per-word character
+// sets and filters client-side rather than trying to express "array is a
+// subset of array" as a single SQL predicate through PostgREST.
+async function getReadWordsForCharacters(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  kanaIds: number[],
+): Promise<HiraganaReadWord[]> {
+  if (kanaIds.length === 0) return [];
+  const allowedIds = new Set(kanaIds);
+
+  const { data: candidateLinks, error: candidateError } = await supabase
+    .from("kana_word_characters")
+    .select("word_id")
+    .in("kana_id", kanaIds);
+  if (candidateError) throw new Error(candidateError.message);
+  const candidateWordIds = [...new Set((candidateLinks ?? []).map((row) => row.word_id))];
+  if (candidateWordIds.length === 0) return [];
+
+  const { data: allLinks, error: allLinksError } = await supabase
+    .from("kana_word_characters")
+    .select("word_id, kana_id, position")
+    .in("word_id", candidateWordIds)
+    .order("position");
+  if (allLinksError) throw new Error(allLinksError.message);
+
+  const kanaIdsByWordId = new Map<number, number[]>();
+  for (const link of allLinks ?? []) {
+    kanaIdsByWordId.set(link.word_id, [...(kanaIdsByWordId.get(link.word_id) ?? []), link.kana_id]);
+  }
+  const eligibleWordIds = [...kanaIdsByWordId.entries()]
+    .filter(([, ids]) => ids.length > 0 && ids.every((id) => allowedIds.has(id)))
+    .map(([wordId]) => wordId);
+  if (eligibleWordIds.length === 0) return [];
+
+  const { data: wordRows, error: wordError } = await supabase
+    .from("kana_example_words")
+    .select("id, word_kana, romaji, meaning_id, audio_url")
+    .in("id", eligibleWordIds);
+  if (wordError) throw new Error(wordError.message);
+
+  return (wordRows ?? []).map((word) => ({
+    id: word.id,
+    wordKana: word.word_kana,
+    romaji: word.romaji,
+    meaning: word.meaning_id,
+    audioUrl: word.audio_url,
+    kanaIds: kanaIdsByWordId.get(word.id) ?? [],
+  }));
+}
 
 function estimatedHours(minMinutes: number, maxMinutes: number): string {
   const formatter = new Intl.NumberFormat("id-ID", {
@@ -213,10 +277,12 @@ export const getPreN5ModuleOverview = cache(
         delayedGateHours != null
           ? evaluateDelayedGateEligibility(previousFirstCompletedAt, new Date(), delayedGateHours)
           : null;
+      const devUnlock = isDevUnlockAllActive();
       const locked =
-        prerequisites.some((code) => !completedStageCodes.has(code)) ||
-        contentStatus !== "ready" ||
-        (delayedGate != null && !delayedGate.eligible);
+        !devUnlock &&
+        (prerequisites.some((code) => !completedStageCodes.has(code)) ||
+          contentStatus !== "ready" ||
+          (delayedGate != null && !delayedGate.eligible));
       const summary: PreN5StageSummary = {
         id: stage.id,
         code: stage.code,
@@ -234,7 +300,7 @@ export const getPreN5ModuleOverview = cache(
         state: progressIsCurrent ? progressState : {},
         locked,
         delayedGateAvailableAt:
-          delayedGate != null && !delayedGate.eligible
+          !devUnlock && delayedGate != null && !delayedGate.eligible
             ? (delayedGate.availableAt?.toISOString() ?? null)
             : null,
         statusLabel: locked
@@ -658,11 +724,14 @@ export const getHiraganaStageBundle = cache(
       Math.min(batchStart + newCharacterCount, items.length),
     );
 
+    const readWords = await getReadWordsForCharacters(supabase, kanaIds);
+
     return {
       module: moduleOverview,
       stage,
       items,
       units: buildUnits(newItems),
+      readWords,
     };
   },
 );

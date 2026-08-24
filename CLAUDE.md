@@ -1,6 +1,13 @@
 # CLAUDE.md — Japanese Lingo Path
 
-Panduan kerja untuk Claude Code di repo ini. Diperbarui 24 Agustus 2026.
+Panduan kerja untuk Claude Code di repo ini. Diperbarui 24 Agustus 2026 (PROMPT-6).
+
+Nama produk yang **terlihat pengguna** sekarang **"BaraJapan"** (diganti dari
+"Japanese Lingo Path" per permintaan pemilik). Repo, folder, domain Vercel,
+nama tabel database, dan nama variabel kode **sengaja tidak diubah** —
+tetap "japanese-lingo-path"/"Japanese Lingo Path" di sana, itu bukan
+kelalaian. `public/og.png` (gambar OG untuk share sosial media) juga masih
+memuat logo lama secara visual — belum diganti, lihat Bagian 4 poin 14.
 
 ---
 
@@ -199,15 +206,19 @@ lagi — hanya keberhasilan tanpa hint di percobaan itu yang menaikkan
 
 #### Kana Script Engine — bukan F1–F5, dan sudah diimplementasikan
 
-Bagian 6.1, tujuh langkah: lihat-dengar → bedakan → ikuti stroke → tulis dari
-memori singkat → tulis dari audio → campuran kumulatif → retention. **Enam
-langkah pertama diimplementasikan** di `HiraganaLearningLab.tsx` (24 Agustus
-2026) sebagai fase `anchor` → `discriminate` → `guided` → `shortMemory` →
-`recall` → `checkpoint`, dijalankan **per-round** (semua item di satu kelompok
-lewat satu fase dulu, baru pindah fase) — bukan satu item lewat semua fase lalu
-pindah item — supaya reset retrieval (di atas) punya item lain untuk diselipkan.
-Langkah ketujuh (retention) **bukan** bagian dari alur belajar per-karakter;
-lihat gerbang tertunda di bawah.
+Bagian 7, urutan: lihat-dengar (anchor) → bedakan (minimal contrast) → ikuti
+stroke (guided) → tulis dari memori singkat (ghost trace) → tulis dari audio
+→ **baca mora/kata pendek** → campuran kumulatif. **Semua tujuh langkah per-
+karakter sudah diimplementasikan** di `HiraganaLearningLab.tsx` sebagai fase
+`anchor` → `discriminate` → `guided` → `shortMemory` → `recall` → `read` →
+`checkpoint` (langkah `read`/"Baca" ditambahkan 24 Agustus 2026, PROMPT-6
+Bagian 4 — lihat Bagian 4 poin 15 di atas). Enam fase pertama dijalankan
+**per-round** (semua item di satu kelompok lewat satu fase dulu, baru pindah
+fase) — bukan satu item lewat semua fase lalu pindah item — supaya reset
+retrieval (di atas) punya item lain untuk diselipkan; `read` sedikit beda:
+kata (bukan karakter tunggal) dari `bundle.readWords`, 3 kata per unit,
+diprioritaskan yang memuat huruf baru unit ini. Retention (gerbang tertunda,
+di luar alur per-karakter ini) dibahas terpisah di bawah.
 
 Kode stage database (F1–F5, BOSS) **belum diganti nama** jadi P1–P5 seperti
 istilah V2.1 — pemetaan kode↔istilah ada di `V21_PHASE_CODE_BY_STAGE`
@@ -268,12 +279,20 @@ terlupakan — V2.1 menuntut confusable set dan prerequisite graph).
 
 ### Yang rusak atau belum ada
 
-1. **Antrean review tidak ada.** `due_at` terisi benar, tapi tidak ada satu baris
-   kode pun yang membacanya. `/ulangi` 100% hardcode dari `app/lib/mock-data.ts:13`
-   (`reviewSummary = { dueNow: 12, learning: 28, mastered: 64 }`). Tombolnya cuma
-   memicu toast. **Landing page sudah menjanjikan fitur ini.**
-   (Badge di sidebar `AppShell.tsx` sudah sengaja dihapus dengan komentar
-   eksplisit — angka "12" hanya di halaman `/ulangi`.)
+1. ~~Antrean review tidak ada.~~ **Sudah ada** (24 Agustus 2026, PROMPT-6
+   Bagian 3) — `/ulangi` sekarang query nyata (`app/lib/review-query.ts`):
+   ambil item `user_kana_mastery.due_at` yang sudah lewat (lintas
+   kurikulum V1/V2/V2.1, sengaja tidak difilter — SRS per-karakter tidak
+   peduli kurikulum mana yang mengajarkannya), batas 40/hari, prioritas
+   dari sinyal nyata (salah tanpa bantuan, benar-tapi-dibantu, lambat,
+   pasangan confusable yang juga jatuh tempo, gagal RETENTION), dan
+   "minimum viable review" (top-up dari huruf terlemah kalau yang jatuh
+   tempo terlalu sedikit, supaya sesi tidak pernah kosong). Latihannya
+   pakai ulang `HiraganaQuiz` (mesin yang sama dengan F1-F12/BOSS), disimpan
+   lewat `recordHiraganaAttempt` yang sudah ada (dipanggil dengan
+   `phaseCode: "review"` → `exercise_type` jadi `v21_review_*`) — tidak ada
+   action baru untuk ini. `/beranda` juga menampilkan ringkasan jatuh tempo
+   sekarang (dulu tidak ada sama sekali, bukan cuma dead number).
 2. ~~Retention gate tidak ditegakkan.~~ **Sudah ditegakkan** (24 Agustus
    2026) — stage `RETENTION` setelah BOSS, dua lapis (halaman + server
    action). Lihat kotak peringatan posisi gerbang di Bagian 3 file ini.
@@ -299,8 +318,15 @@ terlupakan — V2.1 menuntut confusable set dan prerequisite graph).
    (`typed_value = 'writing-score:82'`). Tidak bisa di-query.
 8. **Placement test tidak ada.** V2.1 Bagian 12 butir 4 mensyaratkannya untuk
    memberi credit ke pengguna aktif saat migrasi.
-9. **Landing page tidak sinkron** — masih "Pre-N5 · 5 modul" (hardcode di
-   `app/(marketing)/page.tsx`), padahal sistem aktif punya 11 modul.
+9. ~~Landing page tidak sinkron~~ **Sudah diperbaiki** (24 Agustus 2026,
+   PROMPT-6 Bagian 7) — sekarang "Pre-N5 · 11 modul", angka nyata (bukan
+   query live: tabel `learning_modules` RLS-nya `to: authenticatedRole`
+   saja, jadi query dari halaman publik yang belum login diam-diam
+   mengembalikan 0 baris — ditemukan langsung waktu diverifikasi di
+   browser, sempat menampilkan "0 modul" sebelum diperbaiki. Membuat
+   query itu benar-benar live butuh keputusan keamanan: apakah metadata
+   kurikulum boleh dibaca publik (`anon` role). Itu keputusan pemilik,
+   bukan sesuatu yang diubah sepihak di sesi ini — lihat Bagian 4 poin 14).
 10. ~~Dua jalur `learningFlow` coexist.~~ **Jalur legacy sudah dihapus**
     (24 Agustus 2026) — dikonfirmasi tidak pernah aktif di database
     (`configuration->>'learningFlow'` selalu `null` untuk semua stage) sebelum
@@ -319,6 +345,50 @@ terlupakan — V2.1 menuntut confusable set dan prerequisite graph).
     baik untuk manusia, itu tetap butuh dicoba manual.
 13. **Status deployment Vercel tidak terverifikasi.** Hanya inferensi dari git
     sync; akses API Vercel gagal di sesi audit.
+14. **Konten kurikulum (`learning_modules`, `kana_characters`, dst.) tidak
+    bisa dibaca pengguna yang belum login** — RLS-nya `to: authenticatedRole`
+    saja (lihat `readByAuthenticated()` di `db/schema/kana.ts`). Ini
+    berdampak nyata ke landing page publik (poin 9 di atas) dan ke `og.png`
+    (masih logo "Japanese Lingo Path" lama secara visual — ganti nama di
+    Bagian 6 PROMPT-6 sengaja tidak menyentuh gambar, "jangan buat logo baru
+    sendiri"). Kalau landing page butuh data live dari database di masa
+    depan, ini yang harus diputuskan dulu: buka `anon` read untuk tabel
+    konten tertentu, atau tetap pakai angka statis yang diperbarui manual.
+15. ~~Langkah "Baca" (V2.1 §7) tidak ada.~~ **Sudah ada** (24 Agustus 2026,
+    PROMPT-6 Bagian 4) — langkah ke-7 di `HiraganaLearningLab.tsx`, di
+    antara "Dengar & Tulis" dan "Uji". Sumber kata: `kana_example_words`,
+    disaring supaya SETIAP huruf dalam kata sudah ada di bank aktif
+    (`getReadWordsForCharacters` di `pre-n5-01-query.ts` — subset-check
+    dua tahap, bukan sekadar "kata ini terhubung ke huruf ini"). Data
+    ternyata cukup di semua batch tanpa perlu kombinasi mora buatan (13
+    kata untuk F1's 10 huruf pertama, naik ke 62 untuk 46 huruf penuh —
+    lihat laporan PROMPT-6). Disimpan lewat action baru
+    `recordReadAttempt` (bukan `recordHiraganaAttempt` — kata punya
+    banyak `kana_id`, bukan satu, jadi tidak cocok dengan bentuk lama;
+    `user_kana_attempts.word_id` dipakai, `kana_id` null untuk baris ini),
+    `exercise_type` berprefix `v21_read_`, memperkuat mastery skill
+    `"reading"` untuk SEMUA huruf dalam kata itu sekaligus.
+16. **Peta penguasaan 46 huruf sudah ada** (24 Agustus 2026, PROMPT-6
+    Bagian 5) — `/progres` (dulu 100% mock: "Vocabulary 42%, Grammar 31%,
+    ..." untuk fitur yang tidak pernah dibangun). Status 5 tingkat
+    diturunkan di `app/lib/mastery-tier.ts`, cara turunnya didokumentasikan
+    di sana dan di laporan PROMPT-6 — belum ada kolom status di database,
+    ini derivasi dari `attempts`/`accuracy`/`streak`/`srs_interval_days`
+    dan bukti lolos RETENTION tanpa bantuan.
+17. **Sakelar mode dev ada** (24 Agustus 2026, PROMPT-6 Bagian 2) —
+    `NEXT_PUBLIC_DEV_UNLOCK_ALL=true` aktif di Production Vercel sekarang,
+    supaya pemilik bisa lompat ke tahap mana pun tanpa menyelesaikan
+    prasyarat atau menunggu gerbang 72 jam. Baca `app/lib/dev-mode.ts` —
+    satu fungsi (`isDevUnlockAllActive`), dipakai di dua tempat yang
+    HARUS tetap sinkron: `pre-n5-01-query.ts` (kunci halaman) dan
+    `actions.ts`'s `completeHiraganaStage` (kunci server action, supaya
+    tidak bisa dilewati dengan memanggil action langsung). Label "MODE DEV"
+    tampil di layar (`DevUnlockBanner`) kapan pun sakelar ini aktif — kalau
+    banner itu tidak muncul tapi tahap tetap kebuka semua, itu bug.
+    **Sebelum rilis komersial: hapus/matikan env var ini di Vercel
+    (`vercel env rm NEXT_PUBLIC_DEV_UNLOCK_ALL production`, atau set ke
+    apa pun selain `"true"`), lalu redeploy.** Logika penguncian aslinya
+    tidak disentuh — mati otomatis begitu sakelar mati.
 
 ## 5. Aturan keras — mahal didapat, jangan diulang
 

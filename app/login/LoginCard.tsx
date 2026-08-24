@@ -29,11 +29,11 @@ export function LoginCard() {
   return (
     <div className="login-page">
       <div className="login-card-wrap">
-        <Link href="/" className="login-card__brand">Japanese Lingo Path</Link>
+        <Link href="/" className="login-card__brand">BaraJapan</Link>
         <section className="login-card">
           <div className="login-card__mark"><span>日</span></div>
           <span className="login-card__pill">Masuk untuk melanjutkan</span>
-          <h2>Selamat datang di Japanese Lingo Path</h2>
+          <h2>Selamat datang di BaraJapan</h2>
           <p>Masuk dengan akun Google untuk menyimpan progres belajar Anda.</p>
           {errorParam && <p className="login-card__error">{ERROR_MESSAGES[errorParam] ?? "Terjadi kesalahan. Silakan coba lagi."}</p>}
           <button className="login-card__submit" onClick={signInWithGoogle} disabled={pending}>

@@ -9,7 +9,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <PageHeader eyebrow="YOUR ACCOUNT" title="Settings" copy="Shape Japanese Lingo Path around the way you learn." />
+      <PageHeader eyebrow="YOUR ACCOUNT" title="Settings" copy="Shape BaraJapan around the way you learn." />
       <SettingsForm user={user} />
     </>
   );

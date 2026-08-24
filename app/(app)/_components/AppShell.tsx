@@ -29,9 +29,9 @@ function isNavItemActive(pathname: string, item: NavItem) {
 
 function Brand() {
   return (
-    <div className="brand" aria-label="Japanese Lingo Path">
+    <div className="brand" aria-label="BaraJapan">
       <div className="brand-mark"><span>日</span></div>
-      <div className="brand-name"><small>Japanese</small><strong>Lingo <em>Path</em></strong></div>
+      <div className="brand-name"><small>Bara</small><strong>Japan</strong></div>
     </div>
   );
 }
@@ -77,7 +77,7 @@ function AppShellContent({ user, children }: { user: CurrentUser; children: Reac
 
       <section className="workspace">
         <header className="topbar">
-          <button className="mobile-brand" onClick={() => go("/beranda")}><span>日</span> Japanese Lingo Path</button>
+          <button className="mobile-brand" onClick={() => go("/beranda")}><span>日</span> BaraJapan</button>
           <span className="prototype-pill">VERSI AWAL</span>
           <div className="top-actions">
             <NotificationBell />

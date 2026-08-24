@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getHiraganaStageBundle } from "@/app/lib/pre-n5-01-query";
+import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
+import { DevUnlockBanner } from "../../../../_components/DevUnlockBanner";
 import { HiraganaStagePlayer } from "./HiraganaStagePlayer";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +52,7 @@ export default async function HiraganaStagePage({
 
   return (
     <div className="content hiragana-stage-page">
+      {isDevUnlockAllActive() && <DevUnlockBanner />}
       <header className="hiragana-stage-page__header">
         <Link href={"/belajar/pre-n5/" + moduleCode} className="back-button">
           Kembali ke {bundle.module.title}

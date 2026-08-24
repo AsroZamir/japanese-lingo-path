@@ -255,6 +255,8 @@ button.nav-item.active { background: rgba(255,255,255,.12); }
 .review-summary > div { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 3px 7px; padding-right: 18px; border-right: 1px solid rgba(255,255,255,.12); }
 .review-summary small { grid-column: 1 / -1; color: #8ba9d0; font-size: 7px; font-weight: 800; letter-spacing: .15em; }
 .review-summary strong { font-size: 27px; }.review-summary span { color: #a8bfdc; font-size: 9px; }
+.review-summary__start { display: grid; justify-items: center; gap: 10px; margin-bottom: 20px; padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: white; text-align: center; }
+.review-summary__start p { max-width: 480px; margin: 0; color: var(--moji-muted, #6b7280); font-size: 11px; }
 .table-card { padding: 24px; border: 1px solid var(--line); border-radius: 20px; background: white; }
 .table-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px; }
 .table-title h3 { margin: 5px 0 0; color: var(--deep-navy); font-size: 17px; }
@@ -1879,6 +1881,57 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .hiragana-blitz form { display: grid; grid-template-columns: 1fr auto; gap: 9px; }
 .hiragana-blitz > p { min-height: 18px; color: var(--moji-muted); font-size: 11px; }
 
+.dev-unlock-banner {
+  margin: 0 0 14px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #cc5436;
+  background: #fdeee9;
+  color: #8a2f1c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-align: center;
+}
+
+/* Bagian 6.5 — mastery map (/progres) */
+.mastery-map { display: grid; gap: 20px; }
+.mastery-map__legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 14px 18px; border: 1px solid var(--moji-line); border-radius: 14px; background: #fff; }
+.mastery-map__legend-item { display: inline-flex; align-items: center; gap: 6px; color: var(--moji-muted); font-size: 10.5px; font-weight: 700; }
+.mastery-map__legend-item i { width: 10px; height: 10px; border-radius: 3px; }
+.mastery-map__legend-item.is-new i { background: var(--moji-line); }
+.mastery-map__legend-item.is-familiar i { background: var(--moji-accent-soft-bg); border: 1px solid var(--moji-accent); }
+.mastery-map__legend-item.is-retrievable i { background: #ffe6a8; }
+.mastery-map__legend-item.is-durable i { background: var(--moji-success-bg); border: 1px solid var(--moji-success); }
+.mastery-map__legend-item.is-transferable i { background: #06295d; }
+.mastery-map__grid { display: grid; gap: 8px; padding: 20px; border: 1px solid var(--moji-line); border-radius: 16px; background: #fff; }
+.mastery-map__row { display: flex; flex-wrap: wrap; gap: 8px; }
+.mastery-map__cell {
+  width: 52px; height: 52px; display: grid; place-items: center; border-radius: 12px; border: 1.5px solid transparent;
+  font: 700 22px/1 var(--moji-font-jp); color: var(--moji-ink); background: var(--moji-line); cursor: pointer;
+  transition: transform 120ms ease;
+}
+.mastery-map__cell:hover { transform: translateY(-2px); }
+.mastery-map__cell.is-selected { border-color: var(--moji-ink); }
+.mastery-map__cell.is-new { background: var(--moji-line); color: var(--moji-faint); }
+.mastery-map__cell.is-familiar { background: var(--moji-accent-soft-bg); color: var(--moji-accent); }
+.mastery-map__cell.is-retrievable { background: #ffe6a8; color: #7a5900; }
+.mastery-map__cell.is-durable { background: var(--moji-success-bg); color: var(--moji-success); }
+.mastery-map__cell.is-transferable { background: #06295d; color: #fff; }
+.mastery-map__detail { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 20px; border: 1px solid var(--moji-line); border-radius: 16px; background: #fff; }
+.mastery-map__detail-glyph { width: 70px; height: 70px; display: grid; place-items: center; border-radius: 14px; background: var(--moji-accent-soft-bg); font: 700 34px/1 var(--moji-font-jp); color: var(--moji-accent); }
+.mastery-map__detail-body strong { display: block; margin-bottom: 4px; color: var(--moji-ink); font-size: 15px; }
+.mastery-map__tier-tag { display: inline-block; margin-bottom: 8px; padding: 3px 9px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: .04em; }
+.mastery-map__tier-tag.is-new { background: var(--moji-line); color: var(--moji-faint); }
+.mastery-map__tier-tag.is-familiar { background: var(--moji-accent-soft-bg); color: var(--moji-accent); }
+.mastery-map__tier-tag.is-retrievable { background: #ffe6a8; color: #7a5900; }
+.mastery-map__tier-tag.is-durable { background: var(--moji-success-bg); color: var(--moji-success); }
+.mastery-map__tier-tag.is-transferable { background: #06295d; color: #fff; }
+.mastery-map__detail-body dl { display: grid; gap: 4px; margin: 0; }
+.mastery-map__detail-body dl > div { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
+.mastery-map__detail-body dt { color: var(--moji-faint); }
+.mastery-map__detail-body dd { margin: 0; color: var(--moji-ink); font-weight: 700; text-align: right; }
+
 /* PRE-N5 UI hierarchy refresh */
 .pre-n5-module { max-width: 1180px; }
 .pre-n5-module__hero {
@@ -2060,6 +2113,11 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .hiragana-lab__checkpoint-note strong { color: var(--moji-ink); font-size: 11px; white-space: nowrap; }
 .hiragana-lab__checkpoint-note span { font-size: 9.5px; line-height: 1.45; text-align: right; }
 .hiragana-lab__checkpoint .hiragana-quiz { width: 100%; min-height: 520px; border: 0; padding: 8px 0 0; }
+.hiragana-lab__read { display: grid; justify-items: center; gap: 12px; padding: 20px 0; text-align: center; }
+.hiragana-lab__read > p { margin: 0; color: var(--moji-muted); font-size: 11px; }
+.hiragana-lab__read-word { font: 800 54px/1.2 var(--moji-font-jp); color: var(--moji-ink); }
+.hiragana-lab__read-meaning { color: var(--moji-faint); font-size: 10px; }
+.hiragana-lab__read-preview { color: var(--moji-accent); font-size: 13px; font-family: var(--moji-font-jp); }
 .hiragana-lab__unlock { min-height: 500px; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; }
 .hiragana-lab__unlock-mark { padding: 7px 11px; border-radius: 999px; color: var(--moji-success); background: var(--moji-success-bg); font-size: 9px; font-weight: 900; letter-spacing: .1em; }
 .hiragana-lab__unlock h3 { margin: 4px 0 0; color: var(--moji-ink); font-size: 23px; }

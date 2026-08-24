@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPreN5ModuleOverview } from "@/app/lib/pre-n5-01-query";
+import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
 import { PageHeader } from "../../../_components/PageHeader";
+import { DevUnlockBanner } from "../../../_components/DevUnlockBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +42,7 @@ export default async function PreN5ModulePage({
       <Link href="/belajar" className="back-button">
         Kembali ke daftar modul
       </Link>
+      {isDevUnlockAllActive() && <DevUnlockBanner />}
       <PageHeader
         eyebrow={moduleOverview.code + " - SCRIPT MASTERY"}
         title={moduleOverview.title}

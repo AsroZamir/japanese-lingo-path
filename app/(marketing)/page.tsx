@@ -1,25 +1,43 @@
 import Link from "next/link";
 
-const roadmap = [
-  { code: "Pre-N5", title: "Fondasi Bahasa Jepang untuk Pemula", status: "Sedang dibangun", detail: "5 modul" },
-  { code: "N5", title: "Bahasa Jepang Dasar Lengkap", status: "Direncanakan", detail: "Belum tersedia" },
-  { code: "N4", title: "Bahasa Jepang tingkat dasar-menengah", status: "Direncanakan", detail: "Belum tersedia" },
-  { code: "N3", title: "Bahasa Jepang tingkat menengah", status: "Direncanakan", detail: "Belum tersedia" },
-  { code: "N2", title: "Bahasa Jepang tingkat menengah-atas", status: "Direncanakan", detail: "Belum tersedia" },
-  { code: "N1", title: "Bahasa Jepang tingkat mahir", status: "Direncanakan", detail: "Belum tersedia" },
-];
-
 const differentiators = [
   { icon: "課", label: "KURIKULUM BERTAHAP", text: "Setiap level dipecah jadi modul kecil dengan urutan belajar yang jelas, bukan tumpukan materi acak." },
   { icon: "復", label: "REVIEW TERJADWAL", text: "Materi yang sudah dipelajari diulang otomatis di waktu yang tepat, supaya tidak cepat lupa." },
   { icon: "力", label: "PENILAIAN PER KOMPETENSI", text: "Progres diukur per kemampuan — kosakata, kanji, tata bahasa, membaca, mendengar, berbicara, menulis — bukan satu skor besar." },
 ];
 
+// Bagian 6.7 — "5 modul" was stale (11 real modules exist now: 1 ready,
+// 10 scaffolded). NOT live-queried: every content table (learning_modules
+// included) has RLS locked to the `authenticated` role only
+// (readByAuthenticated() in db/schema/*.ts) — this landing page is public
+// and renders for signed-out visitors, so a live query here silently
+// returns 0 rows instead of erroring (found by hand: rendered "0 modul").
+// Fixing that properly means deciding whether curriculum metadata should
+// be world-readable, which is a real RLS/security call for the owner, not
+// something to change unilaterally while fixing a landing-page number —
+// flagged in the report instead. This constant is a real count, verified
+// directly against the database; it just isn't self-updating.
+const PRE_N5_MODULE_COUNT = 11;
+
 export default function LandingPage() {
+  const roadmap = [
+    {
+      code: "Pre-N5",
+      title: "Fondasi Bahasa Jepang untuk Pemula",
+      status: "Sedang dibangun",
+      detail: PRE_N5_MODULE_COUNT + " modul",
+    },
+    { code: "N5", title: "Bahasa Jepang Dasar Lengkap", status: "Direncanakan", detail: "Belum tersedia" },
+    { code: "N4", title: "Bahasa Jepang tingkat dasar-menengah", status: "Direncanakan", detail: "Belum tersedia" },
+    { code: "N3", title: "Bahasa Jepang tingkat menengah", status: "Direncanakan", detail: "Belum tersedia" },
+    { code: "N2", title: "Bahasa Jepang tingkat menengah-atas", status: "Direncanakan", detail: "Belum tersedia" },
+    { code: "N1", title: "Bahasa Jepang tingkat mahir", status: "Direncanakan", detail: "Belum tersedia" },
+  ];
+
   return (
     <div className="landing">
       <header className="landing-nav">
-        <span className="landing-nav__brand">Japanese Lingo Path</span>
+        <span className="landing-nav__brand">BaraJapan</span>
         <nav className="landing-nav__links">
           <a href="#jalur">Jalur belajar</a>
           <a href="#kenapa">Kenapa kami</a>
@@ -32,7 +50,7 @@ export default function LandingPage() {
         <div className="landing-hero__copy">
           <span className="landing-eyebrow">VERSI AWAL — PRE-N5 SEDANG DIBANGUN</span>
           <h1>Belajar bahasa Jepang<br />dari nol sampai <em>JLPT</em></h1>
-          <p>Japanese Lingo Path adalah platform belajar bahasa Jepang berbahasa Indonesia, dari pemula total sampai siap menghadapi JLPT.</p>
+          <p>BaraJapan adalah platform belajar bahasa Jepang berbahasa Indonesia, dari pemula total sampai siap menghadapi JLPT.</p>
           <div className="landing-hero__ctas">
             <Link href="/login" className="landing-cta-btn">Masuk dengan Google <span>→</span></Link>
             <a href="#jalur" className="landing-hero__secondary-link">Lihat jalur belajar</a>
@@ -72,7 +90,7 @@ export default function LandingPage() {
 
       <section id="kenapa" className="landing-section landing-section--tinted">
         <div className="landing-section__heading">
-          <span className="landing-eyebrow">KENAPA JAPANESE LINGO PATH</span>
+          <span className="landing-eyebrow">KENAPA BARAJAPAN</span>
           <h2>Tiga hal yang membedakan</h2>
         </div>
         <div className="landing-feature-grid">
@@ -93,13 +111,13 @@ export default function LandingPage() {
       </section>
 
       <footer className="landing-footer">
-        <span className="landing-footer__brand">Japanese Lingo Path</span>
+        <span className="landing-footer__brand">BaraJapan</span>
         <nav>
           <a href="#jalur">Jalur belajar</a>
           <a href="#kenapa">Kenapa kami</a>
           <Link href="/login">Masuk</Link>
         </nav>
-        <span className="landing-footer__copyright">© 2026 Japanese Lingo Path</span>
+        <span className="landing-footer__copyright">© 2026 BaraJapan</span>
       </footer>
     </div>
   );

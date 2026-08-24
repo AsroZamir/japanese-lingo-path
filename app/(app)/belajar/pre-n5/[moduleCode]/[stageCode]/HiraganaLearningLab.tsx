@@ -16,6 +16,7 @@ import {
 } from "@/app/lib/hiragana-mnemonics";
 import type {
   HiraganaLearningItem,
+  HiraganaReadWord,
   HiraganaStageBundle,
   HiraganaUnit,
 } from "@/app/lib/pre-n5-01-query";
@@ -26,8 +27,10 @@ import {
 } from "./HiraganaQuiz";
 import {
   recordHiraganaAttempt,
+  recordReadAttempt,
   saveHiraganaStageState,
 } from "./actions";
+import * as wanakana from "wanakana";
 
 // V2.1 §6.1 Kana Script Engine: lihat-dengar -> bedakan -> ikuti stroke ->
 // tulis dari memori singkat -> tulis dari audio -> campuran kumulatif.
@@ -41,6 +44,7 @@ type LearningPhase =
   | "guided"
   | "shortMemory"
   | "recall"
+  | "read"
   | "checkpoint"
   | "unlock";
 
@@ -248,6 +252,21 @@ function requeueAfterHint(remainingQueue: number[], itemId: number): number[] {
   ];
 }
 
+const READ_WORDS_PER_ROUND = 3;
+
+// Bagian 6.4 — prefer words that actually contain one of THIS unit's new
+// characters (reading feels connected to what was just learned), falling
+// back to any word the cumulative bank supports once those run out.
+function selectReadWords(
+  pool: HiraganaReadWord[],
+  unitItemIds: Set<number>,
+  count: number,
+): HiraganaReadWord[] {
+  const containing = pool.filter((word) => word.kanaIds.some((id) => unitItemIds.has(id)));
+  const rest = pool.filter((word) => !containing.includes(word));
+  return [...containing, ...rest].slice(0, Math.min(count, pool.length));
+}
+
 function DiscriminateStep({
   item,
   pool,
@@ -303,6 +322,73 @@ function DiscriminateStep({
             return;
           }
           onOutcome(selected === item.id, selected as number);
+        }}
+      >
+        {saving ? "Menyimpan..." : checked ? "Lanjut" : "Periksa"}
+      </button>
+    </div>
+  );
+}
+
+function normalizeRomaji(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+// Bagian 6.4 — "read short mora/word" (V2.1 §7), the step that was missing
+// between "Dengar & Tulis" (single characters) and "Uji". Grading stays a
+// plain string compare against the word's stored romaji, same convention
+// HiraganaQuiz's typing questions already use — wanakana is used only as
+// a live display-layer preview of what the typed romaji becomes in kana,
+// never baked into the correctness check (CLAUDE.md's own rule: romaji is
+// a display layer, not content).
+function ReadStep({
+  word,
+  saving,
+  onOutcome,
+}: {
+  word: HiraganaReadWord;
+  saving: boolean;
+  onOutcome: (typedRomaji: string) => void;
+}) {
+  const [value, setValue] = useState("");
+  const [checked, setChecked] = useState(false);
+  const isCorrect = normalizeRomaji(value) === normalizeRomaji(word.romaji);
+  const preview = value.trim().length > 0 ? wanakana.toHiragana(value) : "";
+
+  return (
+    <div className="hiragana-lab__read">
+      <p>Baca kata ini, lalu ketik cara bacanya (romaji).</p>
+      <div className="hiragana-lab__read-word">{word.wordKana}</div>
+      {word.meaning && <small className="hiragana-lab__read-meaning">{word.meaning}</small>}
+      <input
+        className={[
+          "hiragana-quiz__input",
+          checked ? (isCorrect ? "is-correct" : "is-wrong") : "",
+        ].filter(Boolean).join(" ")}
+        value={value}
+        disabled={checked}
+        onChange={(event) => setValue(event.target.value)}
+        placeholder="Ketik romaji..."
+        autoComplete="off"
+        autoCapitalize="off"
+        spellCheck={false}
+      />
+      {preview && !checked && <span className="hiragana-lab__read-preview">{preview}</span>}
+      {checked && (
+        <div className={isCorrect ? "hiragana-quiz__feedback is-correct" : "hiragana-quiz__feedback is-wrong"}>
+          {isCorrect ? "Benar." : "Bacaan yang benar: " + word.romaji + "."}
+        </div>
+      )}
+      <button
+        type="button"
+        className="primary-button"
+        disabled={(!checked && value.trim().length === 0) || saving}
+        onClick={() => {
+          if (!checked) {
+            setChecked(true);
+            return;
+          }
+          onOutcome(value);
         }}
       >
         {saving ? "Menyimpan..." : checked ? "Lanjut" : "Periksa"}
@@ -495,6 +581,8 @@ export function HiraganaLearningLab({
   const [retrievalPassed, setRetrievalPassed] = useState(false);
   const attemptedOnceRef = useRef<Set<number>>(new Set());
 
+  const [readQueue, setReadQueue] = useState<HiraganaReadWord[]>([]);
+
   const [checkpointKey, setCheckpointKey] = useState(0);
   const [checkpointMessage, setCheckpointMessage] = useState("");
   const [lastCheckpointResult, setLastCheckpointResult] =
@@ -580,6 +668,7 @@ export function HiraganaLearningLab({
     setHintOpened(false);
     setRetrievalScore(null);
     setRetrievalPassed(false);
+    setReadQueue([]);
   }
 
   // Prompt 4 Bagian 3: this used to be void recordHiraganaAttempt(...) —
@@ -736,15 +825,43 @@ export function HiraganaLearningLab({
           setRetrievalQueue(unit?.items.map((candidate) => candidate.id) ?? []);
           attemptedOnceRef.current = new Set();
         } else {
-          setPhase("checkpoint");
-          setCheckpointMessage("");
-          setCheckpointKey((value) => value + 1);
+          const unitItemIds = new Set(unit?.items.map((candidate) => candidate.id) ?? []);
+          const words = selectReadWords(bundle.readWords, unitItemIds, READ_WORDS_PER_ROUND);
+          if (words.length > 0) {
+            setPhase("read");
+            setReadQueue(words);
+          } else {
+            setPhase("checkpoint");
+            setCheckpointMessage("");
+            setCheckpointKey((value) => value + 1);
+          }
         }
         setRetrievalScore(null);
         setRetrievalPassed(false);
       }
     } else {
       setRetrievalQueue(requeueAfterHint(remaining, retrievalItem.id));
+    }
+  }
+
+  async function handleReadOutcome(word: HiraganaReadWord, typedRomaji: string) {
+    setSavingAttempt(true);
+    await recordReadAttempt({
+      stageId: bundle.stage.id,
+      wordId: word.id,
+      kanaIds: word.kanaIds,
+      typedRomaji,
+      correctRomaji: word.romaji,
+      phaseCode,
+      curriculumVersion: CURRICULUM_VERSION_V21,
+    });
+    setSavingAttempt(false);
+    const remaining = readQueue.slice(1);
+    setReadQueue(remaining);
+    if (remaining.length === 0) {
+      setPhase("checkpoint");
+      setCheckpointMessage("");
+      setCheckpointKey((value) => value + 1);
     }
   }
 
@@ -802,11 +919,12 @@ export function HiraganaLearningLab({
     { key: "guided", label: "Ikuti" },
     { key: "shortMemory", label: "Ingat Singkat" },
     { key: "recall", label: "Dengar & Tulis" },
+    { key: "read", label: "Baca" },
     { key: "checkpoint", label: "Uji" },
   ];
   const phaseNumber = Math.max(1, phaseSteps.findIndex((step) => step.key === phase) + 1);
   const currentCharacterPosition =
-    phase === "checkpoint" || phase === "unlock"
+    phase === "checkpoint" || phase === "unlock" || phase === "read"
       ? unit.items.length
       : phase === "shortMemory" || phase === "recall"
         ? unit.items.length - retrievalQueue.length + 1
@@ -857,7 +975,7 @@ export function HiraganaLearningLab({
 
         <div className="hiragana-lab__principle">
           <b>Workflow menuju 46 huruf</b>
-          <p>Lihat-dengar, bedakan, ikuti goresan, tulis dari memori singkat, tulis dari audio, lalu diuji campur dengan huruf lama. Fase berikutnya hanya menambah huruf baru setelah ingatan lama kembali dipanggil.</p>
+          <p>Lihat-dengar, bedakan, ikuti goresan, tulis dari memori singkat, tulis dari audio, baca kata pendek, lalu diuji campur dengan huruf lama. Fase berikutnya hanya menambah huruf baru setelah ingatan lama kembali dipanggil.</p>
         </div>
       </aside>
 
@@ -871,17 +989,18 @@ export function HiraganaLearningLab({
               {phase === "guided" && "Bangun gerakan tangan"}
               {phase === "shortMemory" && "Tulis dari memori singkat"}
               {phase === "recall" && "Tulis dari audio"}
+              {phase === "read" && "Baca kata pendek"}
               {phase === "checkpoint" && "Checkpoint campuran"}
               {phase === "unlock" && "Makna mulai terbuka"}
             </h2>
           </div>
           <div className="hiragana-lab__header-meta">
-            <span>Langkah {phaseNumber}/6 - {phaseSteps[phaseNumber - 1]?.label ?? "Uji"}</span>
+            <span>Langkah {phaseNumber}/7 - {phaseSteps[phaseNumber - 1]?.label ?? "Uji"}</span>
             <b>Huruf {Math.min(currentCharacterPosition, unit.items.length)}/{unit.items.length}</b>
           </div>
         </header>
 
-        <ol className="hiragana-lab__steps" aria-label={"Langkah belajar " + phaseNumber + " dari 6"}>
+        <ol className="hiragana-lab__steps" aria-label={"Langkah belajar " + phaseNumber + " dari 7"}>
           {phaseSteps.map((step, index) => (
             <li
               key={step.key}
@@ -1006,6 +1125,15 @@ export function HiraganaLearningLab({
               </div>
             )}
           </>
+        )}
+
+        {phase === "read" && readQueue[0] && (
+          <ReadStep
+            key={readQueue[0].id}
+            word={readQueue[0]}
+            saving={savingAttempt}
+            onOutcome={(typedRomaji) => void handleReadOutcome(readQueue[0], typedRomaji)}
+          />
         )}
 
         {phase === "checkpoint" && (

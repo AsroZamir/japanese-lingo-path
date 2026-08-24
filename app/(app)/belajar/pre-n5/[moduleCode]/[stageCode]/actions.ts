@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { HIRAGANA_LAB_VERSION, V21_PHASE_CODE_BY_STAGE } from "@/app/lib/hiragana-mnemonics";
+import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
+import { nextSrsInterval as sharedNextSrsInterval, nextSrsEase } from "@/app/lib/srs";
 import {
   clamp,
   evaluateCheckpointPass,
@@ -295,7 +297,7 @@ export async function completeHiraganaStage(input: {
   // eligibility rather than relying on the UI never having offered a way
   // in. Mirrors the page's own check: the immediately-preceding stage
   // (by order_index) must have been first-passed >=delayedGateHours ago.
-  if (typeof context.configuration.delayedGateHours === "number") {
+  if (typeof context.configuration.delayedGateHours === "number" && !isDevUnlockAllActive()) {
     const { data: previousStage, error: previousStageError } = await supabase
       .from("learning_stages")
       .select("id")
@@ -475,4 +477,98 @@ export async function completeHiraganaStage(input: {
     requiredLabel: evaluation.requiredLabel,
     nextStageCode: nextStage?.code ?? null,
   };
+}
+
+// Bagian 6.4 — the missing "Baca" step (V2.1 §7's "read short mora/word").
+// A word attempt doesn't fit recordHiraganaAttempt's shape (that one is
+// keyed to a single kanaId; a word is several characters at once, and
+// user_kana_attempts already has a separate word_id column for exactly
+// this), so it gets its own small action instead of forcing the existing
+// one to handle two different things. Reinforces mastery for every
+// character the word is made of, skill "reading", same SM-2-lite math
+// recordHiraganaAttempt itself uses (extracted to app/lib/srs.ts so both
+// stay in sync without duplicating the constants by hand).
+export async function recordReadAttempt(input: {
+  stageId: number;
+  wordId: number;
+  kanaIds: number[];
+  typedRomaji: string;
+  correctRomaji: string;
+  responseTimeMs?: number | null;
+  phaseCode?: string | null;
+  curriculumVersion?: string | null;
+}): Promise<LearningActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sesi berakhir. Silakan masuk kembali." };
+
+  const context = await getStageContext(supabase, input.stageId);
+  if (!context) return { ok: false, error: "Stage Hiragana tidak ditemukan." };
+
+  const isCorrect = normalizedAnswer(input.typedRomaji) === normalizedAnswer(input.correctRomaji);
+  const phaseCode = input.phaseCode ?? "READ";
+  const exerciseType = "v21_read_" + phaseCode.toLowerCase();
+
+  const { error: attemptError } = await supabase.from("user_kana_attempts").insert({
+    user_id: user.id,
+    kana_id: null,
+    word_id: input.wordId,
+    lesson_id: null,
+    exercise_type: exerciseType,
+    is_correct: isCorrect,
+    selected_option_id: null,
+    correct_option_id: null,
+    typed_value: input.typedRomaji.trim() || "no-answer",
+    response_time_ms:
+      input.responseTimeMs == null
+        ? null
+        : Math.max(0, Math.round(finiteNumber(input.responseTimeMs, 0))),
+    first_attempt_correct: isCorrect,
+    hint_level: 0,
+    assisted: false,
+    phase_code: phaseCode,
+    curriculum_version: input.curriculumVersion ?? null,
+  });
+  if (attemptError) return { ok: false, error: attemptError.message };
+
+  for (const kanaId of input.kanaIds) {
+    const { data: existing, error: masteryReadError } = await supabase
+      .from("user_kana_mastery")
+      .select("attempts, correct, streak, srs_interval_days, srs_ease")
+      .eq("user_id", user.id)
+      .eq("kana_id", kanaId)
+      .eq("skill", "reading")
+      .maybeSingle();
+    if (masteryReadError) return { ok: false, error: masteryReadError.message };
+
+    const attempts = (existing?.attempts ?? 0) + 1;
+    const correct = (existing?.correct ?? 0) + (isCorrect ? 1 : 0);
+    const streak = isCorrect ? (existing?.streak ?? 0) + 1 : 0;
+    const intervalDays = sharedNextSrsInterval(existing?.srs_interval_days ?? 0, isCorrect);
+    const ease = nextSrsEase(existing?.srs_ease ?? 2.5, isCorrect);
+    const now = new Date();
+    const dueAt = new Date(now.getTime() + intervalDays * 86_400_000).toISOString();
+
+    const { error: masteryError } = await supabase.from("user_kana_mastery").upsert(
+      {
+        user_id: user.id,
+        kana_id: kanaId,
+        skill: "reading",
+        attempts,
+        correct,
+        accuracy: attempts > 0 ? correct / attempts : 0,
+        streak,
+        srs_interval_days: intervalDays,
+        srs_ease: ease,
+        due_at: dueAt,
+        last_seen_at: now.toISOString(),
+      },
+      { onConflict: "user_id,kana_id,skill" },
+    );
+    if (masteryError) return { ok: false, error: masteryError.message };
+  }
+
+  return { ok: true };
 }

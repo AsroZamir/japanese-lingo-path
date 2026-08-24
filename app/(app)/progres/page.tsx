@@ -1,19 +1,26 @@
 import { PageHeader } from "../_components/PageHeader";
+import { getHiraganaMasteryMap } from "@/app/lib/mastery-map-query";
+import { MasteryMap } from "./MasteryMap";
 
-const skills = [
-  ["Vocabulary", 42, "+8%"],
-  ["Grammar", 31, "+5%"],
-  ["Kanji", 24, "+4%"],
-  ["Reading", 18, "+3%"],
-  ["Listening", 12, "New"],
-];
+export const dynamic = "force-dynamic";
 
-export default function ProgressPage() {
+// Bagian 6.5 — this page used to be entirely mock (a fixed "Vocabulary
+// 42% / Grammar 31% / ..." skill list that tracked nothing real, since
+// the app has no grammar/kanji/listening system at all yet). Replaced
+// with the real 46-hiragana mastery map — the one piece of per-character
+// progress data that actually exists — rather than leaving fabricated
+// numbers next to it.
+export default async function ProgressPage() {
+  const entries = await getHiraganaMasteryMap();
+
   return (
     <>
-      <PageHeader eyebrow="YOUR DEVELOPMENT" title="Progress" copy="See what is improving and where to focus next." />
-      <section className="metric-grid"><div><small>STUDY TIME</small><strong>3h 42m</strong><span>This month</span></div><div><small>LESSONS</small><strong>8</strong><span>Completed</span></div><div><small>ACCURACY</small><strong>76%</strong><span>All practice</span></div><div><small>STREAK</small><strong>7 days</strong><span>Personal best</span></div></section>
-      <section className="progress-layout"><div className="table-card"><div className="table-title"><div><span className="card-kicker dark">SKILL MAP</span><h3>Your current foundation</h3></div></div>{skills.map(([skill, value, change]) => <div className="skill-row" key={skill}><strong>{skill}</strong><span><i style={{ width: `${value}%` }}></i></span><b>{value}%</b><small>{change}</small></div>)}</div><aside className="insight-card"><span>✦ AI INSIGHT</span><h3>Your path is just beginning</h3><p>Once more activity is collected, personalized observations and recommendations will appear here.</p><div className="insight-placeholder"><i></i><i></i><i></i></div></aside></section>
+      <PageHeader
+        eyebrow="PENGUASAAN HIRAGANA"
+        title="Peta 46 Huruf"
+        copy="Warna menunjukkan status penguasaan sungguhan dari riwayat latihan, bukan angka buatan."
+      />
+      <MasteryMap entries={entries} />
     </>
   );
 }
