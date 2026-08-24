@@ -77,6 +77,7 @@ export type HiraganaLearningItem = {
   mnemonic: HiraganaMnemonic;
   examples: HiraganaExample[];
   mastery: HiraganaMastery;
+  confusableIds: number[];
 };
 
 export type HiraganaUnit = {
@@ -267,18 +268,26 @@ function chunk<T>(items: T[], size: number): T[][] {
 
 function buildUnits(items: HiraganaLearningItem[]): HiraganaUnit[] {
   const units: HiraganaUnit[] = [];
-  const basicGroups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 
-  for (const groupCode of basicGroups) {
-    const groupItems = items.filter(
-      (item) => item.type === "basic" && item.groupCode === groupCode,
+  // V2.1 §7 chunks every phase's new characters into exactly two lessons
+  // (2x5 for P1-P4, 2x3 for P5) rather than by the gojuon group_code
+  // stored on kana_characters — that column mixes group boundaries (H
+  // has 3 rows, I has 5) in ways that don't land on phase edges, so
+  // grouping by it produced uneven lessons (e.g. 5/3/2 for P4 instead
+  // of 2x5). Splitting the already phase-sliced items in half is exact.
+  const basicItems = items.filter((item) => item.type === "basic");
+  if (basicItems.length > 0) {
+    const half = Math.ceil(basicItems.length / 2);
+    const lessons = [basicItems.slice(0, half), basicItems.slice(half)].filter(
+      (lesson) => lesson.length > 0,
     );
-    if (groupItems.length === 0) continue;
-    units.push({
-      code: "basic-" + groupCode,
-      title: "Hiragana Dasar · Kelompok " + groupCode,
-      description: groupItems.map((item) => item.character).join(" · "),
-      items: groupItems,
+    lessons.forEach((lessonItems, index) => {
+      units.push({
+        code: "basic-" + (index + 1),
+        title: "Hiragana Dasar · Kelompok " + (index + 1),
+        description: lessonItems.map((item) => item.character).join(" · "),
+        items: lessonItems,
+      });
     });
   }
 
@@ -443,7 +452,7 @@ export const getHiraganaStageBundle = cache(
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const [linkResult, masteryResult] = await Promise.all([
+    const [linkResult, masteryResult, confusionResult] = await Promise.all([
       kanaIds.length > 0
         ? supabase
             .from("kana_word_characters")
@@ -458,9 +467,32 @@ export const getHiraganaStageBundle = cache(
             .eq("user_id", user.id)
             .in("kana_id", kanaIds)
         : Promise.resolve({ data: [], error: null }),
+      kanaIds.length > 0
+        ? supabase
+            .from("kana_confusion_pairs")
+            .select("kana_a_id, kana_b_id")
+            .or(
+              "kana_a_id.in.(" + kanaIds.join(",") + "),kana_b_id.in.(" + kanaIds.join(",") + ")",
+            )
+        : Promise.resolve({ data: [], error: null }),
     ]);
     if (linkResult.error) throw new Error(linkResult.error.message);
     if (masteryResult.error) throw new Error(masteryResult.error.message);
+    if (confusionResult.error) throw new Error(confusionResult.error.message);
+
+    const kanaIdSet = new Set(kanaIds);
+    const confusableIdsByKanaId = new Map<number, number[]>();
+    for (const pair of confusionResult.data ?? []) {
+      if (!kanaIdSet.has(pair.kana_a_id) || !kanaIdSet.has(pair.kana_b_id)) continue;
+      confusableIdsByKanaId.set(pair.kana_a_id, [
+        ...(confusableIdsByKanaId.get(pair.kana_a_id) ?? []),
+        pair.kana_b_id,
+      ]);
+      confusableIdsByKanaId.set(pair.kana_b_id, [
+        ...(confusableIdsByKanaId.get(pair.kana_b_id) ?? []),
+        pair.kana_a_id,
+      ]);
+    }
 
     const wordIds = [
       ...new Set((linkResult.data ?? []).map((link) => link.word_id)),
@@ -548,6 +580,7 @@ export const getHiraganaStageBundle = cache(
               }
             : modifiedMnemonic(type, row.character, row.romaji, baseCharacter),
         examples: examplesByKanaId.get(row.id) ?? [],
+        confusableIds: confusableIdsByKanaId.get(row.id) ?? [],
         mastery: {
           attempts: masteryRaw.attempts,
           accuracyPercent,

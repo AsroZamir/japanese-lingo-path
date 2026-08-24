@@ -22,6 +22,8 @@ export type HiraganaQuizQuestion = {
   choices?: HiraganaLearningItem[];
   exerciseType: HiraganaAttemptInput["exerciseType"];
   skill: HiraganaAttemptInput["skill"];
+  phaseCode?: string | null;
+  curriculumVersion?: string | null;
 };
 
 export type HiraganaQuizResult = {
@@ -151,6 +153,8 @@ export function HiraganaQuiz({
       writingScore: current.kind === "writing" ? currentWritingScore : null,
       writingMatched: current.kind === "writing" ? currentWritingPassed : null,
       responseTimeMs: now - startedAt,
+      phaseCode: current.phaseCode ?? null,
+      curriculumVersion: current.curriculumVersion ?? null,
     });
   }
 

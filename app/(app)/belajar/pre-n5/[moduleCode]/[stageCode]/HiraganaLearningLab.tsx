@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AudioButton } from "@/components/kana/AudioButton";
 import {
   KanaStrokeAnimator,
@@ -9,8 +9,10 @@ import {
 } from "@/components/kana/KanaWritingCoach";
 import type { KanaStrokeData } from "@/components/kana/stroke-geometry";
 import {
+  CURRICULUM_VERSION_V21,
   HIRAGANA_LAB_VERSION,
   HIRAGANA_WORD_UNLOCKS,
+  V21_PHASE_CODE_BY_STAGE,
 } from "@/app/lib/hiragana-mnemonics";
 import type {
   HiraganaLearningItem,
@@ -27,8 +29,20 @@ import {
   saveHiraganaStageState,
 } from "./actions";
 
-type LearningPhase = "anchor" | "guided" | "recall" | "checkpoint" | "unlock";
-type WritingSurface = "screen" | "paper";
+// V2.1 §6.1 Kana Script Engine: lihat-dengar -> bedakan -> ikuti stroke ->
+// tulis dari memori singkat -> tulis dari audio -> campuran kumulatif.
+// Each phase runs as a full round across the unit's items (not one item
+// at a time through every phase) because the retrieval-reset rule in
+// §4.2 needs other items to interleave with a hinted item's unhinted
+// retry, and a round-based queue is what makes that possible.
+type LearningPhase =
+  | "anchor"
+  | "discriminate"
+  | "guided"
+  | "shortMemory"
+  | "recall"
+  | "checkpoint"
+  | "unlock";
 
 type HiraganaLearningLabProps = {
   bundle: HiraganaStageBundle;
@@ -60,15 +74,26 @@ function choicesFor(
   pool: HiraganaLearningItem[],
   target: HiraganaLearningItem,
   offset: number,
+  count = 4,
 ): HiraganaLearningItem[] {
   const distractors = pool
     .filter((item) => item.id !== target.id)
     .slice(offset)
     .concat(pool.filter((item) => item.id !== target.id).slice(0, offset))
-    .slice(0, 3);
+    .slice(0, Math.max(0, count - 1));
   const choices = [target, ...distractors];
   const shift = choices.length > 0 ? offset % choices.length : 0;
   return choices.slice(shift).concat(choices.slice(0, shift));
+}
+
+// V2.1 §5.2 rasio item: <=10 -> ~70% baru, 11-20 -> ~55% baru, >20 ->
+// ~35-45% baru (sisanya lama/weak point). Bank size is the cumulative
+// pool available at this stage (bundle.items.length), not the lesson
+// size, since the ratio table talks about "bank aktif" as a whole.
+function newItemRatio(bankSize: number): number {
+  if (bankSize <= 10) return 0.7;
+  if (bankSize <= 20) return 0.55;
+  return 0.4;
 }
 
 function buildCheckpointQuestions(
@@ -76,6 +101,7 @@ function buildCheckpointQuestions(
   cumulativeItems: HiraganaLearningItem[],
   unitIndex: number,
   questionCount: number,
+  phaseCode: string,
 ): HiraganaQuizQuestion[] {
   const currentItems = units[unitIndex]?.items ?? [];
   const futureIds = new Set(
@@ -85,28 +111,32 @@ function buildCheckpointQuestions(
       .map((item) => item.id),
   );
   const learnedPool = cumulativeItems.filter((item) => !futureIds.has(item.id));
-  const currentIds = new Set(currentItems.map((item) => item.id));
-  const previousPool = learnedPool.filter((item) => !currentIds.has(item.id));
   if (learnedPool.length === 0 || currentItems.length === 0) return [];
 
   const finalUnit = unitIndex === units.length - 1;
+  // Non-final unit: "new" is just this lesson. Final unit: the whole
+  // phase's checkpoint should weigh the phase's full new batch against
+  // everything learned in earlier phases, not just the last lesson.
+  const stageItemIds = new Set(units.flatMap((unit) => unit.items).map((item) => item.id));
+  const newPool = finalUnit
+    ? learnedPool.filter((item) => stageItemIds.has(item.id))
+    : currentItems;
+  const oldPool = learnedPool.filter((item) => !newPool.some((candidate) => candidate.id === item.id));
+
   const totalQuestions = Math.max(1, questionCount);
-  const targets = Array.from({ length: totalQuestions }, (_, index) => {
-    if (finalUnit) {
-      return learnedPool[
-        Math.min(
-          learnedPool.length - 1,
-          Math.floor((index * learnedPool.length) / totalQuestions),
-        )
-      ];
-    }
-    if (index < Math.ceil(totalQuestions * 0.7)) {
-      return currentItems[index % currentItems.length];
-    }
-    return previousPool.length > 0
-      ? previousPool[(index * 3 + unitIndex) % previousPool.length]
-      : currentItems[index % currentItems.length];
-  });
+  const ratio = newItemRatio(learnedPool.length);
+  const newCount = oldPool.length === 0
+    ? totalQuestions
+    : Math.min(totalQuestions, Math.max(1, Math.round(totalQuestions * ratio)));
+  const oldCount = totalQuestions - newCount;
+
+  const targets: HiraganaLearningItem[] = [];
+  for (let index = 0; index < newCount; index += 1) {
+    targets.push(newPool[index % newPool.length]);
+  }
+  for (let index = 0; index < oldCount; index += 1) {
+    targets.push(oldPool.length > 0 ? oldPool[index % oldPool.length] : newPool[index % newPool.length]);
+  }
 
   return targets.map((item, index): HiraganaQuizQuestion => {
     if (index % 3 === 0) {
@@ -119,6 +149,8 @@ function buildCheckpointQuestions(
         choices: choicesFor(learnedPool, item, index + unitIndex),
         exerciseType: "audio_visual",
         skill: "audio",
+        phaseCode,
+        curriculumVersion: CURRICULUM_VERSION_V21,
       };
     }
     if (index % 3 === 1) {
@@ -130,6 +162,8 @@ function buildCheckpointQuestions(
         promptMode: "kana",
         exerciseType: "checkpoint",
         skill: "recall",
+        phaseCode,
+        curriculumVersion: CURRICULUM_VERSION_V21,
       };
     }
     return {
@@ -140,6 +174,8 @@ function buildCheckpointQuestions(
       promptMode: "audio",
       exerciseType: "write_from_audio",
       skill: "writing",
+      phaseCode,
+      curriculumVersion: CURRICULUM_VERSION_V21,
     };
   });
 }
@@ -179,6 +215,251 @@ function useStrokeData(item: HiraganaLearningItem | undefined): {
   };
 }
 
+function firstStrokeOnly(data: KanaStrokeData | null): KanaStrokeData | null {
+  if (!data || data.strokes.length === 0) return null;
+  return { strokes: data.strokes.slice(0, 1), medians: data.medians.slice(0, 1) };
+}
+
+function discriminateChoices(
+  item: HiraganaLearningItem,
+  pool: HiraganaLearningItem[],
+): HiraganaLearningItem[] {
+  const confusable = pool.filter(
+    (candidate) => candidate.id !== item.id && item.confusableIds.includes(candidate.id),
+  );
+  const filler = pool.filter(
+    (candidate) => candidate.id !== item.id && !item.confusableIds.includes(candidate.id),
+  );
+  const distractors = [...confusable, ...filler].slice(0, 2);
+  const choices = [item, ...distractors];
+  const shift = choices.length > 0 ? item.id % choices.length : 0;
+  return choices.slice(shift).concat(choices.slice(0, shift));
+}
+
+// 2-4 other items must intervene before a hint-assisted item reappears
+// unhinted (V2.1 §4.2, hint tier 4: "reset retrieval"). Reinserting a
+// few slots into the remaining queue is what creates that gap.
+function requeueAfterHint(remainingQueue: number[], itemId: number): number[] {
+  const insertAt = Math.min(remainingQueue.length, 2 + Math.floor(Math.random() * 3));
+  return [
+    ...remainingQueue.slice(0, insertAt),
+    itemId,
+    ...remainingQueue.slice(insertAt),
+  ];
+}
+
+function DiscriminateStep({
+  item,
+  pool,
+  onOutcome,
+}: {
+  item: HiraganaLearningItem;
+  pool: HiraganaLearningItem[];
+  onOutcome: (correct: boolean, selectedId: number) => void;
+}) {
+  const choices = useMemo(() => discriminateChoices(item, pool), [item, pool]);
+  // Rendered with key={item.id} at the call site, so a fresh item
+  // already means a fresh mount — no reset effect needed here.
+  const [selected, setSelected] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  return (
+    <div className="hiragana-lab__discriminate">
+      <p>Dengarkan bunyinya, lalu pilih huruf yang cocok. Huruf ini mudah tertukar dengan pilihan lain.</p>
+      <AudioButton url={item.audioUrl} autoplay />
+      <div className="hiragana-lab__discriminate-choices">
+        {choices.map((choice) => {
+          const stateClass = checked
+            ? choice.id === item.id
+              ? "is-correct"
+              : selected === choice.id
+                ? "is-wrong"
+                : ""
+            : selected === choice.id
+              ? "is-selected"
+              : "";
+          return (
+            <button
+              type="button"
+              key={choice.id}
+              disabled={checked}
+              className={stateClass}
+              onClick={() => setSelected(choice.id)}
+            >
+              {choice.character}
+            </button>
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        className="primary-button"
+        disabled={selected == null}
+        onClick={() => {
+          if (!checked) {
+            setChecked(true);
+            return;
+          }
+          onOutcome(selected === item.id, selected as number);
+        }}
+      >
+        {checked ? "Lanjut" : "Periksa"}
+      </button>
+    </div>
+  );
+}
+
+function ShortMemoryFlash({
+  item,
+  onReady,
+}: {
+  item: HiraganaLearningItem;
+  onReady: () => void;
+}) {
+  // No explicit key at the call site, but the parent RetrievalStep is
+  // keyed by item id, so this remounts fresh for every new item.
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setVisible(false);
+      onReady();
+    }, 1500);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.id]);
+
+  return (
+    <div className="hiragana-lab__flash">
+      <span>Ingat bentuknya</span>
+      <div className={"hiragana-lab__flash-kana" + (visible ? "" : " is-hidden")}>
+        {item.character}
+      </div>
+      <p>{visible ? "Huruf akan disembunyikan sebentar lagi..." : "Sekarang tulis dari ingatan."}</p>
+    </div>
+  );
+}
+
+type RetrievalCueMode = "audio" | "flash";
+
+function RetrievalStep({
+  item,
+  strokeData,
+  strokeLoading,
+  cueMode,
+  hintLevel,
+  hintOpened,
+  onOpenHint,
+  onCloseHint,
+  onOutcome,
+}: {
+  item: HiraganaLearningItem;
+  strokeData: KanaStrokeData | null;
+  strokeLoading: boolean;
+  cueMode: RetrievalCueMode;
+  hintLevel: number;
+  hintOpened: boolean;
+  onOpenHint: (level: number) => void;
+  onCloseHint: () => void;
+  onOutcome: (outcome: KanaWritingOutcome) => void;
+}) {
+  // Rendered with key={item.id + "-" + cueMode-driving phase} at the
+  // call site, so a fresh item/phase already means a fresh mount.
+  const [flashDone, setFlashDone] = useState(cueMode === "audio");
+
+  if (cueMode === "flash" && !flashDone) {
+    return <ShortMemoryFlash item={item} onReady={() => setFlashDone(true)} />;
+  }
+
+  return (
+    <div className="hiragana-lab__practice">
+      <div className="hiragana-lab__recall-prompt">
+        <small>{cueMode === "audio" ? "COBA DARI INGATAN" : "TULIS DARI MEMORI SINGKAT"}</small>
+        {cueMode === "audio" ? (
+          <AudioButton url={item.audioUrl} autoplay />
+        ) : (
+          <p>Tulis huruf yang baru saja tampil, tanpa audio maupun bentuk lagi.</p>
+        )}
+        {hintOpened && (
+          <p>Percobaan ini memakai bantuan; harus diulang tanpa bantuan agar dihitung.</p>
+        )}
+      </div>
+
+      <div className="hiragana-lab__hint">
+        {hintLevel === 0 ? (
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => onOpenHint(1)}
+          >
+            Saya lupa - beri petunjuk ringan
+          </button>
+        ) : hintLevel === 1 ? (
+          <>
+            <b>Hint 1 - Orientasi</b>
+            <p>
+              {strokeData?.strokeGroups?.length ?? strokeData?.strokes.length ?? 0} goresan.{" "}
+              {item.mnemonic.strokeCue ?? "Ingat titik awal, urutan, dan arah gerakannya."}
+            </p>
+            <div className="hiragana-lab__hint-actions">
+              <button type="button" className="primary-button" onClick={onCloseHint}>
+                Tutup petunjuk dan coba lagi
+              </button>
+              <button type="button" className="secondary-button" onClick={() => onOpenHint(2)}>
+                Masih lupa - lihat goresan pertama
+              </button>
+            </div>
+          </>
+        ) : hintLevel === 2 ? (
+          <>
+            <b>Hint 2 - Sebagian</b>
+            <p>Ini goresan pertamanya saja. Bentuk lengkap belum ditampilkan.</p>
+            <KanaStrokeAnimator character={item.character} strokeData={firstStrokeOnly(strokeData)} />
+            <div className="hiragana-lab__hint-actions">
+              <button type="button" className="primary-button" onClick={onCloseHint}>
+                Tutup petunjuk dan coba lagi
+              </button>
+              <button type="button" className="secondary-button" onClick={() => onOpenHint(3)}>
+                Masih lupa - lihat gerakan lengkap
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <b>Hint 3 - Model</b>
+            <p>Pelajari kembali urutannya. Hasil dengan bantuan tidak dihitung sebagai penguasaan.</p>
+            <KanaStrokeAnimator character={item.character} strokeData={strokeData} />
+            <button type="button" className="primary-button" onClick={onCloseHint}>
+              Tutup bantuan dan coba lagi
+            </button>
+          </>
+        )}
+      </div>
+
+      {strokeLoading ? (
+        <div className="hiragana-stage__loading">Memuat area menulis...</div>
+      ) : (
+        <KanaWritingCoach
+          key={item.id + "-" + cueMode + "-" + hintLevel}
+          character={item.character}
+          strokeData={strokeData}
+          mode="recall"
+          hintLevel={hintLevel >= 3 ? 2 : 0}
+          onComplete={onOutcome}
+        />
+      )}
+
+      <details className="hiragana-lab__scoring-note">
+        <summary>Bagaimana tulisan diperiksa?</summary>
+        <p>
+          Sistem memeriksa jumlah goresan logis, urutan, arah, titik awal-akhir,
+          dan kemiripan bentuk. Kelulusan hanya diberikan jika semua goresan
+          cocok TANPA bantuan yang sedang terbuka.
+        </p>
+      </details>
+    </div>
+  );
+}
+
 export function HiraganaLearningLab({
   bundle,
   onComplete,
@@ -195,34 +476,23 @@ export function HiraganaLearningLab({
   );
   const startingUnitIndex =
     firstIncompleteIndex >= 0 ? firstIncompleteIndex : Math.max(bundle.units.length - 1, 0);
-  const startingItemIndex = Math.max(
-    0,
-    bundle.units[startingUnitIndex]?.items.findIndex(
-      (item) => !initialWritten.includes(item.id),
-    ) ?? 0,
-  );
-  const startingUnitFinished =
-    bundle.units[startingUnitIndex]?.items.every((item) =>
-      initialWritten.includes(item.id),
-    ) ?? false;
 
   const [unitIndex, setUnitIndex] = useState(startingUnitIndex);
-  const [itemIndex, setItemIndex] = useState(startingItemIndex);
-  const [phase, setPhase] = useState<LearningPhase>(
-    startingUnitFinished && !initialCompleted.includes(bundle.units[startingUnitIndex]?.code)
-      ? "checkpoint"
-      : "anchor",
-  );
+  const [phase, setPhase] = useState<LearningPhase>("anchor");
+  const [itemIndex, setItemIndex] = useState(0);
   const [completedUnitCodes, setCompletedUnitCodes] = useState(initialCompleted);
   const [freeWrittenKanaIds, setFreeWrittenKanaIds] = useState(initialWritten);
+
   const [guidedScore, setGuidedScore] = useState<number | null>(null);
   const [guidedPassed, setGuidedPassed] = useState(false);
-  const [recallScore, setRecallScore] = useState<number | null>(null);
-  const [recallPassed, setRecallPassed] = useState(false);
-  const [recallFailures, setRecallFailures] = useState(0);
+
+  const [retrievalQueue, setRetrievalQueue] = useState<number[]>([]);
   const [hintLevel, setHintLevel] = useState(0);
-  const [writingSurface, setWritingSurface] = useState<WritingSurface>("screen");
-  const [paperRevealed, setPaperRevealed] = useState(false);
+  const [hintOpened, setHintOpened] = useState(false);
+  const [retrievalScore, setRetrievalScore] = useState<number | null>(null);
+  const [retrievalPassed, setRetrievalPassed] = useState(false);
+  const attemptedOnceRef = useRef<Set<number>>(new Set());
+
   const [checkpointKey, setCheckpointKey] = useState(0);
   const [checkpointMessage, setCheckpointMessage] = useState("");
   const [lastCheckpointResult, setLastCheckpointResult] =
@@ -230,8 +500,7 @@ export function HiraganaLearningLab({
   const [saving, setSaving] = useState(false);
 
   const unit = bundle.units[unitIndex];
-  const item = unit?.items[itemIndex];
-  const stroke = useStrokeData(item);
+  const phaseCode = V21_PHASE_CODE_BY_STAGE[bundle.stage.code] ?? bundle.stage.code;
   const phaseTarget = bundle.items.length;
   const batchCharacterCount = bundle.units.reduce(
     (total, candidate) => total + candidate.items.length,
@@ -258,13 +527,22 @@ export function HiraganaLearningLab({
       bundle.items,
       unitIndex,
       checkpointQuestionCount,
+      phaseCode,
     ),
-    [bundle.items, bundle.units, checkpointQuestionCount, unitIndex],
+    [bundle.items, bundle.units, checkpointQuestionCount, unitIndex, phaseCode],
   );
   const unlockWords = unit ? HIRAGANA_WORD_UNLOCKS[unit.code] ?? [] : [];
   const learnedCharacterCount = previousPhaseCount + bundle.units
     .filter((candidate) => completedUnitCodes.includes(candidate.code))
     .reduce((total, candidate) => total + candidate.items.length, 0);
+
+  const anchorItem = unit?.items[itemIndex];
+  const guidedItem = unit?.items[itemIndex];
+  const discriminateItem = unit?.items[itemIndex];
+  const retrievalItemId = retrievalQueue[0];
+  const retrievalItem = unit?.items.find((candidate) => candidate.id === retrievalItemId);
+  const strokeTarget = phase === "guided" ? guidedItem : phase === "anchor" ? anchorItem : retrievalItem;
+  const stroke = useStrokeData(strokeTarget);
 
   async function persistState(
     nextCompleted: string[],
@@ -282,113 +560,170 @@ export function HiraganaLearningLab({
     });
   }
 
-  function resetItem(nextIndex: number) {
-    setItemIndex(nextIndex);
-    setPhase("anchor");
-    setGuidedScore(null);
-    setGuidedPassed(false);
-    setRecallScore(null);
-    setRecallPassed(false);
-    setRecallFailures(0);
-    setHintLevel(0);
-    setWritingSurface("screen");
-    setPaperRevealed(false);
-  }
-
   function openUnit(nextUnitIndex: number) {
     const nextUnit = bundle.units[nextUnitIndex];
     if (!nextUnit) return;
-    const nextItemIndex = Math.max(
-      0,
-      nextUnit.items.findIndex((candidate) => !freeWrittenKanaIds.includes(candidate.id)),
-    );
     setUnitIndex(nextUnitIndex);
     setCheckpointMessage("");
-    if (
-      nextUnit.items.every((candidate) => freeWrittenKanaIds.includes(candidate.id)) &&
-      !completedUnitCodes.includes(nextUnit.code)
-    ) {
-      setItemIndex(0);
-      setPhase("checkpoint");
-      return;
-    }
-    resetItem(nextItemIndex);
+    setPhase("anchor");
+    setItemIndex(0);
+    setGuidedScore(null);
+    setGuidedPassed(false);
+    setRetrievalQueue([]);
+    setHintLevel(0);
+    setHintOpened(false);
+    setRetrievalScore(null);
+    setRetrievalPassed(false);
   }
 
-  function recordWritingAttempt(
-    score: number,
-    matched: boolean,
-    exerciseType: "trace" | "write_from_audio",
-  ) {
-    if (!item) return;
+  function recordAttempt(input: {
+    item: HiraganaLearningItem;
+    exerciseType: "discriminate" | "trace" | "short_memory" | "write_from_audio";
+    skill: "audio" | "writing";
+    isFirstAttempt: boolean;
+    outcomeMatched: boolean;
+    assisted: boolean;
+    hintLevelUsed: number;
+    selectedKanaId?: number | null;
+    writingScore?: number | null;
+    writingMatched?: boolean | null;
+  }) {
     void recordHiraganaAttempt({
       stageId: bundle.stage.id,
-      kanaId: item.id,
-      exerciseType,
-      skill: "writing",
-      writingScore: score,
-      writingMatched: matched,
+      kanaId: input.item.id,
+      exerciseType: input.exerciseType,
+      skill: input.skill,
+      selectedKanaId: input.selectedKanaId ?? null,
+      writingScore: input.writingScore ?? null,
+      writingMatched: input.writingMatched ?? null,
+      phaseCode,
+      curriculumVersion: CURRICULUM_VERSION_V21,
+      hintLevel: input.hintLevelUsed,
+      assisted: input.assisted,
+      firstAttemptCorrect: input.isFirstAttempt
+        ? input.outcomeMatched && !input.assisted
+        : null,
     });
+  }
+
+  function advanceAnchor() {
+    if (!unit) return;
+    if (itemIndex + 1 < unit.items.length) {
+      setItemIndex((value) => value + 1);
+      return;
+    }
+    setPhase("discriminate");
+    setItemIndex(0);
+  }
+
+  function handleDiscriminateOutcome(correct: boolean, selectedId: number) {
+    if (!discriminateItem) return;
+    recordAttempt({
+      item: discriminateItem,
+      exerciseType: "discriminate",
+      skill: "audio",
+      isFirstAttempt: true,
+      outcomeMatched: correct,
+      assisted: false,
+      hintLevelUsed: 0,
+      selectedKanaId: selectedId,
+    });
+    if (!unit) return;
+    if (itemIndex + 1 < unit.items.length) {
+      setItemIndex((value) => value + 1);
+      return;
+    }
+    setPhase("guided");
+    setItemIndex(0);
+    setGuidedScore(null);
+    setGuidedPassed(false);
   }
 
   function handleGuidedOutcome(outcome: KanaWritingOutcome) {
     setGuidedScore(outcome.score);
     setGuidedPassed(outcome.matched);
-    recordWritingAttempt(outcome.score, outcome.matched, "trace");
+    if (!guidedItem) return;
+    recordAttempt({
+      item: guidedItem,
+      exerciseType: "trace",
+      skill: "writing",
+      isFirstAttempt: true,
+      outcomeMatched: outcome.matched,
+      assisted: false,
+      hintLevelUsed: 0,
+      writingScore: outcome.score,
+      writingMatched: outcome.matched,
+    });
   }
 
-  async function acceptRecallOutcome(outcome: KanaWritingOutcome) {
-    if (!item) return;
-    setRecallScore(outcome.score);
-    recordWritingAttempt(outcome.score, outcome.matched, "write_from_audio");
-    if (!outcome.matched) {
-      setRecallPassed(false);
-      setRecallFailures((value) => value + 1);
-      return;
-    }
-    if (hintLevel > 0) {
-      setRecallPassed(false);
-      return;
-    }
-
-    setRecallPassed(true);
-    const nextWritten = [...new Set([...freeWrittenKanaIds, item.id])];
-    setFreeWrittenKanaIds(nextWritten);
-    await persistState(
-      completedUnitCodes,
-      nextWritten,
-      unit?.code ?? null,
-    );
-  }
-
-  function continueAfterRecall() {
-    if (!unit || !recallPassed) return;
+  function advanceGuided() {
+    if (!unit) return;
     if (itemIndex + 1 < unit.items.length) {
-      resetItem(itemIndex + 1);
+      setItemIndex((value) => value + 1);
+      setGuidedScore(null);
+      setGuidedPassed(false);
       return;
     }
-    setPhase("checkpoint");
-    setCheckpointMessage("");
-    setCheckpointKey((value) => value + 1);
+    attemptedOnceRef.current = new Set();
+    setPhase("shortMemory");
+    setRetrievalQueue(unit.items.map((candidate) => candidate.id));
+    setHintLevel(0);
+    setHintOpened(false);
+    setRetrievalScore(null);
+    setRetrievalPassed(false);
   }
 
-  async function handlePaperAssessment(correct: boolean) {
-    if (!paperRevealed || !item) return;
-    const outcome: KanaWritingOutcome = {
-      score: correct ? 100 : 0,
-      matched: correct,
-      totalMistakes: correct ? 0 : 1,
-      attempts: 1,
-    };
-    if (!correct) {
-      recordWritingAttempt(outcome.score, outcome.matched, "write_from_audio");
-      setRecallScore(outcome.score);
-      setRecallPassed(false);
-      setRecallFailures((value) => value + 1);
-      setPaperRevealed(false);
-      return;
+  async function handleRetrievalOutcome(
+    outcome: KanaWritingOutcome,
+    cueMode: RetrievalCueMode,
+  ) {
+    if (!retrievalItem) return;
+    setRetrievalScore(outcome.score);
+    const passedClean = outcome.matched && !hintOpened;
+    setRetrievalPassed(passedClean);
+
+    const isFirstAttempt = !attemptedOnceRef.current.has(retrievalItem.id);
+    attemptedOnceRef.current.add(retrievalItem.id);
+
+    recordAttempt({
+      item: retrievalItem,
+      exerciseType: cueMode === "flash" ? "short_memory" : "write_from_audio",
+      skill: "writing",
+      isFirstAttempt,
+      outcomeMatched: outcome.matched,
+      assisted: hintOpened,
+      hintLevelUsed: hintLevel,
+      writingScore: outcome.score,
+      writingMatched: outcome.matched,
+    });
+
+    const remaining = retrievalQueue.slice(1);
+    setHintLevel(0);
+    setHintOpened(false);
+
+    if (passedClean) {
+      if (cueMode === "audio") {
+        const nextWritten = [...new Set([...freeWrittenKanaIds, retrievalItem.id])];
+        setFreeWrittenKanaIds(nextWritten);
+        await persistState(completedUnitCodes, nextWritten, unit?.code ?? null);
+      }
+      setRetrievalQueue(remaining);
+      if (remaining.length === 0) {
+        if (cueMode === "flash") {
+          setPhase("recall");
+          setRetrievalQueue(unit?.items.map((candidate) => candidate.id) ?? []);
+          attemptedOnceRef.current = new Set();
+        } else {
+          setPhase("checkpoint");
+          setCheckpointMessage("");
+          setCheckpointKey((value) => value + 1);
+        }
+        setRetrievalScore(null);
+        setRetrievalPassed(false);
+      }
+    } else {
+      setRetrievalQueue(requeueAfterHint(remaining, retrievalItem.id));
     }
-    await acceptRecallOutcome(outcome);
   }
 
   async function finishCheckpoint(result: HiraganaQuizResult) {
@@ -435,22 +770,25 @@ export function HiraganaLearningLab({
     openUnit(unitIndex + 1);
   }
 
-  if (!unit || !item) {
+  if (!unit) {
     return <div className="hiragana-stage__empty">Data batch Hiragana belum tersedia.</div>;
   }
 
-  const phaseNumber =
-    phase === "anchor" ? 1 : phase === "guided" ? 2 : phase === "recall" ? 3 : 4;
-  const phaseLabel = phase === "anchor"
-    ? "Kenali"
-    : phase === "guided"
-      ? "Ikuti"
-      : phase === "recall"
-        ? "Ingat"
-        : "Uji";
-  const currentCharacterPosition = phase === "checkpoint" || phase === "unlock"
-    ? unit.items.length
-    : itemIndex + 1;
+  const phaseSteps: { key: LearningPhase; label: string }[] = [
+    { key: "anchor", label: "Kenali" },
+    { key: "discriminate", label: "Bedakan" },
+    { key: "guided", label: "Ikuti" },
+    { key: "shortMemory", label: "Ingat Singkat" },
+    { key: "recall", label: "Dengar & Tulis" },
+    { key: "checkpoint", label: "Uji" },
+  ];
+  const phaseNumber = Math.max(1, phaseSteps.findIndex((step) => step.key === phase) + 1);
+  const currentCharacterPosition =
+    phase === "checkpoint" || phase === "unlock"
+      ? unit.items.length
+      : phase === "shortMemory" || phase === "recall"
+        ? unit.items.length - retrievalQueue.length + 1
+        : itemIndex + 1;
 
   return (
     <div className="hiragana-lab">
@@ -482,7 +820,7 @@ export function HiraganaLearningLab({
                   index === unitIndex ? "is-active" : "",
                   complete ? "is-complete" : "",
                 ].filter(Boolean).join(" ")}
-                onClick={() => openUnit(index)}
+                onClick={() => complete && openUnit(index)}
                 aria-current={index === unitIndex ? "step" : undefined}
               >
                 <span>{complete ? "OK" : String(index + 1).padStart(2, "0")}</span>
@@ -497,7 +835,7 @@ export function HiraganaLearningLab({
 
         <div className="hiragana-lab__principle">
           <b>Workflow menuju 46 huruf</b>
-          <p>Selesaikan batch kecil aktif, lalu uji bank huruf kumulatif. Fase berikutnya hanya menambah huruf baru setelah ingatan lama kembali dipanggil.</p>
+          <p>Lihat-dengar, bedakan, ikuti goresan, tulis dari memori singkat, tulis dari audio, lalu diuji campur dengan huruf lama. Fase berikutnya hanya menambah huruf baru setelah ingatan lama kembali dipanggil.</p>
         </div>
       </aside>
 
@@ -507,46 +845,48 @@ export function HiraganaLearningLab({
             <span>{unit.title}</span>
             <h2>
               {phase === "anchor" && "Kenali bentuk dan bunyinya"}
+              {phase === "discriminate" && "Bedakan dari huruf yang mirip"}
               {phase === "guided" && "Bangun gerakan tangan"}
-              {phase === "recall" && "Tulis dari ingatan"}
+              {phase === "shortMemory" && "Tulis dari memori singkat"}
+              {phase === "recall" && "Tulis dari audio"}
               {phase === "checkpoint" && "Checkpoint campuran"}
               {phase === "unlock" && "Makna mulai terbuka"}
             </h2>
           </div>
           <div className="hiragana-lab__header-meta">
-            <span>Langkah {phaseNumber}/4 - {phaseLabel}</span>
-            <b>Huruf {currentCharacterPosition}/{unit.items.length}</b>
+            <span>Langkah {phaseNumber}/6 - {phaseSteps[phaseNumber - 1]?.label ?? "Uji"}</span>
+            <b>Huruf {Math.min(currentCharacterPosition, unit.items.length)}/{unit.items.length}</b>
           </div>
         </header>
 
-        <ol className="hiragana-lab__steps" aria-label={"Langkah belajar " + phaseNumber + " dari 4"}>
-          {["Kenali", "Ikuti", "Ingat", "Uji"].map((label, index) => (
+        <ol className="hiragana-lab__steps" aria-label={"Langkah belajar " + phaseNumber + " dari 6"}>
+          {phaseSteps.map((step, index) => (
             <li
-              key={label}
+              key={step.key}
               className={index + 1 === phaseNumber ? "is-active" : index + 1 < phaseNumber ? "is-done" : ""}
               aria-current={index + 1 === phaseNumber ? "step" : undefined}
             >
-              <b>{index + 1 < phaseNumber ? "OK" : index + 1}</b><span>{label}</span>
+              <b>{index + 1 < phaseNumber ? "OK" : index + 1}</b><span>{step.label}</span>
             </li>
           ))}
         </ol>
 
-        {phase === "anchor" && (
+        {phase === "anchor" && anchorItem && (
           <div className="hiragana-lab__anchor">
             <div className="hiragana-lab__anchor-card">
-              <div className="hiragana-lab__kana">{item.character}</div>
+              <div className="hiragana-lab__kana">{anchorItem.character}</div>
               <div>
-                <span className="hiragana-lab__emoji">{item.mnemonic.emoji}</span>
+                <span className="hiragana-lab__emoji">{anchorItem.mnemonic.emoji}</span>
                 <small>ANCHOR BUNYI</small>
-                <h3>{item.mnemonic.anchorWord ?? item.mnemonic.title}</h3>
-                <p>{item.mnemonic.soundCue ?? item.mnemonic.story}</p>
-                <AudioButton url={item.audioUrl} autoplay />
+                <h3>{anchorItem.mnemonic.anchorWord ?? anchorItem.mnemonic.title}</h3>
+                <p>{anchorItem.mnemonic.soundCue ?? anchorItem.mnemonic.story}</p>
+                <AudioButton url={anchorItem.audioUrl} autoplay />
               </div>
             </div>
 
             <div className="hiragana-lab__cues">
-              <div><small>BENTUK</small><p>{item.mnemonic.shapeCue ?? item.mnemonic.story}</p></div>
-              <div><small>GERAKAN</small><p>{item.mnemonic.strokeCue ?? "Amati arah dan urutan setiap goresan, bukan hanya hasil akhirnya."}</p></div>
+              <div><small>BENTUK</small><p>{anchorItem.mnemonic.shapeCue ?? anchorItem.mnemonic.story}</p></div>
+              <div><small>GERAKAN</small><p>{anchorItem.mnemonic.strokeCue ?? "Amati arah dan urutan setiap goresan, bukan hanya hasil akhirnya."}</p></div>
             </div>
 
             <div className="hiragana-lab__animation">
@@ -554,28 +894,37 @@ export function HiraganaLearningLab({
                 <div className="hiragana-stage__loading">Memuat urutan goresan...</div>
               ) : (
                 <KanaStrokeAnimator
-                  key={item.id}
-                  character={item.character}
+                  key={anchorItem.id}
+                  character={anchorItem.character}
                   strokeData={stroke.data}
                 />
               )}
             </div>
 
-            <button type="button" className="primary-button" onClick={() => setPhase("guided")}>
-              Saya siap mengikuti goresannya
+            <button type="button" className="primary-button" onClick={advanceAnchor}>
+              Lanjut
             </button>
           </div>
         )}
 
-        {phase === "guided" && (
+        {phase === "discriminate" && discriminateItem && (
+          <DiscriminateStep
+            key={discriminateItem.id}
+            item={discriminateItem}
+            pool={bundle.items}
+            onOutcome={handleDiscriminateOutcome}
+          />
+        )}
+
+        {phase === "guided" && guidedItem && (
           <div className="hiragana-lab__practice">
             <p>Ikuti goresan samar satu per satu. Tahap ini melatih gerakan, jadi tidak memakai angka kelulusan yang menghukum.</p>
             {stroke.loading ? (
               <div className="hiragana-stage__loading">Memuat area menulis...</div>
             ) : (
               <KanaWritingCoach
-                key={"guided-" + item.id}
-                character={item.character}
+                key={"guided-" + guidedItem.id}
+                character={guidedItem.character}
                 strokeData={stroke.data}
                 mode="guided"
                 onComplete={handleGuidedOutcome}
@@ -591,198 +940,49 @@ export function HiraganaLearningLab({
               type="button"
               className="primary-button"
               disabled={!guidedPassed}
-              onClick={() => {
-                setPhase("recall");
-                setRecallScore(null);
-                setRecallPassed(false);
-                setHintLevel(0);
-              }}
+              onClick={advanceGuided}
             >
-              Lanjut: tulis tanpa contoh
+              Lanjut
             </button>
           </div>
         )}
 
-        {phase === "recall" && (
-          <div className="hiragana-lab__practice">
-            <div className="hiragana-lab__recall-prompt">
-              <small>COBA DARI INGATAN</small>
-              <AudioButton url={item.audioUrl} autoplay />
-              <p>Tulis huruf yang baru dipelajari dari ingatan. Jika lupa, gunakan bantuan bertingkat lalu coba lagi tanpa bantuan.</p>
-            </div>
-
-            <div className="hiragana-lab__surface-switch" aria-label="Pilih media menulis">
-              <button
-                type="button"
-                className={writingSurface === "screen" ? "is-active" : ""}
-                onClick={() => {
-                  setWritingSurface("screen");
-                  setRecallScore(null);
-                  setRecallPassed(false);
-                  setHintLevel(0);
-                }}
-              >
-                Tulis di layar
-              </button>
-              <button
-                type="button"
-                className={writingSurface === "paper" ? "is-active" : ""}
-                onClick={() => {
-                  setWritingSurface("paper");
-                  setRecallScore(null);
-                  setRecallPassed(false);
-                  setHintLevel(0);
-                  setPaperRevealed(false);
-                }}
-              >
-                Tulis di kertas
-              </button>
-            </div>
-
-            {writingSurface === "screen" && (
-              <div className="hiragana-lab__hint">
-                {hintLevel === 0 ? (
-                  <>
-                    {recallFailures > 0 && (
-                      <p>Tidak apa-apa jika lupa. Ambil petunjuk, pelajari lagi, lalu ulangi tanpa bantuan.</p>
-                    )}
-                    <button
-                      type="button"
-                      className="secondary-button"
-                      onClick={() => {
-                        setHintLevel(1);
-                        setRecallScore(null);
-                        setRecallPassed(false);
-                      }}
-                    >
-                      Saya lupa - beri petunjuk ringan
-                    </button>
-                  </>
-                ) : hintLevel === 1 ? (
-                  <>
-                    <b>Petunjuk ringan</b>
-                    <p>
-                      {stroke.data?.strokeGroups?.length ?? stroke.data?.strokes.length ?? 0} goresan.{" "}
-                      {item.mnemonic.strokeCue ?? "Ingat titik awal, urutan, dan arah gerakannya."}
-                    </p>
-                    <button
-                      type="button"
-                      className="primary-button"
-                      onClick={() => {
-                        setHintLevel(0);
-                        setRecallScore(null);
-                        setRecallPassed(false);
-                      }}
-                    >
-                      Tutup petunjuk dan coba lagi
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary-button"
-                      onClick={() => {
-                        setHintLevel(2);
-                        setRecallScore(null);
-                        setRecallPassed(false);
-                      }}
-                    >
-                      Masih lupa - lihat gerakan lengkap
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <b>Gerakan lengkap</b>
-                    <p>Pelajari kembali urutannya. Hasil dengan bantuan tidak dihitung sebagai penguasaan.</p>
-                    <KanaStrokeAnimator
-                      character={item.character}
-                      strokeData={stroke.data}
-                    />
-                    <button
-                      type="button"
-                      className="primary-button"
-                      onClick={() => {
-                        setHintLevel(0);
-                        setRecallScore(null);
-                        setRecallPassed(false);
-                      }}
-                    >
-                      Tutup bantuan dan coba lagi
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {writingSurface === "screen" ? (
-              stroke.loading ? (
-                <div className="hiragana-stage__loading">Memuat area menulis...</div>
-              ) : (
-                <KanaWritingCoach
-                  key={"blind-" + item.id + "-" + hintLevel}
-                  character={item.character}
-                  strokeData={stroke.data}
-                  mode="recall"
-                  hintLevel={hintLevel}
-                  onComplete={(outcome) => void acceptRecallOutcome(outcome)}
-                />
-              )
-            ) : (
-              <div className="hiragana-lab__paper">
-                {!paperRevealed ? (
-                  <>
-                    <span>1</span>
-                    <h3>Tulis satu kali di kertas</h3>
-                    <p>Ucapkan bunyinya pelan saat tangan bergerak. Jangan menebak dari romaji.</p>
-                    <button type="button" className="primary-button" onClick={() => setPaperRevealed(true)}>
-                      Sudah - tampilkan jawaban
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="hiragana-lab__paper-answer">{item.character}</div>
-                    <p>Bandingkan bentuk, jumlah goresan, urutan, dan arah dengan tulisanmu.</p>
-                    <div>
-                      <button type="button" className="secondary-button" onClick={() => void handlePaperAssessment(false)}>
-                        Belum sesuai
-                      </button>
-                      <button type="button" className="primary-button" onClick={() => void handlePaperAssessment(true)}>
-                        Sesuai
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {recallScore != null && (
-              <div className={"hiragana-lab__score " + (recallPassed ? "is-pass" : "is-retry")}>
-                <strong>{recallScore}%</strong>
+        {(phase === "shortMemory" || phase === "recall") && retrievalItem && (
+          <>
+            <RetrievalStep
+              key={retrievalItem.id + "-" + phase}
+              item={retrievalItem}
+              strokeData={stroke.data}
+              strokeLoading={stroke.loading}
+              cueMode={phase === "shortMemory" ? "flash" : "audio"}
+              hintLevel={hintLevel}
+              hintOpened={hintOpened}
+              onOpenHint={(level) => {
+                setHintLevel(level);
+                setHintOpened(true);
+                setRetrievalScore(null);
+                setRetrievalPassed(false);
+              }}
+              onCloseHint={() => {
+                setHintLevel(0);
+                setRetrievalScore(null);
+                setRetrievalPassed(false);
+              }}
+              onOutcome={(outcome) => void handleRetrievalOutcome(outcome, phase === "shortMemory" ? "flash" : "audio")}
+            />
+            {retrievalScore != null && (
+              <div className={"hiragana-lab__score " + (retrievalPassed ? "is-pass" : "is-retry")}>
+                <strong>{retrievalScore}%</strong>
                 <span>
-                  {recallPassed
+                  {retrievalPassed
                     ? "Lulus tanpa bantuan"
-                    : hintLevel > 0
-                      ? "Latihan dibantu selesai; ulangi tanpa petunjuk"
+                    : hintOpened
+                      ? "Dibantu - akan muncul lagi tanpa bantuan setelah beberapa huruf lain"
                       : "Belum cocok; periksa bentuk, urutan, dan arah"}
                 </span>
               </div>
             )}
-
-            <details className="hiragana-lab__scoring-note">
-              <summary>Bagaimana tulisan diperiksa?</summary>
-              <p>
-                Sistem memeriksa jumlah goresan logis, urutan, arah, titik awal-akhir,
-                dan kemiripan bentuk. Angka persen hanya menunjukkan kemiripan;
-                kelulusan diberikan jika semua goresan cocok tanpa petunjuk.
-              </p>
-            </details>
-            <button
-              type="button"
-              className="primary-button"
-              disabled={!recallPassed || saving}
-              onClick={continueAfterRecall}
-            >
-              {itemIndex + 1 < unit.items.length ? "Lanjut ke huruf berikutnya" : "Mulai checkpoint"}
-            </button>
-          </div>
+          </>
         )}
 
         {phase === "checkpoint" && (
@@ -792,7 +992,7 @@ export function HiraganaLearningLab({
               <span>
                 {finalUnit
                   ? "Checkpoint akhir fase memakai bank seluruh " + phaseTarget + " huruf yang telah dipelajari."
-                  : "70% kelompok baru, 30% huruf lama. Bunyi, pengenalan, dan tulisan dicampur."}
+                  : "Campuran huruf baru dan lama sesuai ukuran bank aktif."}
               </span>
             </div>
             {checkpointMessage && <p className="hiragana-stage__feedback">{checkpointMessage}</p>}

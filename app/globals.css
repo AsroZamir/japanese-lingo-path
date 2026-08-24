@@ -2072,6 +2072,26 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .hiragana-lab__words > .is-summary { grid-column: 1 / -1; }
 .hiragana-lab__words > .is-summary strong { letter-spacing: .12em; }
 
+/* V2.1 discriminate step: minimal-contrast recognition before tracing. */
+.hiragana-lab__discriminate { width: min(100%, 560px); display: grid; justify-items: center; gap: 12px; margin: 0 auto; padding: 18px; text-align: center; }
+.hiragana-lab__discriminate > p { max-width: 440px; margin: 0; color: var(--moji-muted); font-size: 11px; line-height: 1.5; }
+.hiragana-lab__discriminate-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; width: 100%; max-width: 400px; }
+.hiragana-lab__discriminate-choices button { min-height: 74px; border: 1.5px solid var(--moji-line); border-radius: 13px; color: var(--moji-ink); background: #fff; font: 700 30px/1 var(--moji-font-jp); }
+.hiragana-lab__discriminate-choices button.is-selected { border-color: var(--moji-accent); background: var(--moji-accent-soft-bg); }
+.hiragana-lab__discriminate-choices button.is-correct { border-color: var(--moji-success); background: var(--moji-success-bg); }
+.hiragana-lab__discriminate-choices button.is-wrong { border-color: var(--moji-accent); background: var(--moji-error-bg); }
+
+/* V2.1 write-from-short-memory step: flash the glyph, then hide it. */
+.hiragana-lab__flash { width: min(100%, 460px); min-height: 220px; display: grid; place-content: center; justify-items: center; gap: 10px; margin: 0 auto; text-align: center; }
+.hiragana-lab__flash > span { color: var(--moji-accent); font-size: 9px; font-weight: 900; letter-spacing: .1em; }
+.hiragana-lab__flash > p { margin: 0; color: var(--moji-muted); font-size: 10.5px; }
+.hiragana-lab__flash-kana { color: var(--moji-ink); font: 800 130px/1 var(--moji-font-jp); transition: opacity .25s ease; }
+.hiragana-lab__flash-kana.is-hidden { opacity: 0; }
+
+.hiragana-lab__hint-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.hiragana-lab__hint-actions .primary-button,
+.hiragana-lab__hint-actions .secondary-button { width: auto; margin: 0; }
+
 /* Keep the learner oriented without crowding the writing surface. */
 .hiragana-stage-page { max-width: 1180px; }
 .hiragana-lab { grid-template-columns: 252px minmax(0, 1fr); gap: 18px; align-items: start; }

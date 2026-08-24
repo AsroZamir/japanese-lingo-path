@@ -16,6 +16,23 @@ export type HiraganaWordUnlock = {
 
 export const HIRAGANA_LAB_VERSION = "hiragana-path-46-v1";
 
+// V2.1 §7 refers to these stages as P1-P5, but the database rows kept
+// their original F1-F5 codes to avoid an unnecessary rename migration.
+// This is the single place that maps between the two. Kept in this
+// client-safe module (not pre-n5-01-query.ts) because HiraganaLearningLab
+// is a client component and importing a runtime value from the query
+// file would pull its next/headers-dependent Supabase import into the
+// client bundle.
+export const V21_PHASE_CODE_BY_STAGE: Record<string, string> = {
+  F1: "P1",
+  F2: "P2",
+  F3: "P3",
+  F4: "P4",
+  F5: "P5",
+  BOSS: "CORE_GATE",
+};
+export const CURRICULUM_VERSION_V21 = "v2.1";
+
 export const HIRAGANA_BASIC_CHARACTERS = [
   "\u3042", "\u3044", "\u3046", "\u3048", "\u304a",
   "\u304b", "\u304d", "\u304f", "\u3051", "\u3053",

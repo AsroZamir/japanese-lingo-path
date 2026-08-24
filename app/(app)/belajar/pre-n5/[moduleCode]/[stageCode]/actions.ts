@@ -23,13 +23,23 @@ export type HiraganaAttemptInput = {
     | "srs"
     | "gate_recognition"
     | "gate_audio"
-    | "gate_writing";
+    | "gate_writing"
+    | "discriminate"
+    | "short_memory";
   skill: KanaSkill;
   answerText?: string | null;
   selectedKanaId?: number | null;
   writingScore?: number | null;
   writingMatched?: boolean | null;
   responseTimeMs?: number | null;
+  // V2.1 mastery-evidence fields (Bagian 3.4). Present only from the
+  // rebuilt phase flow — legacy callers (BOSS gate) omit them, and the
+  // insert falls back to the old "v2_{stageCode}_{kind}" exercise_type.
+  phaseCode?: string | null;
+  curriculumVersion?: string | null;
+  hintLevel?: number | null;
+  assisted?: boolean | null;
+  firstAttemptCorrect?: boolean | null;
 };
 
 export type LearningActionResult = {
@@ -122,8 +132,8 @@ export async function recordHiraganaAttempt(
     .maybeSingle();
   if (kanaError || !kana) return { ok: false, error: "Karakter Hiragana tidak valid." };
 
-  const choiceTypes = new Set(["reverse_recall", "audio_visual", "gate_audio"]);
-  const writingTypes = new Set(["trace", "write_from_audio", "gate_writing"]);
+  const choiceTypes = new Set(["reverse_recall", "audio_visual", "gate_audio", "discriminate"]);
+  const writingTypes = new Set(["trace", "write_from_audio", "gate_writing", "short_memory"]);
   let isCorrect: boolean;
   if (choiceTypes.has(input.exerciseType)) {
     isCorrect = input.selectedKanaId === kana.id;
@@ -140,7 +150,9 @@ export async function recordHiraganaAttempt(
     input.answerText?.trim() ||
     (writingScore != null ? "writing-score:" + Math.round(writingScore) : null) ||
     (!isCorrect ? "no-answer" : null);
-  const exerciseType = "v2_" + context.code.toLowerCase() + "_" + input.exerciseType;
+  const exerciseType = input.phaseCode
+    ? "v21_" + input.phaseCode.toLowerCase() + "_" + input.exerciseType
+    : "v2_" + context.code.toLowerCase() + "_" + input.exerciseType;
 
   const { error: attemptError } = await supabase.from("user_kana_attempts").insert({
     user_id: user.id,
@@ -156,6 +168,11 @@ export async function recordHiraganaAttempt(
       input.responseTimeMs == null
         ? null
         : Math.max(0, Math.round(finiteNumber(input.responseTimeMs, 0))),
+    first_attempt_correct: input.firstAttemptCorrect ?? null,
+    hint_level: input.hintLevel ?? null,
+    assisted: input.assisted ?? null,
+    phase_code: input.phaseCode ?? null,
+    curriculum_version: input.curriculumVersion ?? null,
   });
   if (attemptError) return { ok: false, error: attemptError.message };
 
