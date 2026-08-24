@@ -154,6 +154,32 @@ export function KanaWritingCoach({
     callbackRef.current = onComplete;
   }, [onComplete]);
 
+  // Hotfix (live bug report, Prompt 5): a stroke that exits the canvas
+  // mid-drag must never leave the surface stuck. Two standard, zero-risk
+  // hardenings against the most likely browser-level causes: (1) with
+  // `touch-action: auto` (the previous default, now `none` on
+  // .kana-coach__surface), a touch drag leaving the element can be
+  // reinterpreted by the browser as a page-scroll gesture, which silently
+  // stops delivering touch events for the rest of that gesture; (2) the SVG
+  // kakitori/hanzi-writer draws into had no pointer capture of its own from
+  // our side — kakitori's internal timing layer sets one, but capturing
+  // explicitly here too is cheap insurance against library/version drift.
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    function onPointerDown(e: PointerEvent) {
+      const svg = host?.querySelector("svg");
+      if (!svg) return;
+      try {
+        svg.setPointerCapture(e.pointerId);
+      } catch {
+        // Pointer already released or unsupported pointerId — safe to ignore.
+      }
+    }
+    host.addEventListener("pointerdown", onPointerDown);
+    return () => host.removeEventListener("pointerdown", onPointerDown);
+  }, []);
+
   useEffect(() => {
     const host = hostRef.current;
     if (!host || !strokeData) {

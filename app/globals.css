@@ -2020,8 +2020,8 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .hiragana-lab__cues p { margin-top: 5px; }
 .hiragana-lab__animation { max-width: 340px; margin: 0 auto; }
 .kana-coach { width: min(100%, 360px); display: grid; justify-items: center; gap: 10px; }
-.kana-coach__surface { width: 100%; min-height: 220px; display: grid; place-items: center; }
-.kana-coach__surface svg { max-width: 100%; height: auto; }
+.kana-coach__surface { width: 100%; min-height: 220px; display: grid; place-items: center; touch-action: none; }
+.kana-coach__surface svg { max-width: 100%; height: auto; touch-action: none; }
 .kana-coach__status { color: var(--moji-muted); font-size: 10px; line-height: 1.45; text-align: center; }
 .kana-coach__status.is-error { color: #a0442e; }
 .kana-coach__replay { width: auto; margin: 0; padding: 9px 14px; }
