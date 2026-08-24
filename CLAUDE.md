@@ -1,6 +1,6 @@
 # CLAUDE.md — Japanese Lingo Path
 
-Panduan kerja untuk Claude Code di repo ini. Diperbarui 23 Agustus 2026.
+Panduan kerja untuk Claude Code di repo ini. Diperbarui 24 Agustus 2026.
 
 ---
 
@@ -153,36 +153,104 @@ Gate awal (titik awal pilot, harus dikalibrasi):
 - Checkpoint akuisisi ≥80% first-attempt — **hanya membuka langkah berikutnya**,
   belum memberi label mastered
 - Retention gate ≥85% first-attempt tanpa hint setelah **jeda minimal 72 jam**;
-  tiap subskill kritis minimal 75%
+  tiap subskill kritis minimal 75%. **Sudah diimplementasikan — posisinya
+  penting, sempat salah sekali, baca kotak di bawah.**
 - Transfer gate: minimal 3 dari 4 aspek rubric tanpa bantuan yang membocorkan
   jawaban
 
-**Hint ladder V2.1 punya 3 tingkat, implementasi sekarang baru 2.** Yang ada:
-`hintLevel` 0/1/2 (tanpa bantuan → petunjuk goresan+teks → animasi lengkap).
-Yang diminta: (1) orientasi — kategori/bunyi awal/jumlah stroke, tidak
-menunjukkan jawaban; (2) sebagian — pilihan dipersempit, komponen pertama,
-siluet tipis; (3) model — jawaban penuh lalu guided retry.
-**Reset retrieval:** setelah 2–4 item distraktor item muncul lagi tanpa hint, dan
-hanya keberhasilan ini yang boleh memperbarui mastery.
+> ⚠️ **Posisi retention gate: SETELAH BOSS, bukan sebelum F5.** Implementasi
+> pertama (23 Agustus 2026) salah menaruh gerbang 72 jam di depan pintu masuk
+> F5 — ditemukan dan diperbaiki 24 Agustus 2026. Posisi yang benar (V2.1
+> Bagian 4.1 + 9.2 langkah 7): F1→F5 hanya checkpoint langsung ≥80%, tanpa
+> jeda; BOSS (Hiragana Gate 46) juga langsung, ≥80%, **belum** memberi status
+> "dikuasai"; baru **setelah** BOSS ada stage baru **`RETENTION`**
+> (`learning_stages.code`, `order_index` disisipkan di antara BOSS dan F6)
+> yang menutup pintu 72 jam sejak BOSS pertama lolos
+> (`user_learning_stage_progress.first_completed_at` milik BOSS — kolom ini
+> beda dari `completed_at`, yang tertimpa tiap kali stage diulang; jangan
+> pernah pakai `completed_at` untuk "kapan PERTAMA kali lolos"), lalu
+> mengambil sampel dari **seluruh 46 huruf** dan butuh ≥85% first-attempt
+> tanpa hint. Lolos `RETENTION` itulah yang menandai
+> `user_learning_module_progress.status = 'completed'` ("dikuasai") **dan**
+> yang membuka F6 (ekstensi dakuten) — bukan lolos BOSS saja.
+>
+> Mesinnya (`evaluateDelayedGateEligibility` + `evaluateRetentionScore`,
+> `gate-logic.ts`) generik lewat `learning_stages.configuration.
+> delayedGateHours` + `.retentionGate` — kalau perlu gerbang tertunda serupa
+> di modul lain, pakai ulang lewat konfigurasi, jangan tulis mesin baru.
+> **Gerbang ini ditegakkan di DUA lapis**: halaman (`pre-n5-01-query.ts`
+> menampilkan layar "Belum waktunya kembali" alih-alih redirect diam) **dan**
+> server action `completeHiraganaStage` sendiri (menolak memproses kalau
+> gerbang belum terbuka, terlepas dari apa yang diklaim caller) — sempat
+> hanya lapis pertama yang ada, celah itu tertutup 24 Agustus 2026 setelah
+> ditemukan lewat test yang memanggil server action langsung.
 
-#### Kana Script Engine — bukan F1–F5
+**Hint ladder V2.1 3 tingkat — sudah diimplementasikan** (24 Agustus 2026,
+`HiraganaLearningLab.tsx`'s `RetrievalStep`): `hintLevel` 0/1/2/3 — (1) orientasi:
+jumlah goresan + teks cue, tidak menunjukkan bentuk; (2) sebagian: animasi
+goresan pertama saja; (3) model: animasi lengkap + guided retry
+(`KanaWritingCoach`'s built-in outline, dipicu hanya di level 3, bukan 2).
+**Reset retrieval juga sudah ada:** item yang pakai hint di-antre ulang 2–4 item
+kemudian di fase yang sama (queue-based, lihat `requeueAfterHint`), tanpa hint
+lagi — hanya keberhasilan tanpa hint di percobaan itu yang menaikkan
+`freeWrittenKanaIds`. Bukti tersimpan di database lewat kolom `hint_level`,
+`assisted`, `first_attempt_correct` pada `user_kana_attempts` (ditambahkan
+23–24 Agustus 2026, nullable/aditif) — bukan lagi hanya state React.
+
+#### Kana Script Engine — bukan F1–F5, dan sudah diimplementasikan
 
 Bagian 6.1, tujuh langkah: lihat-dengar → bedakan → ikuti stroke → tulis dari
-memori singkat → tulis dari audio → campuran kumulatif → retention.
+memori singkat → tulis dari audio → campuran kumulatif → retention. **Enam
+langkah pertama diimplementasikan** di `HiraganaLearningLab.tsx` (24 Agustus
+2026) sebagai fase `anchor` → `discriminate` → `guided` → `shortMemory` →
+`recall` → `checkpoint`, dijalankan **per-round** (semua item di satu kelompok
+lewat satu fase dulu, baru pindah fase) — bukan satu item lewat semua fase lalu
+pindah item — supaya reset retrieval (di atas) punya item lain untuk diselipkan.
+Langkah ketujuh (retention) **bukan** bagian dari alur belajar per-karakter;
+lihat gerbang tertunda di bawah.
 
-Chunking PRE-N5.01 sudah ditentukan sampai hurufnya (Bagian 7):
+Kode stage database (F1–F5, BOSS) **belum diganti nama** jadi P1–P5 seperti
+istilah V2.1 — pemetaan kode↔istilah ada di `V21_PHASE_CODE_BY_STAGE`
+(`hiragana-mnemonics.ts`). Stage yang tidak ada di peta itu (F6–F12, RETENTION)
+memakai kode stage-nya sendiri sebagai `phase_code`.
 
-| Fase | Huruf | Jumlah |
+Chunking PRE-N5.01 sudah ditentukan sampai hurufnya (Bagian 7) **dan sudah
+diimplementasikan persis sesuai tabel ini** (`pre-n5-01-query.ts`'s
+`defaultScopes` + baris `learning_stages.configuration`):
+
+| Fase | Kode stage | Huruf | Jumlah |
+|---|---|---|---|
+| P1 | F1 | あいうえお + かきくけこ | 10 |
+| P2 | F2 | さしすせそ + たちつてと | 10 |
+| P3 | F3 | なにぬねの + はひふへほ | 10 |
+| P4 | F4 | まみむめも + やゆよ + らり | 10 |
+| P5 | F5 | るれろわをん | 6 |
+
+Tiap fase dipecah jadi pelajaran 5 huruf (F5 jadi 3+3) — pembelahan genap ini
+ada di `buildUnits()`, **bukan** ikut kolom `group_code`/`order_in_group` di
+`kana_characters` (kolom itu tidak berurutan bersih untuk keperluan ini,
+sudah diverifikasi lewat query langsung). Setelah P2 checkpoint memakai bank
+20; setelah P3 bank 30; P4 bank 40; final bank 46.
+
+**Ekstensi dakuten/handakuten/youon — dibuka setelah core 46, sudah
+diimplementasikan** (7 stage baru, 24 Agustus 2026, `learning_stages.code`
+F6–F12, `order_index` 8–14 setelah RETENTION):
+
+| Stage | Isi | Jumlah |
 |---|---|---|
-| P1 | あいうえお + かきくけこ | 10 |
-| P2 | さしすせそ + たちつてと | 10 |
-| P3 | なにぬねの + はひふへほ | 10 |
-| P4 | まみむめも + やゆよ + らり | 10 |
-| P5 | るれろわをん | 6 |
+| F6 | が-baris + ざ-baris (dakuten) | 10 |
+| F7 | だ-baris + ば-baris (dakuten) | 10 |
+| F8 | ぱ-baris (handakuten) | 5 |
+| F9 | きゃ/ぎゃ/しゃ-baris (youon) | 9 |
+| F10 | じゃ/ちゃ/にゃ-baris (youon) | 9 |
+| F11 | ひゃ/びゃ/ぴゃ-baris (youon) | 9 |
+| F12 | みゃ/りゃ-baris (youon) | 6 |
 
-Tiap fase dipecah jadi pelajaran 5 huruf. Setelah P2 checkpoint memakai bank 20;
-setelah P3 bank 30; P4 bank 40; final bank 46. Dakuten/handakuten dan youon
-dibuka **setelah** core 46 checkpoint.
+Sokuon (っ) **sengaja tidak** dimasukkan fase ini — datanya ada dan lengkap di
+database, tapi tidak diminta di prompt yang membangunnya. Mesin belajarnya
+**dipakai ulang 100%** dari core 46 lewat `configuration.characterSet`
+(`'core46'` default / `'dakuten_handakuten'` / `'youon'`) di
+`pre-n5-01-query.ts` — jangan bangun ulang mesin terpisah untuk konten ini.
 
 ## 4. Kondisi sekarang
 
@@ -206,9 +274,9 @@ terlupakan — V2.1 menuntut confusable set dan prerequisite graph).
    memicu toast. **Landing page sudah menjanjikan fitur ini.**
    (Badge di sidebar `AppShell.tsx` sudah sengaja dihapus dengan komentar
    eksplisit — angka "12" hanya di halaman `/ulangi`.)
-2. **Retention gate tidak ditegakkan.** Stage "F5 · SRS Retention" di
-   `HiraganaStagePlayer.tsx` me-render `<HiraganaLearningLab>` yang sama persis
-   dengan F1–F4, di sesi yang sama, seketika.
+2. ~~Retention gate tidak ditegakkan.~~ **Sudah ditegakkan** (24 Agustus
+   2026) — stage `RETENTION` setelah BOSS, dua lapis (halaman + server
+   action). Lihat kotak peringatan posisi gerbang di Bagian 3 file ini.
 3. **Status glyph pipeline tidak diketahui.** Kode perbaikan
    (`scripts/fetch-kana-stroke-data.ts`, `STROKE_INDEX_OVERRIDES`) masih utuh,
    tapi klaim "211 karakter terverifikasi" berasal dari perbandingan jumlah
@@ -218,28 +286,37 @@ terlupakan — V2.1 menuntut confusable set dan prerequisite graph).
 4. **Mnemonik kemungkinan tampil terlalu awal**, dan field `story`-nya templat
    identik untuk semua 66 entri. V2.1 Bagian 9 mensyaratkan mnemonik sebagai cue
    opsional **setelah** pengguna mencoba mengingat.
-5. **First-attempt tidak tercatat sebagai data.** Logika "hint dipakai → tidak
-   dihitung mastery" hidup sebagai state React (`recallPassed` dipaksa `false`),
-   hilang saat refresh.
-6. **Skema V2.1 belum ada.** `curriculum_version`, `content_version`,
-   `engine_version`, `hint_level`, `support_level`, `confidence`,
-   `first_attempt_correct`, `actual_interval` — semua tidak ada. Yang mirip:
-   `srs_interval_days` (≈`scheduled_interval`), `response_time_ms` (≈`latency_ms`).
-   Daftar lengkap yang dituntut ada di V2.1 Bagian 11.1.
+5. ~~First-attempt tidak tercatat sebagai data.~~ **Sudah tercatat** (24
+   Agustus 2026) — `first_attempt_correct`/`hint_level`/`assisted` di
+   `user_kana_attempts` (nullable, null untuk semua baris lama by design).
+6. **Skema V2.1 sebagian ada.** `curriculum_version`, `hint_level`,
+   `first_attempt_correct` **sudah ada** (24 Agustus 2026, di
+   `user_kana_attempts`). Masih tidak ada: `content_version`,
+   `engine_version`, `support_level`, `confidence`, `actual_interval`. Yang
+   mirip: `srs_interval_days` (≈`scheduled_interval`), `response_time_ms`
+   (≈`latency_ms`). Daftar lengkap yang dituntut ada di V2.1 Bagian 11.1.
 7. **Skor tulisan tangan satu angka, disimpan sebagai string**
    (`typed_value = 'writing-score:82'`). Tidak bisa di-query.
 8. **Placement test tidak ada.** V2.1 Bagian 12 butir 4 mensyaratkannya untuk
    memberi credit ke pengguna aktif saat migrasi.
 9. **Landing page tidak sinkron** — masih "Pre-N5 · 5 modul" (hardcode di
    `app/(marketing)/page.tsx`), padahal sistem aktif punya 11 modul.
-10. **Dua jalur `learningFlow`** ("legacy" vs default) coexist di
-    `HiraganaStagePlayer.tsx` — sisa iterasi 20-huruf vs 46-huruf.
+10. ~~Dua jalur `learningFlow` coexist.~~ **Jalur legacy sudah dihapus**
+    (24 Agustus 2026) — dikonfirmasi tidak pernah aktif di database
+    (`configuration->>'learningFlow'` selalu `null` untuk semua stage) sebelum
+    dihapus.
 11. **`user_kana_gate_results` 0 baris** — tabel ada, tidak dipakai kode mana pun.
-12. **Belum ada suite E2E berulang.** `scripts/auth-setup.ts` terbukti pernah
-    berhasil (login lewat `signInWithPassword()`, suntik cookie sesi ke
-    Playwright, melewati Google) — ada `.auth/storageState.json` dan screenshot
-    halaman terproteksi sebagai bukti. Tapi tidak ada `.spec.ts`, config
-    Playwright, atau CI. Screenshot yang ada dari era "20 huruf", sudah usang.
+12. ~~Belum ada suite E2E berulang.~~ **Sudah ada** (23–24 Agustus 2026):
+    `playwright.config.ts` + `tests/e2e/*.spec.ts` + `tests/unit/*.spec.ts`,
+    jalankan dengan `npx playwright test` (lihat Bagian 10). Termasuk
+    pendekatan yang lebih kuat dari sekadar klik UI: `tests/support/
+    serverActions.ts` memanggil server action Next.js **langsung** (replay
+    protokol HTTP asli, ID action dibaca dari `server-reference-manifest.json`
+    hasil build — jangan pernah di-hardcode, berubah tiap build) dengan data
+    evaluasi tulisan tangan buatan, tanpa perlu menggambar sungguhan di
+    kanvas. Ini yang membuktikan Ikuti/Uji/RETENTION benar di level
+    penyimpanan data — bukan bukti bahwa pengenalan tulisan tangan terasa
+    baik untuk manusia, itu tetap butuh dicoba manual.
 13. **Status deployment Vercel tidak terverifikasi.** Hanya inferensi dari git
     sync; akses API Vercel gagal di sesi audit.
 
@@ -374,14 +451,26 @@ Catatan: narasi Indonesia saat ini **hanya ada di V1 (M01)**, lewat
 ### P0 menurut V2.1 Bagian 13 — kutipan langsung, jangan diurutkan ulang
 
 1. **Canonical glyph pipeline** — satu asset source untuk display, animation,
-   trace, dan scoring; perbaiki あ/お dan golden tests.
-2. **Mastery evidence model** — pisahkan completion, unaided retrieval, hint
-   usage, delayed retention, dan transfer.
-3. **Hint ladder + retry semantics** — attempt dibantu tidak menambah mastery.
-4. **Cumulative phase graph** — Hiragana 10/10/10/10/6 dengan bank 10/20/30/40/46.
-5. **Explainable handwriting score** — tampilkan subscore dan specific correction.
-6. **Curriculum versioning** — progress V2 lama tetap aman, V2.1 punya namespace
-   baru. (Perhatikan: sekarang V1 dan V2 malah **berbagi** tabel attempt/mastery.)
+   trace, dan scoring; perbaiki あ/お dan golden tests. **Belum dikerjakan.**
+2. ~~Mastery evidence model~~ — **sebagian besar sudah** (24 Agustus 2026):
+   unaided retrieval vs hint usage terpisah dan tersimpan
+   (`first_attempt_correct`/`hint_level`/`assisted`), delayed retention ada
+   (`RETENTION` stage). Yang belum: transfer gate (Bagian 4.1's "3 dari 4
+   aspek rubric") sama sekali belum ada bentuknya.
+3. ~~Hint ladder + retry semantics~~ — **sudah** (24 Agustus 2026), 3 tingkat +
+   reset retrieval. Lihat Bagian 3.
+4. ~~Cumulative phase graph~~ — **sudah**, termasuk ekstensi dakuten/
+   handakuten/youon (F6–F12). Lihat Bagian 3.
+5. **Explainable handwriting score** — **belum**, masih satu angka gabungan
+   dari `@k1low/kakitori` (`writing-score:NN` di kolom `typed_value`, string,
+   tidak bisa di-query). Tidak disentuh sesi 23–24 Agustus 2026 — eksplisit
+   di luar cakupan prompt yang mengerjakannya.
+6. **Curriculum versioning** — **sebagian**: kolom `curriculum_version`
+   sekarang ada di `user_kana_attempts` (isi `'v2.1'` untuk attempt baru,
+   `null` untuk lama), tapi V1 dan V2/V2.1 masih **berbagi** tabel
+   attempt/mastery yang sama, dibedakan lewat prefix `exercise_type`
+   (`v2_f1_*` lama, `v21_*` baru) — bukan lewat kolom versi itu sendiri untuk
+   baris lama. Migrasi struktural yang lebih dalam belum dikerjakan.
 
 ### Perbaikan produk yang berdiri di luar P0
 
@@ -427,6 +516,23 @@ npm run build
 npx drizzle-kit generate
 npx drizzle-kit migrate
 ```
+
+### Test Playwright (E2E + unit), sejak 23–24 Agustus 2026
+
+```bash
+npx tsx scripts/auth-setup.ts   # sekali di awal, atau kalau sesi kedaluwarsa (~1 jam)
+npm run dev                     # di terminal terpisah, biarkan berjalan
+npx playwright test             # semua test, tests/e2e/*.spec.ts + tests/unit/*.spec.ts
+npx playwright test tests/e2e/retention-gate.spec.ts   # satu file saja
+```
+
+`workers: 1` di `playwright.config.ts` **sengaja**, jangan dihapus — beberapa
+test menembak server action lewat `tests/support/serverActions.ts`, yang
+membaca ID action dari `.next/dev/server/**/server-reference-manifest.json`
+hasil `npm run dev` yang sedang berjalan (bukan hasil `npm run build`, path
+beda). Semua test memakai akun E2E khusus (`E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD`
+di `.env.local`) lewat `tests/support/db.ts` — **tidak pernah** menyentuh baris
+milik 4 pengguna Google OAuth asli.
 
 ### `npm run build` di komputer lokal
 
