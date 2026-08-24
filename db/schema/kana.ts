@@ -285,6 +285,15 @@ export const userKanaAttempts = pgTable(
     // multiple-choice mistakes.
     typedValue: text("typed_value"),
     responseTimeMs: integer("response_time_ms"),
+    // V2.1 mastery-evidence columns (Bagian 3.4). Nullable and additive —
+    // null on every pre-V2.1 row by design, never backfilled. Together
+    // they let a query tell "passed cold, first try" apart from "passed
+    // after a hint", which labVersion-in-JSON state alone couldn't do.
+    firstAttemptCorrect: boolean("first_attempt_correct"),
+    hintLevel: integer("hint_level"),
+    assisted: boolean("assisted"),
+    phaseCode: text("phase_code"),
+    curriculumVersion: text("curriculum_version"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

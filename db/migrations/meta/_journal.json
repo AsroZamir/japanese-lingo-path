@@ -43,6 +43,13 @@
       "when": 1787416391399,
       "tag": "0005_learning_stage_resume_state",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787530061474,
+      "tag": "0006_add_v21_mastery_evidence_columns",
+      "breakpoints": true
     }
   ]
 }
