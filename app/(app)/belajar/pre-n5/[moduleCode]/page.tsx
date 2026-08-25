@@ -35,7 +35,7 @@ export default async function PreN5ModulePage({
   params: Promise<{ moduleCode: string }>;
 }) {
   const { moduleCode } = await params;
-  if (!["PRE-N5.01", "PRE-N5.02", "PRE-N5.03"].includes(moduleCode)) notFound();
+  if (!["PRE-N5.01", "PRE-N5.02", "PRE-N5.03", "PRE-N5.04"].includes(moduleCode)) notFound();
   if (await isModuleLockedByPrerequisites(moduleCode)) redirect("/belajar");
   const moduleOverview = await getPreN5ModuleOverview(moduleCode);
   if (!moduleOverview) notFound();
@@ -72,7 +72,9 @@ export default async function PreN5ModulePage({
                   ? "46 KATAKANA DASAR"
                   : moduleOverview.code === "PRE-N5.03"
                     ? "ANGKA, WAKTU, HARGA & COUNTER DASAR"
-                    : "46 HIRAGANA DASAR"}
+                    : moduleOverview.code === "PRE-N5.04"
+                      ? "20+ SAPAAN & UNGKAPAN DASAR"
+                      : "46 HIRAGANA DASAR"}
               </b>
             </div>
             <h2>{moduleOverview.objective}</h2>
@@ -113,7 +115,7 @@ export default async function PreN5ModulePage({
           <strong>Belajar sedikit, lalu uji semua yang sudah dipelajari.</strong>
           <p>Fase berikutnya terbuka setelah batch aktif dan checkpoint kumulatifnya lulus.</p>
         </div>
-        {moduleOverview.code !== "PRE-N5.03" && (
+        {moduleOverview.code !== "PRE-N5.03" && moduleOverview.code !== "PRE-N5.04" && (
           <ol aria-label="Urutan jumlah huruf">
             {[10, 20, 30, 40, 46].map((count, index) => {
               const stage = phaseStages[index];
@@ -152,7 +154,8 @@ export default async function PreN5ModulePage({
 
         <div className="pre-n5-stage-list__grid">
           {moduleOverview.stages.map((stage) => {
-            const isVocabModule = moduleOverview.code === "PRE-N5.03";
+            const isVocabModule = moduleOverview.code === "PRE-N5.03" || moduleOverview.code === "PRE-N5.04";
+            const isRoleplayModule = moduleOverview.code === "PRE-N5.04";
             const cumulativeCount = configurationNumber(
               stage.configuration,
               "cumulativeCharacterCount",
@@ -175,9 +178,11 @@ export default async function PreN5ModulePage({
                   <div className="pre-n5-stage-card__meta">
                     <span>
                       {stage.code === "BOSS"
-                        ? isVocabModule
-                          ? "Simulasi konbini - ujian akhir"
-                          : "Ujian akhir - 46 huruf"
+                        ? isRoleplayModule
+                          ? "Roleplay situasi campuran - ujian akhir"
+                          : isVocabModule
+                            ? "Simulasi konbini - ujian akhir"
+                            : "Ujian akhir - 46 huruf"
                         : stage.code === "RETENTION"
                           ? "Gerbang tertunda - buka 72 jam setelah Gate"
                           : isVocabModule

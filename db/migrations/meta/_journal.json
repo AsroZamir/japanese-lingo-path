@@ -85,6 +85,13 @@
       "when": 1787630492463,
       "tag": "0011_narrow_thor_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1787631268894,
+      "tag": "0012_unknown_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

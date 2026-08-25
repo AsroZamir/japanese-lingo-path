@@ -93,6 +93,43 @@ const ANGKA_INTRO: Segment[] = [
   },
 ];
 
+// PROMPT-10 Bagian 6 — module_intro for PRE-N5.04, using the exact
+// Indonesian-politeness bridge the work order itself specified.
+const SAPAAN_INTRO: Segment[] = [
+  {
+    orderIndex: 0,
+    boardText: "Modul ini bukan tentang menghafal kata — tapi tentang tahu MANA yang pantas dikatakan, kepada siapa.",
+    visualAction: { kind: "text" },
+    pose: "menjelaskan",
+    narrationText:
+      "Modul ini beda dari yang sebelumnya. Ini bukan tentang menghafal arti kata — おはよう dan おはようございます artinya sama persis, \"selamat pagi\". Yang beda adalah kepada siapa boleh dipakai. Ini yang paling sering gagal diajarkan kursus lain.",
+  },
+  {
+    orderIndex: 1,
+    boardText: "Kabar baik: bahasa Indonesia sudah punya sistem kesopanan yang sama seperti Jepang.",
+    visualAction: {
+      kind: "table",
+      columns: ["Jepang", "Setara Indonesia", "Kepada siapa"],
+      rows: [
+        ["おはようございます", "\"Selamat pagi, Pak/Bu\"", "atasan, guru, orang tua, orang baru"],
+        ["おはよう", "\"Pagi!\"", "teman dekat, adik, sebaya akrab"],
+        ["すみません", "\"Permisi\" / \"Maaf\"", "serbaguna — dua fungsi sekaligus"],
+      ],
+    },
+    pose: "memberi-semangat",
+    narrationText:
+      "Kabar baiknya: kamu sudah paham konsep ini secara naluri. \"Selamat pagi, Pak\" berbeda dari \"Pagi!\" — kamu sudah tahu ada Bapak, Ibu, Mas, Mbak untuk orang yang berbeda. Penutur bahasa Inggris tidak punya ini, jadi kursus berbahasa Inggris harus menjelaskan panjang lebar. Kamu tinggal diberi pemetaannya — lihat tabel ini.",
+  },
+  {
+    orderIndex: 2,
+    boardText: "Lima situasi: sapaan & waktu, rutinitas rumah, makan, terima kasih & maaf, perkenalan.",
+    visualAction: { kind: "text" },
+    pose: "netral",
+    narrationText:
+      "Kita akan lewati lima situasi sehari-hari: sapaan dan waktu, rutinitas keluar-masuk rumah, ungkapan sebelum dan sesudah makan, terima kasih dan maaf, dan perkenalan diri. Tiap situasi, kamu akan diminta memilih ungkapan yang PALING PANTAS — bukan cuma yang benar secara bahasa.",
+  },
+];
+
 async function seedModule(db: Awaited<ReturnType<typeof createSeedClient>>["db"], code: string, segments: Segment[]) {
   const [moduleRow] = await db.select().from(learningModules).where(eq(learningModules.code, code));
   if (!moduleRow) {
@@ -126,6 +163,7 @@ async function main() {
   try {
     await seedModule(db, "PRE-N5.02", KATAKANA_INTRO);
     await seedModule(db, "PRE-N5.03", ANGKA_INTRO);
+    await seedModule(db, "PRE-N5.04", SAPAAN_INTRO);
     console.log(
       "\nPERLU DITINJAU: naskah di atas belum melalui QA linguistik penutur asli (V2.1 Bagian 16 butir 10).",
     );

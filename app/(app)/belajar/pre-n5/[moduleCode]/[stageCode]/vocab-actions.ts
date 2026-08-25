@@ -19,10 +19,35 @@ import {
 // are reused directly; only the item lookup (vocab_items instead of
 // kana_characters) and exercise-type grading are new.
 
+// PROMPT-10 Bagian 6 — PRE-N5.04 is the SECOND module built on this
+// engine, which means F1-F5/BOSS (its stage codes) now collide with
+// PRE-N5.03's own F1-F5/BOSS at the phase_code level — exactly the
+// class of bug resolvePhaseCode (katakana-data.ts) already solved once
+// for the kana engine, flagged as a known follow-up in
+// docs/POLA-MODUL-BARU.md. Fixed the same way, but scoped: only modules
+// added to this map get prefixed — PRE-N5.03's already-recorded rows
+// keep their raw (unprefixed) phase_code untouched, so nothing about
+// its existing behavior or stored data changes.
+const VOCAB_PHASE_PREFIX: Record<string, string> = {
+  "PRE-N5.04": "V04",
+};
+function resolveVocabPhaseCode(moduleCode: string, stageCode: string): string {
+  const prefix = VOCAB_PHASE_PREFIX[moduleCode];
+  return prefix ? prefix + "_" + stageCode : stageCode;
+}
+
 export type VocabAttemptInput = {
   stageId: number;
   itemId: number;
-  exerciseType: "listen_choice" | "type_reading" | "pattern_predict" | "contrast_choice" | "konbini_price" | "konbini_change";
+  exerciseType:
+    | "listen_choice"
+    | "type_reading"
+    | "pattern_predict"
+    | "contrast_choice"
+    | "konbini_price"
+    | "konbini_change"
+    | "response_choice"
+    | "response_production";
   skill: "recognition" | "production" | "listening";
   selectedItemId?: number | null;
   typedValue?: string | null;
@@ -110,7 +135,7 @@ export async function recordVocabAttempt(input: VocabAttemptInput): Promise<Lear
     .maybeSingle();
   if (itemError || !item) return { ok: false, error: "Item tidak valid." };
 
-  const choiceTypes = new Set(["listen_choice", "contrast_choice"]);
+  const choiceTypes = new Set(["listen_choice", "contrast_choice", "response_choice"]);
   let isCorrect: boolean;
   let errorType: "language" | "math" | null = null;
 
@@ -129,11 +154,11 @@ export async function recordVocabAttempt(input: VocabAttemptInput): Promise<Lear
     isCorrect = expectedChange != null && Number(input.typedValue) === expectedChange;
     if (!isCorrect) errorType = "math";
   } else {
-    // type_reading, pattern_predict
+    // type_reading, pattern_predict, response_production
     isCorrect = normalizedAnswer(input.typedValue) === normalizedAnswer(item.reading);
   }
 
-  const phaseCode = input.phaseCode ?? context.code;
+  const phaseCode = resolveVocabPhaseCode(context.moduleCode, input.phaseCode ?? context.code);
   const exerciseType = "v21_" + phaseCode.toLowerCase() + "_" + input.exerciseType;
 
   const { error: attemptError } = await supabase.from("user_vocab_attempts").insert({
@@ -287,7 +312,7 @@ export async function completeVocabStage(input: {
       .from("user_vocab_attempts")
       .select("first_attempt_correct, created_at")
       .eq("user_id", user.id)
-      .eq("phase_code", context.code)
+      .eq("phase_code", resolveVocabPhaseCode(context.moduleCode, context.code))
       .like("exercise_type", "v21_%")
       .order("created_at", { ascending: false })
       .limit(total);

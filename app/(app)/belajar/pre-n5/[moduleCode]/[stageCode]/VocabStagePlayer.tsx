@@ -6,6 +6,8 @@ import type { VocabStageBundle } from "@/app/lib/vocab-engine-query";
 import { VocabQuiz, type VocabQuizQuestion, type VocabQuizResult } from "./VocabQuiz";
 import { VocabLearningLab } from "./VocabLearningLab";
 import { KonbiniSimulation } from "./KonbiniSimulation";
+import { SapaanLearningLab } from "./SapaanLearningLab";
+import { SapaanRoleplay } from "./SapaanRoleplay";
 import { completeVocabStage, type StageCompletionResult } from "./vocab-actions";
 
 const CURRICULUM_VERSION_V21 = "v2.1";
@@ -141,6 +143,14 @@ export function VocabStagePlayer({ bundle }: { bundle: VocabStageBundle }) {
 
   if (bundle.konbiniSimulation) {
     return <KonbiniSimulation key={runKey} bundle={bundle} onComplete={(result, state) => void finishStage(result, state)} />;
+  }
+
+  if (bundle.roleplayTransfer) {
+    return <SapaanRoleplay key={runKey} bundle={bundle} onComplete={(result, state) => void finishStage(result, state)} />;
+  }
+
+  if (bundle.module.code === "PRE-N5.04") {
+    return <SapaanLearningLab key={runKey} bundle={bundle} onComplete={(result, state) => void finishStage(result, state)} />;
   }
 
   return <VocabLearningLab key={runKey} bundle={bundle} onComplete={(result, state) => void finishStage(result, state)} />;

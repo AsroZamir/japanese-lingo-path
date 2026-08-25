@@ -60,7 +60,23 @@ export const vocabItems = pgTable(
     // items and for irregulars with no single clean "regular" pair
     // (dates 1-10/14/20/24, which have no pattern to contrast against).
     irregularOf: integer("irregular_of").references((): AnyPgColumn => vocabItems.id),
+    // PROMPT-10 Bagian 6 (PRE-N5.04) — social register, null for modules
+    // where it doesn't apply (numbers, katakana). "formal" | "casual" |
+    // null (register-neutral, e.g. すみません serves both).
+    register: text("register"),
+    // The OTHER register variant of the same underlying expression (e.g.
+    // おはようございます's registerOf points at おはよう, or vice versa) —
+    // lets the UI build a casual/formal bridge pair directly from the
+    // data, same shape as irregularOf but a distinct relationship (a
+    // register pair isn't a sound-change exception, it's two equally
+    // "correct" forms for different social contexts).
+    registerOf: integer("register_of").references((): AnyPgColumn => vocabItems.id),
     audioUrl: text("audio_url"),
+    // PROMPT-10 Bagian 6: V2.1 asks for narration from at least two
+    // distinct VOICEVOX speakers so learners practice cross-speaker
+    // recognition. Second speaker's audio, when generated; null
+    // otherwise (single-speaker modules like PRE-N5.01-03 never fill this).
+    audioUrlSpeaker2: text("audio_url_speaker_2"),
     orderIndex: integer("order_index").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

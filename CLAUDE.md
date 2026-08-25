@@ -1,6 +1,39 @@
 # CLAUDE.md — Japanese Lingo Path
 
-Panduan kerja untuk Claude Code di repo ini. Diperbarui 25 Agustus 2026 (PROMPT-9).
+Panduan kerja untuk Claude Code di repo ini. Diperbarui 25 Agustus 2026 (PROMPT-10).
+
+**PROMPT-10 (25 Agustus 2026):**
+- **Bagian 1 — kunci modul yang "sudah dibuka" ternyata masih terkunci
+  di production**: akar masalahnya persis seperti dicurigai di prompt
+  itu sendiri — `NEXT_PUBLIC_DEV_UNLOCK_ALL` ditanam ke bundle JS saat
+  **BUILD**, bukan dibaca saat runtime; mengubahnya di dashboard Vercel
+  tidak berpengaruh sampai build berikutnya. **Diganti total** dengan
+  `dev_unlock_flags` (tabel baru, satu baris per user, dibaca lewat
+  `isDevUnlockAllActive()` yang sekarang **async**, query DB tiap
+  request) — nyalakan/matikan tanpa deploy ulang. Env var lama sudah
+  tidak dipakai kode mana pun; boleh dihapus dari Vercel kapan saja.
+  Diverifikasi ujung-ke-ujung: akun dengan baris flag langsung terbuka,
+  akun tanpa baris tetap terkunci, tanpa redeploy di antara keduanya.
+- **Bagian 2/3/4 — Mesin Sensei diupgrade dari "kotak notifikasi" ke
+  ukuran kelas sungguhan** (1280-1440px lebar, min 680px tinggi, 420px
+  karakter, 26-28px teks) + narasi otomatis diputar saat "Lanjut" (klik
+  = user gesture asli, jadi `audio.play()` dipanggil langsung di dalam
+  handler klik, BUKAN lewat `useEffect` — beberapa browser tidak lagi
+  menghitung itu sebagai respons ke gesture) + **karakter sensei asli**
+  (`public/sensei/sensei-{netral,menunjuk,menjelaskan,memberi-semangat,
+  berpikir,menulis,merayakan,prihatin-mendukung}.webp`, dari foto 8-pose
+  yang disiapkan pemilik, latar diputihkan jadi transparan lewat
+  threshold alpha manual — bukan `hanzi-writer`/AI removal). SVG
+  placeholder lama sudah dihapus total.
+- **Bagian 6 — PRE-N5.04 (Sapaan & Ungkapan Dasar) aktif**, modul
+  KETIGA di jalur Vocabulary Engine (setelah PRE-N5.03) — lihat
+  `docs/POLA-MODUL-BARU.md` untuk detail penuh apa yang generik lintas
+  modul vocab-engine vs yang harus ditulis ulang. Penting: modul kedua
+  di jalur ini membuat `phase_code` bentrok antar-modul (F1 vs F1) —
+  sudah diperbaiki lewat `resolveVocabPhaseCode` (`vocab-actions.ts`),
+  PRE-N5.03 sengaja TIDAK disentuh (tetap kode mentah, data lama aman).
+  **Sengaja hanya sampai BOSS** — belum ada stage RETENTION untuk modul
+  ini (V2.1 tidak eksplisit memintanya di sini, beda dari kana/angka).
 
 **PROMPT-8 (25 Agustus 2026, ringkas — laporan lengkap di riwayat sesi):**
 kunci antar-modul di `/belajar` dibuka oleh `NEXT_PUBLIC_DEV_UNLOCK_ALL`
@@ -487,20 +520,23 @@ terlupakan — V2.1 menuntut confusable set dan prerequisite graph).
     di sana dan di laporan PROMPT-6 — belum ada kolom status di database,
     ini derivasi dari `attempts`/`accuracy`/`streak`/`srs_interval_days`
     dan bukti lolos RETENTION tanpa bantuan.
-17. **Sakelar mode dev ada** (24 Agustus 2026, PROMPT-6 Bagian 2) —
-    `NEXT_PUBLIC_DEV_UNLOCK_ALL=true` aktif di Production Vercel sekarang,
-    supaya pemilik bisa lompat ke tahap mana pun tanpa menyelesaikan
-    prasyarat atau menunggu gerbang 72 jam. Baca `app/lib/dev-mode.ts` —
-    satu fungsi (`isDevUnlockAllActive`), dipakai di dua tempat yang
-    HARUS tetap sinkron: `pre-n5-01-query.ts` (kunci halaman) dan
-    `actions.ts`'s `completeHiraganaStage` (kunci server action, supaya
-    tidak bisa dilewati dengan memanggil action langsung). Label "MODE DEV"
-    tampil di layar (`DevUnlockBanner`) kapan pun sakelar ini aktif — kalau
-    banner itu tidak muncul tapi tahap tetap kebuka semua, itu bug.
-    **Sebelum rilis komersial: hapus/matikan env var ini di Vercel
-    (`vercel env rm NEXT_PUBLIC_DEV_UNLOCK_ALL production`, atau set ke
-    apa pun selain `"true"`), lalu redeploy.** Logika penguncian aslinya
-    tidak disentuh — mati otomatis begitu sakelar mati.
+17. **Sakelar mode dev ada, TAPI BUKAN LAGI ENV VAR** (24 Agustus 2026,
+    PROMPT-6 Bagian 2; diganti total 25 Agustus 2026, PROMPT-10 Bagian 1
+    — env var `NEXT_PUBLIC_*` ternyata ditanam saat build, jadi ubah di
+    dashboard Vercel tidak berpengaruh sampai build berikutnya, membuat
+    kunci modul "sudah dibuka" tetap terkunci nyata di production).
+    Sekarang tabel `dev_unlock_flags` (satu baris per user_id, kolom
+    `enabled`), dibaca oleh `isDevUnlockAllActive()` (`app/lib/
+    dev-mode.ts`, sekarang **async**, query DB tiap request lewat
+    `cache()` React) — nyalakan/matikan dengan UPDATE satu baris, tanpa
+    redeploy. Dipakai di titik yang sama seperti dulu (kunci halaman +
+    `completeHiraganaStage`/`completeVocabStage` server action), semua
+    call site sudah di-`await`. Label "MODE DEV" (`DevUnlockBanner`)
+    tetap tampil sama seperti sebelumnya.
+    **Sebelum rilis komersial: `update dev_unlock_flags set enabled =
+    false where user_id = '<id pemilik>'`** (atau `delete` barisnya) —
+    tidak perlu redeploy, tidak perlu sentuh Vercel sama sekali. Logika
+    penguncian aslinya tidak disentuh — mati otomatis begitu flag mati.
 
 ## 5. Aturan keras — mahal didapat, jangan diulang
 

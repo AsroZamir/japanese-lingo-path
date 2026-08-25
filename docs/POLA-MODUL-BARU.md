@@ -262,17 +262,23 @@ Dibuktikan lewat pemakaian TANPA PERUBAHAN, bukan cuma diklaim:
 
 ### Yang SENGAJA belum diselesaikan — dicatat, bukan lupa
 
-- **`resolvePhaseCode`-style disambiguation BELUM diterapkan ke
-  `vocab-actions.ts`.** `completeVocabStage` saat ini pakai
-  `context.code` (F1, BOSS, dst.) LANGSUNG sebagai `phase_code`, tanpa
-  prefiks. Ini aman SEKARANG karena baru ada SATU modul vocab-engine.
-  Begitu modul kedua di jalur ini dibangun (04 sapaan / 05 kosakata / 10
-  listening), F1-nya modul itu akan bentrok `phase_code` dengan F1-nya
-  PRE-N5.03 di query RETENTION-check `completeVocabStage` (yang cuma
-  filter per `phase_code`+`exercise_type like 'v21_%'`, TIDAK per
-  `item_id`) — persis kelas masalah yang `resolvePhaseCode` selesaikan
-  untuk kana. **Modul vocab-engine kedua HARUS menambah skema prefiks
-  serupa sebelum di-deploy, bukan sesudah ketahuan datanya campur.**
+- ~~`resolvePhaseCode`-style disambiguation belum diterapkan ke
+  `vocab-actions.ts`.~~ **Sudah diterapkan (PROMPT-10, 2026-08-25)** —
+  modul KEDUA di jalur vocab-engine (PRE-N5.04 sapaan) memang membuat
+  F1-nya bentrok `phase_code` dengan F1-nya PRE-N5.03 persis seperti
+  diperkirakan. Diselesaikan dengan `resolveVocabPhaseCode(moduleCode,
+  stageCode)` di `vocab-actions.ts` — map kecil `VOCAB_PHASE_PREFIX`
+  (`{"PRE-N5.04": "V04"}`), diterapkan di KEDUA titik yang menulis/baca
+  `phase_code` (`recordVocabAttempt` dan `completeVocabStage`'s
+  retention-check query). **Sengaja tidak menyentuh PRE-N5.03** — modul
+  yang tidak ada di map itu tetap pakai kode stage mentah tanpa prefiks,
+  supaya data PRE-N5.03 yang sudah ada (dan pengguna asli yang mungkin
+  sudah memakainya) tidak berubah format di tengah jalan. Diverifikasi
+  langsung: attempt PRE-N5.04 F1 tersimpan sebagai `phase_code='V04_F1'`,
+  attempt PRE-N5.03 F1 tetap `phase_code='F1'`, tidak ada percampuran.
+  **Modul vocab-engine ketiga (05 kosakata / 10 listening) tinggal
+  tambah satu baris ke `VOCAB_PHASE_PREFIX`, bukan menulis ulang
+  mekanismenya.**
 - **Simulasi konbini masih sederhana** (5 transaksi acak dari kategori
   `price`, uang dibayar dipilih dari [1000,5000,10000] terdekat ke atas)
   — belum ada variasi skenario (mis. minta kembalian dalam pecahan
@@ -316,3 +322,65 @@ Dibuktikan lewat pemakaian TANPA PERUBAHAN, bukan cuma diklaim:
    `completeVocabStage` via `tests/support/serverActions.ts`) — dan kalau
    memungkinkan, verifikasi visual browser sungguhan juga (modul
    non-tulisan-tangan tidak punya alasan untuk melewatinya).
+7. **Isi `learning_stages.pass_criteria` secara eksplisit untuk SETIAP
+   baris stage.** Ditemukan sesi PROMPT-10: baris scaffold PRE-N5.04
+   punya `pass_criteria = '{}'::jsonb` (default kolom) karena hanya
+   `configuration` yang diisi saat mengaktifkan modul, `pass_criteria`
+   lupa disentuh. Akibatnya `completeVocabStage` sempat meloloskan skor
+   berapa pun ("minimal 0%") — gerbang SERVER-nya bocor total meski UI
+   klien sudah menegakkan 80% dengan benar. Ketahuan lewat verifikasi
+   server-action langsung (`requiredLabel: 'minimal 0%'` di respons),
+   bukan lewat membaca kode. **Selalu verifikasi `requiredLabel` di
+   respons `completeVocabStage`/`completeHiraganaStage` sungguhan
+   menyebut angka yang benar (80%/85%), jangan cuma cek `passed: true`
+   — angka default kosong bisa membuat semuanya "lulus" secara diam-diam.**
+
+## Modul KETIGA di jalur Vocabulary Engine — PRE-N5.04 (PROMPT-10)
+
+PRE-N5.04 (Sapaan & Ungkapan Dasar) membuktikan mesin ini reusable
+sungguhan, bukan cuma teori: engine yang sama (skema `vocab_items`,
+`vocab-engine-query.ts`, `vocab-actions.ts`) melahirkan modul dengan
+KEMAMPUAN BEDA — bukan hafal kosakata (PRE-N5.03), tapi memilih
+ungkapan yang PANTAS untuk situasi sosial tertentu (register:
+formal/casual, lihat `db/schema/vocab.ts`'s `register`/`registerOf`,
+kolom baru yang ditambahkan modul ini — netral untuk modul yang tidak
+butuh, tidak memaksa skema lama berubah bentuk).
+
+- **Yang dipakai ulang APA ADANYA**: `vocab_items` (+2 kolom baru,
+  aditif), `gate-logic.ts`, SRS math, `VocabQuiz.tsx` (BOSS/RETENTION
+  generik — walau modul ini akhirnya TIDAK pakai VocabQuiz untuk BOSS-nya,
+  lihat poin di bawah), pola stage-player (`VocabStagePlayer.tsx` cukup
+  ditambah dua baris percabangan: `roleplayTransfer` dan
+  `bundle.module.code === "PRE-N5.04"`).
+- **Yang TERNYATA tidak cocok dipakai ulang**: `VocabLearningLab.tsx`
+  (listen→build→contrast) — bentuknya "kenali lalu produksi item
+  tunggal", sedangkan engine pragmatik butuh "baca SITUASI, pilih/
+  hasilkan ungkapan yang PANTAS untuknya" — bentuk soal yang beda secara
+  struktural (prompt = situasi, bukan audio/kana item itu sendiri).
+  Ditulis `SapaanLearningLab.tsx` baru, TAPI tetap pakai ulang
+  `.hiragana-lab`/`.hiragana-lab__rail` dkk. untuk wadah visualnya —
+  bagian VISUAL generik, bagian STATE MACHINE tidak.
+- **`VocabQuiz.tsx` juga ternyata tidak cocok untuk BOSS-nya** (soal
+  situasional ganda menampilkan audio/kana item sebagai bagian prompt —
+  itu justru membocorkan jawaban untuk soal "situasi → pilih ungkapan").
+  Ditulis `SapaanRoleplay.tsx` baru, mengikuti pola `KonbiniSimulation.tsx`
+  (komponen kapsul bespoke ketika bentuk interaksinya beda), bukan
+  dipaksakan ke komponen generik yang ada.
+- **Skenario situasional (situasi → ungkapan yang benar) sengaja BUKAN
+  di database** — ditulis sebagai data TypeScript di
+  `app/lib/sapaan-scenarios.ts`, dikunci ke `vocab_items.reading` (field
+  stabil), bukan ke id baris atau ke key lokal skrip seed. Ini konten
+  pedagogis kecil dan sangat spesifik-modul (~19 baris), bukan sesuatu
+  yang berulang lintas modul seperti `vocab_items` sendiri — tabel
+  generik baru untuk ini akan jadi over-engineering untuk satu modul.
+- **Shadowing (V2.1 §6.7's "chunk shadowing") sengaja TIDAK
+  disimpan/dinilai sama sekali** — sesuai izin eksplisit prompt
+  ("kalau penilaian suara terlalu rumit, jangan paksa"), langkah ini
+  murni UI self-report ("sudah dicoba?" lanjut) tanpa panggilan server
+  action. Kalau penilaian produksi suara sungguhan dikerjakan nanti,
+  ini titik yang perlu diisi — bukan bug, sengaja kosong.
+- **Dua suara VOICEVOX per item** (V2.1 §6.7) — kolom baru
+  `audio_url_speaker_2` di `vocab_items`, diisi lewat pemanggilan
+  `synthesize()` dua kali per item di seed script. Modul lain yang ingin
+  fitur sama tinggal tambah kolom yang sama (sudah ada), tidak perlu
+  desain baru.

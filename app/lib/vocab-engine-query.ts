@@ -17,7 +17,17 @@ export type VocabItem = {
   numericValue: number | null;
   isIrregular: boolean;
   irregularOfId: number | null;
+  // PROMPT-10 Bagian 6 (PRE-N5.04) — null for every module that doesn't
+  // use social register (numbers, katakana). registerOfId lets the UI
+  // build a casual/formal bridge pair from the data, same shape as
+  // irregularOfId but a distinct relationship (see db/schema/vocab.ts).
+  register: "formal" | "casual" | null;
+  registerOfId: number | null;
   audioUrl: string | null;
+  // Second VOICEVOX speaker's narration — null for single-speaker
+  // modules (PRE-N5.01-03). V2.1 §6.7 asks for cross-speaker recognition
+  // practice specifically for the Interaction/Pragmatics Engine.
+  audioUrlSpeaker2: string | null;
   mastery: { attempts: number; accuracyPercent: number; dueAt: string | null };
 };
 
@@ -34,6 +44,10 @@ export type VocabStageBundle = {
   units: VocabUnit[];
   allItems: VocabItem[];
   konbiniSimulation: boolean;
+  // PROMPT-10 Bagian 6 (PRE-N5.04) — BOSS stage config flag, same
+  // pattern as konbiniSimulation: a capstone that's a different UI
+  // (SapaanRoleplay.tsx) than the regular teaching lab.
+  roleplayTransfer: boolean;
 };
 
 export const getVocabStageBundle = cache(
@@ -47,7 +61,7 @@ export const getVocabStageBundle = cache(
       ? (stage.configuration.categories as string[])
       : [];
     if (categories.length === 0) {
-      return { module: moduleOverview, stage, units: [], allItems: [], konbiniSimulation: false };
+      return { module: moduleOverview, stage, units: [], allItems: [], konbiniSimulation: false, roleplayTransfer: false };
     }
 
     const supabase = await createClient();
@@ -60,7 +74,9 @@ export const getVocabStageBundle = cache(
 
     const { data: itemRows, error: itemError } = await supabase
       .from("vocab_items")
-      .select("id, category, term_kana, reading, meaning_id, numeric_value, is_irregular, irregular_of, audio_url, order_index")
+      .select(
+        "id, category, term_kana, reading, meaning_id, numeric_value, is_irregular, irregular_of, register, register_of, audio_url, audio_url_speaker_2, order_index",
+      )
       .eq("module_id", moduleRow.data.id)
       .in("category", categories)
       .order("order_index");
@@ -100,7 +116,10 @@ export const getVocabStageBundle = cache(
         numericValue: row.numeric_value,
         isIrregular: row.is_irregular,
         irregularOfId: row.irregular_of,
+        register: row.register as "formal" | "casual" | null,
+        registerOfId: row.register_of,
         audioUrl: row.audio_url,
+        audioUrlSpeaker2: row.audio_url_speaker_2,
         mastery: {
           attempts: masteryRaw.attempts,
           accuracyPercent: masteryRaw.attempts > 0 ? Math.round((masteryRaw.correct / masteryRaw.attempts) * 100) : 0,
@@ -125,6 +144,7 @@ export const getVocabStageBundle = cache(
       units,
       allItems,
       konbiniSimulation: stage.configuration.konbiniSimulation === true,
+      roleplayTransfer: stage.configuration.roleplayTransfer === true,
     };
   },
 );
