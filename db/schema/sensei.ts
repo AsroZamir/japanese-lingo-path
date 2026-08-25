@@ -36,7 +36,19 @@ const readByAuthenticated = (tableName: string) =>
 export const SENSEI_SEGMENT_TYPES = ["module_intro", "phase_intro", "concept_moment", "writing_demo"] as const;
 export type SenseiSegmentType = (typeof SENSEI_SEGMENT_TYPES)[number];
 
-export const SENSEI_POSES = ["neutral", "pointing", "smiling", "thinking"] as const;
+// PROMPT-10 Bagian 4 — the 8-pose set the owner's real character art
+// uses (public/sensei/sensei-{pose}.webp). Names match the art's own
+// filenames exactly so a new pose is "drop the file in, nothing else."
+export const SENSEI_POSES = [
+  "netral",
+  "menunjuk",
+  "menjelaskan",
+  "memberi-semangat",
+  "berpikir",
+  "menulis",
+  "merayakan",
+  "prihatin-mendukung",
+] as const;
 export type SenseiPose = (typeof SENSEI_POSES)[number];
 
 export const senseiSegments = pgTable(
@@ -68,7 +80,7 @@ export const senseiSegments = pgTable(
     // full discriminated union both this table's authors and the
     // renderer (SenseiBoard.tsx) must agree on.
     visualAction: jsonb("visual_action").notNull().default(sql`'{"kind":"text"}'::jsonb`),
-    senseiPose: text("sensei_pose").notNull().default("neutral"),
+    senseiPose: text("sensei_pose").notNull().default("netral"),
     // Editable narration script (Indonesian) — kept as a real column so
     // it can be reviewed/edited without touching visualAction's jsonb
     // shape, same split as lesson_content_blocks.narrationText/Url.

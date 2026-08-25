@@ -11,7 +11,7 @@ export default async function LearnPage() {
 
   return (
     <>
-      {isDevUnlockAllActive() && <DevUnlockBanner />}
+      {(await isDevUnlockAllActive()) && <DevUnlockBanner />}
       <PageHeader
         eyebrow="KURIKULUM V2 · PRE-N5"
         title="Fondasi Active Mastery"

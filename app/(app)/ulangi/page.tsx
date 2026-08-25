@@ -24,7 +24,7 @@ export default async function ReviewPage() {
 
   return (
     <>
-      {isDevUnlockAllActive() && <DevUnlockBanner />}
+      {(await isDevUnlockAllActive()) && <DevUnlockBanner />}
       <PageHeader
         eyebrow="SPACED REPETITION"
         title="Review Hari Ini"

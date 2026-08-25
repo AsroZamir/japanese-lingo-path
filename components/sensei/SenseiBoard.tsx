@@ -1,16 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { AudioButton } from "@/components/kana/AudioButton";
+import { useRef, useState } from "react";
 import type { SenseiSegmentRow } from "@/app/lib/sensei-query";
 import { SenseiWritingDemo } from "./SenseiWritingDemo";
 
-// PROMPT-9 Bagian 2 — the generic "papan tulis" presentation player.
+// PROMPT-9/10 — the generic "papan tulis" presentation player.
 // Module-agnostic on purpose: takes whatever segments the caller fetched
 // (module_intro / phase_intro+concept_moment / a single writing_demo) and
-// steps through them. Teks selalu tampil; narasi HANYA lewat tombol putar
-// (AudioButton, sudah click-to-play/stop) — tidak pernah autoplay, dan
-// tidak ada video sama sekali (Bagian 2 aturan berat butir 1-2).
+// steps through them. Teks selalu tampil; narasi otomatis diputar saat
+// "Lanjut" (PROMPT-10 Bagian 3). Audio playback is triggered IMPERATIVELY
+// inside each click handler (not via a useEffect reacting to state) —
+// browsers only allow audio.play() without user-gesture friction when
+// it's called synchronously inside the gesture's own handler; going
+// through an effect adds a React commit + microtask hop that some
+// browsers no longer count as "in response to" the click. Segment 0
+// specifically needs an explicit "Mulai penjelasan" click first — that's
+// the one gesture that unlocks audio for the rest of this presentation,
+// since the page load itself was never a user gesture.
 export function SenseiBoard({
   segments,
   onFinish,
@@ -21,19 +27,89 @@ export function SenseiBoard({
   finishLabel?: string;
 }) {
   const [index, setIndex] = useState(0);
-  if (segments.length === 0) return null;
-  const segment = segments[index];
+  const [started, setStarted] = useState(false);
+  // "diingat selama sesi" (Bagian 3) — sessionStorage so muting on one
+  // presentation (e.g. module_intro) carries into the next one opened
+  // later in the same browser tab (e.g. a phase_intro), not just within
+  // this single mount. Lazy initializer (not an effect) since this only
+  // needs to run once, before the first render matters.
+  const [muted, setMuted] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return sessionStorage.getItem("sensei-muted") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [audioState, setAudioState] = useState<"idle" | "playing" | "unavailable">("idle");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const segment = segments.length > 0 ? segments[index] : null;
+
+  function playSegment(target: SenseiSegmentRow) {
+    const audio = audioRef.current;
+    if (!audio || !target.narrationUrl) {
+      setAudioState(target.narrationUrl ? "idle" : "unavailable");
+      return;
+    }
+    audio.pause();
+    audio.src = target.narrationUrl;
+    audio.currentTime = 0;
+    audio.play().then(
+      () => setAudioState("playing"),
+      () => setAudioState("idle"), // blocked or file missing — text stays readable regardless
+    );
+  }
+
+  if (!segment) return null;
   const isLast = index === segments.length - 1;
+
+  function handleStartAudio() {
+    setStarted(true);
+    if (!muted) playSegment(segment!);
+  }
+
+  function goTo(nextIndex: number) {
+    // "Lanjut" is itself a fresh user gesture — it autoplays the next
+    // segment's narration even if the learner skipped segment 0's
+    // explicit gate and went straight to clicking through.
+    const next = segments[nextIndex];
+    setIndex(nextIndex);
+    setStarted(true);
+    if (!muted) playSegment(next);
+    else audioRef.current?.pause();
+  }
+
+  function replay() {
+    playSegment(segment!);
+  }
+
+  function toggleMute() {
+    setMuted((value) => {
+      const next = !value;
+      if (next) audioRef.current?.pause();
+      try {
+        sessionStorage.setItem("sensei-muted", next ? "1" : "0");
+      } catch {
+        // Ignore — worst case the preference doesn't carry to the next presentation.
+      }
+      return next;
+    });
+  }
 
   return (
     <div className="sensei-board">
+      <audio ref={audioRef} onEnded={() => setAudioState("idle")} onError={() => setAudioState("unavailable")}>
+        <track kind="captions" />
+      </audio>
       <div className="sensei-board__stage">
         <img
+          key={segment.senseiPose}
           className="sensei-board__illustration"
-          src={"/sensei/sensei-" + segment.senseiPose + ".svg"}
+          src={"/sensei/sensei-" + segment.senseiPose + ".webp"}
           alt=""
-          width={140}
-          height={182}
+          width={420}
+          height={560}
+          loading="eager"
         />
         <div className="sensei-board__board">
           <div className="sensei-board__visual">
@@ -78,29 +154,42 @@ export function SenseiBoard({
               <SenseiWritingDemo character={segment.kanaCharacter} strokeDataUrl={segment.strokeDataUrl} />
             )}
           </div>
-          <p className="sensei-board__text">{segment.boardText}</p>
-          {segment.narrationUrl && (
-            <div className="sensei-board__narration">
-              <AudioButton url={segment.narrationUrl} />
-              <span>Dengarkan penjelasan</span>
-            </div>
-          )}
+          <p key={"text-" + segment.id} className="sensei-board__text sensei-board__text--written">
+            {segment.boardText}
+          </p>
+          <div className="sensei-board__narration">
+            {!started && !muted ? (
+              <button type="button" className="sensei-board__start-audio" onClick={handleStartAudio}>
+                🔊 Mulai penjelasan
+              </button>
+            ) : (
+              <>
+                <button type="button" className="sensei-board__narration-toggle" onClick={toggleMute} aria-pressed={muted}>
+                  {muted ? "🔇 Suara mati" : "🔊 Suara nyala"}
+                </button>
+                {!muted && segment.narrationUrl && (
+                  <button type="button" className="sensei-board__replay" onClick={replay} disabled={audioState === "unavailable"}>
+                    ↺ Putar ulang
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="sensei-board__controls">
-        <span className="sensei-board__progress">
-          {index + 1}/{segments.length}
-        </span>
+        <div className="sensei-board__dots" role="progressbar" aria-valuemin={1} aria-valuemax={segments.length} aria-valuenow={index + 1}>
+          {segments.map((s, i) => (
+            <span key={s.id} className={i === index ? "is-active" : i < index ? "is-done" : ""} />
+          ))}
+          <small>{index + 1}/{segments.length}</small>
+        </div>
         <div className="sensei-board__actions">
           <button type="button" className="secondary-button" onClick={onFinish}>
             Lewati
           </button>
-          <button
-            type="button"
-            className="primary-button"
-            onClick={() => (isLast ? onFinish() : setIndex((value) => value + 1))}
-          >
+          <button type="button" className="primary-button" onClick={() => (isLast ? onFinish() : goTo(index + 1))}>
             {isLast ? finishLabel : "Lanjut →"}
           </button>
         </div>

@@ -18,7 +18,7 @@ export default async function PracticePage() {
 
   return (
     <>
-      {isDevUnlockAllActive() && <DevUnlockBanner />}
+      {(await isDevUnlockAllActive()) && <DevUnlockBanner />}
       <PageHeader
         eyebrow="LATIHAN KECEPATAN"
         title="Latihan"

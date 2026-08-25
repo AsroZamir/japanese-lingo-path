@@ -54,7 +54,7 @@ export default async function PreN5ModulePage({
       <Link href="/belajar" className="back-button">
         Kembali ke daftar modul
       </Link>
-      {isDevUnlockAllActive() && <DevUnlockBanner />}
+      {(await isDevUnlockAllActive()) && <DevUnlockBanner />}
       <PageHeader
         eyebrow={moduleOverview.code + " - SCRIPT MASTERY"}
         title={moduleOverview.title}

@@ -310,7 +310,7 @@ export async function completeHiraganaStage(input: {
   // eligibility rather than relying on the UI never having offered a way
   // in. Mirrors the page's own check: the immediately-preceding stage
   // (by order_index) must have been first-passed >=delayedGateHours ago.
-  if (typeof context.configuration.delayedGateHours === "number" && !isDevUnlockAllActive()) {
+  if (typeof context.configuration.delayedGateHours === "number" && !(await isDevUnlockAllActive())) {
     const { data: previousStage, error: previousStageError } = await supabase
       .from("learning_stages")
       .select("id")

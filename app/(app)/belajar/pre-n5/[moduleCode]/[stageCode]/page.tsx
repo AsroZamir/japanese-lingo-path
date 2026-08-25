@@ -80,7 +80,7 @@ export default async function HiraganaStagePage({
       reopenLabel="Lihat perkenalan tahap ini lagi"
     >
     <div className="content hiragana-stage-page">
-      {isDevUnlockAllActive() && <DevUnlockBanner />}
+      {(await isDevUnlockAllActive()) && <DevUnlockBanner />}
       <header className="hiragana-stage-page__header">
         <Link href={"/belajar/pre-n5/" + moduleCode} className="back-button">
           Kembali ke {bundle.module.title}

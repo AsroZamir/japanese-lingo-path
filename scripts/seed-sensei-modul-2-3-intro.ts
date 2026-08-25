@@ -26,7 +26,7 @@ const KATAKANA_INTRO: Segment[] = [
     orderIndex: 0,
     boardText: "Kamu sudah menguasai hiragana. Sekarang: kenapa bahasa Jepang butuh sistem tulisan KEDUA?",
     visualAction: { kind: "text" },
-    pose: "thinking",
+    pose: "berpikir",
     narrationText:
       "Kamu sudah menguasai hiragana. Sekarang pertanyaannya: kenapa bahasa Jepang masih butuh satu sistem tulisan lagi? Sensei jelaskan alasannya.",
   },
@@ -40,7 +40,7 @@ const KATAKANA_INTRO: Segment[] = [
         { label: "コーヒー", example: "koohii", note: "dari bahasa Belanda \"koffie\"" },
       ],
     },
-    pose: "pointing",
+    pose: "menunjuk",
     narrationText:
       "Katakana dipakai khusus untuk kata serapan dari bahasa asing — kata yang aslinya bukan bahasa Jepang. Bentuknya sengaja lebih bersudut dan tegas, beda dari hiragana yang bentuknya melengkung lembut. Contohnya テレビ, dibaca \"terebi\", dari kata bahasa Inggris \"television\". Atau コーヒー, dibaca \"koohii\" — kamu pasti sudah bisa menebak artinya.",
   },
@@ -48,7 +48,7 @@ const KATAKANA_INTRO: Segment[] = [
     orderIndex: 2,
     boardText: "Bunyinya sama persis dengan hiragana yang sudah kamu kuasai — hanya bentuknya yang beda.",
     visualAction: { kind: "compare", items: [{ label: "か / カ", example: "ka", note: "bunyi sama, bentuk beda" }] },
-    pose: "smiling",
+    pose: "memberi-semangat",
     narrationText:
       "Kabar baiknya: bunyi katakana sama persis dengan hiragana yang sudah kamu kuasai. か dan カ, dua-duanya dibaca \"ka\". Kamu tidak belajar bunyi baru di modul ini — hanya bentuk tulisan baru untuk bunyi yang sudah kamu kenal.",
   },
@@ -59,7 +59,7 @@ const ANGKA_INTRO: Segment[] = [
     orderIndex: 0,
     boardText: "Modul ini: angka, waktu, harga, dan cara menghitung benda dalam bahasa Jepang.",
     visualAction: { kind: "text" },
-    pose: "neutral",
+    pose: "netral",
     narrationText:
       "Modul ini tentang angka, waktu, harga, dan cara menghitung benda dalam bahasa Jepang. Ini keterampilan yang langsung kepakai — di kasir konbini, di jadwal kereta, di mana saja.",
   },
@@ -73,7 +73,7 @@ const ANGKA_INTRO: Segment[] = [
         { label: "Jepang", example: "一匹 (ippiki)", note: "kata penggolong 匹 untuk hewan kecil" },
       ],
     },
-    pose: "smiling",
+    pose: "memberi-semangat",
     narrationText:
       "Ini bagian yang menguntungkan pembelajar berbahasa Indonesia. Bahasa Jepang punya \"kata penggolong\" — kata khusus yang berubah tergantung jenis benda yang dihitung. Ini terdengar asing untuk pembelajar berbahasa Inggris, tapi bahasa Indonesia sudah punya konsep yang sama persis: sehelai kertas, seekor kucing, sebatang rokok, seorang anak. Kamu tidak belajar konsep baru — kamu tinggal belajar kata penggolong versi Jepangnya.",
   },
@@ -87,7 +87,7 @@ const ANGKA_INTRO: Segment[] = [
         { label: "Jepang", example: "百万", note: "dikelompokkan per 4 digit: 万 (10.000) sebagai satuan baru" },
       ],
     },
-    pose: "thinking",
+    pose: "berpikir",
     narrationText:
       "Satu hal yang perlu perhatian khusus. Bahasa Indonesia mengelompokkan angka besar per tiga digit — ribu, lalu juta. Bahasa Jepang mengelompokkan per empat digit, dengan 万 sebagai satuan baru untuk sepuluh ribu. Jadi satu juta rupiah, dalam logika Jepang, dihitung sebagai seratus kali sepuluh-ribu — 百万. Ini bukan soal hafalan, tapi soal membiasakan cara berpikir yang beda. Nanti kita latih pelan-pelan dengan contoh harga Rupiah asli.",
   },

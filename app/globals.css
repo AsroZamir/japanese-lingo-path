@@ -2278,41 +2278,89 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .konbini-sim__step p { max-width: 430px; margin: 0; color: var(--moji-muted); font-size: 13px; line-height: 1.5; }
 .konbini-sim__step .hiragana-quiz__input { width: min(100%, 320px); }
 
-/* PROMPT-9 Bagian 2 — Mesin Sensei (papan tulis). Modal-style overlay,
-   module-agnostic; only the segments fed into it change per caller. */
-.sensei-board { max-width: 760px; margin: 0 auto; display: grid; gap: 18px; padding: 28px; border: 1px solid var(--moji-line); border-radius: var(--moji-radius-2xl); background: var(--moji-white); }
-.sensei-board__stage { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: start; gap: 22px; }
-.sensei-board__illustration { width: 140px; height: auto; }
-.sensei-board__board { min-width: 0; display: grid; gap: 14px; padding: 20px 22px; border-radius: 16px; background: var(--moji-cream); }
-.sensei-board__text { margin: 0; color: var(--moji-ink); font-size: 15px; line-height: 1.6; }
-.sensei-board__narration { display: flex; align-items: center; gap: 10px; color: var(--moji-muted); font-size: 11px; font-weight: 700; }
+/* PROMPT-9/10 — Mesin Sensei (papan tulis). Modal-style overlay,
+   module-agnostic; only the segments fed into it change per caller.
+   PROMPT-10 Bagian 2: concrete target sizes (desktop >=1280px) — this
+   file previously read like a notification card, not a lesson. Numbers
+   below are the ones specified in the work order, not eyeballed. */
+.sensei-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(36,30,24,.55); overflow-y: auto; }
+.sensei-overlay__panel { width: min(88vw, 1440px); min-width: min(1280px, 92vw); max-height: calc(100vh - 40px); overflow-y: auto; }
+
+.sensei-board {
+  width: 100%; min-height: max(680px, min(85vh, 860px)); margin: 0 auto; display: flex; flex-direction: column; gap: 40px;
+  padding: 40px; border-radius: 28px; background: var(--moji-white);
+  /* "Papan tulis" surface, not a plain white card: a faint frame plus a
+     subtle inner vignette so it reads as a distinct surface from the
+     page behind it, without tipping into a cartoon chalkboard. */
+  border: 1px solid var(--moji-line);
+  box-shadow: 0 1px 0 #fff inset, 0 30px 60px -20px rgba(36,30,24,.25);
+  background-image: radial-gradient(120% 140% at 15% 0%, #fffdfa 0%, var(--moji-white) 55%);
+}
+.sensei-board__stage { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(300px, 34%) minmax(0, 1fr); align-items: end; gap: 32px; }
+.sensei-board__illustration { width: 100%; max-width: 420px; min-height: 420px; height: auto; object-fit: contain; object-position: bottom center; justify-self: center; align-self: end; filter: drop-shadow(0 18px 24px rgba(36,30,24,.12)); }
+.sensei-board__board {
+  min-width: 62%; height: 100%; display: flex; flex-direction: column; gap: 24px; justify-content: center;
+  padding: 36px 40px; border-radius: 22px; background: var(--moji-cream);
+  border: 1px solid #ece6da;
+  box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgba(36,30,24,.04);
+}
+.sensei-board__text { margin: 0; color: var(--moji-ink); font-size: 27px; line-height: 1.5; font-weight: 600; }
+/* "Ditulis" bukan "dicetak" — teks masuk dengan fade+geser halus tiap
+   ganti segmen, bukan langsung utuh. Halus, bukan mengetik huruf demi
+   huruf (itu akan terasa lebih seperti gimmick daripada papan tulis). */
+.sensei-board__text--written { animation: sensei-write-in .42s cubic-bezier(.16,1,.3,1) both; }
+@keyframes sensei-write-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sensei-board__narration { display: flex; align-items: center; gap: 14px; }
 .sensei-board__visual:empty { display: none; }
-.sensei-board__glyph { display: grid; justify-items: center; gap: 4px; padding: 10px 0; }
+.sensei-board__glyph { display: grid; justify-items: center; gap: 8px; padding: 8px 0; }
 .sensei-board__glyph span { color: var(--moji-accent); font: 700 84px/1 var(--moji-font-jp); }
-.sensei-board__glyph small { color: var(--moji-faint); font-size: 11px; }
+.sensei-board__glyph small { color: var(--moji-faint); font-size: 17px; }
 .sensei-board__table { width: 100%; border-collapse: collapse; }
-.sensei-board__table th, .sensei-board__table td { padding: 8px 10px; border-bottom: 1px solid var(--moji-line); text-align: left; font-size: 12.5px; color: var(--moji-ink); }
-.sensei-board__table th { color: var(--moji-faint); font-size: 10px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
-.sensei-board__compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-.sensei-board__compare-item { display: grid; gap: 4px; padding: 12px; border-radius: 12px; background: #fff; border: 1px solid var(--moji-line); text-align: center; }
-.sensei-board__compare-item b { color: var(--moji-accent); font-size: 13px; }
-.sensei-board__compare-example { color: var(--moji-ink); font: 700 22px/1.2 var(--moji-font-jp); }
-.sensei-board__compare-item small { color: var(--moji-faint); font-size: 10px; }
-.sensei-board__writing-loading { padding: 30px; text-align: center; color: var(--moji-faint); font-size: 12px; }
-.sensei-board__controls { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-.sensei-board__progress { color: var(--moji-faint); font-size: 10px; font-weight: 900; letter-spacing: .05em; }
-.sensei-board__actions { display: flex; gap: 10px; }
-.sensei-board__actions .secondary-button, .sensei-board__actions .primary-button { width: auto; margin: 0; }
+.sensei-board__table th, .sensei-board__table td { padding: 12px 14px; border-bottom: 1px solid var(--moji-line); text-align: left; font-size: 18px; color: var(--moji-ink); }
+.sensei-board__table th { color: var(--moji-faint); font-size: 13px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+.sensei-board__compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.sensei-board__compare-item { display: grid; gap: 8px; padding: 18px; border-radius: 14px; background: #fff; border: 1px solid var(--moji-line); text-align: center; }
+.sensei-board__compare-item b { color: var(--moji-accent); font-size: 17px; }
+.sensei-board__compare-example { color: var(--moji-ink); font: 700 30px/1.2 var(--moji-font-jp); }
+.sensei-board__compare-item small { color: var(--moji-faint); font-size: 14px; }
+.sensei-board__writing-loading { padding: 30px; text-align: center; color: var(--moji-faint); font-size: 15px; }
+
+.sensei-board__start-audio, .sensei-board__narration-toggle, .sensei-board__replay {
+  height: 52px; padding: 0 22px; border-radius: 999px; border: 1px solid var(--moji-line);
+  background: #fff; color: var(--moji-ink); font-size: 15px; font-weight: 700; white-space: nowrap;
+}
+.sensei-board__start-audio { border-color: var(--moji-accent); color: var(--moji-accent); background: var(--moji-accent-soft-bg); }
+.sensei-board__narration-toggle[aria-pressed="true"] { color: var(--moji-faint); }
+.sensei-board__replay { color: var(--moji-muted); }
+
+.sensei-board__controls { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.sensei-board__dots { display: flex; align-items: center; gap: 10px; }
+.sensei-board__dots span { width: 10px; height: 10px; border-radius: 999px; background: var(--moji-line); transition: background .2s ease, transform .2s ease; }
+.sensei-board__dots span.is-active { background: var(--moji-accent); transform: scale(1.3); }
+.sensei-board__dots span.is-done { background: #e5b9a9; }
+.sensei-board__dots small { margin-left: 6px; color: var(--moji-faint); font-size: 13px; font-weight: 800; }
+.sensei-board__actions { display: flex; gap: 14px; }
+.sensei-board__actions .secondary-button, .sensei-board__actions .primary-button { width: auto; height: 52px; padding: 0 28px; margin: 0; font-size: 15px; }
 .sensei-board__reopen { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 8px 14px; border: 1px solid var(--moji-line); border-radius: 999px; color: var(--moji-muted); background: #fff; font-size: 11px; font-weight: 700; }
 
-@media (max-width: 680px) {
-  .sensei-board { padding: 18px; }
-  .sensei-board__stage { grid-template-columns: 1fr; justify-items: center; text-align: center; }
-  .sensei-board__illustration { width: 96px; }
+@media (max-width: 767px) {
+  .sensei-overlay { padding: 0; }
+  .sensei-overlay__panel { width: 100vw; min-width: 0; max-height: 100vh; height: 100vh; }
+  .sensei-board { width: 100vw; height: 100vh; min-height: 100vh; border-radius: 0; padding: 20px 16px; gap: 20px; }
+  .sensei-board__stage { grid-template-columns: 1fr; grid-template-rows: auto 1fr; align-items: stretch; gap: 16px; min-height: 0; }
+  .sensei-board__illustration { max-width: 220px; min-height: 0; max-height: 220px; justify-self: center; }
+  .sensei-board__board { min-width: 0; height: auto; flex: 1 1 auto; padding: 22px 20px; gap: 18px; overflow-y: auto; }
+  .sensei-board__text { font-size: 21px; }
+  .sensei-board__glyph span { font-size: 64px; }
+  .sensei-board__compare-example { font-size: 24px; }
+  .sensei-board__actions { width: 100%; }
+  .sensei-board__actions .secondary-button, .sensei-board__actions .primary-button { flex: 1 1 0; }
+  .sensei-board__controls { flex-direction: column-reverse; align-items: stretch; gap: 14px; }
 }
 
-.sensei-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(36,30,24,.45); overflow-y: auto; }
-.sensei-overlay__panel { width: 100%; max-height: calc(100vh - 40px); overflow-y: auto; }
 .hiragana-lab__sensei-writing { display: flex; align-items: center; gap: 12px; justify-content: center; margin: 4px 0; }
 
 @media (max-width: 680px) {

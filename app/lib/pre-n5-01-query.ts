@@ -259,6 +259,7 @@ export const getPreN5ModuleOverview = cache(
         .map((stage) => stage.code),
     );
 
+    const devUnlock = await isDevUnlockAllActive();
     const stages = (stageRows ?? []).map((stage): PreN5StageSummary => {
       const progress = progressByStageId.get(stage.id);
       const progressState = asObject(progress?.state);
@@ -283,7 +284,6 @@ export const getPreN5ModuleOverview = cache(
         delayedGateHours != null
           ? evaluateDelayedGateEligibility(previousFirstCompletedAt, new Date(), delayedGateHours)
           : null;
-      const devUnlock = isDevUnlockAllActive();
       const locked =
         !devUnlock &&
         (prerequisites.some((code) => !completedStageCodes.has(code)) ||

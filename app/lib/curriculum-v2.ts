@@ -108,7 +108,7 @@ export const getCurriculumV2ModuleSummaries = cache(
     );
     const codeById = new Map(moduleRows.map((module) => [module.id, module.code]));
 
-    const devUnlock = isDevUnlockAllActive();
+    const devUnlock = await isDevUnlockAllActive();
     return moduleRows.map((module): CurriculumModuleSummary => {
       const prerequisiteIds = prerequisiteIdsByModule.get(module.id) ?? [];
       const missingPrerequisites = prerequisiteIds.filter(
@@ -176,7 +176,7 @@ export const getCurriculumV2ModuleSummaries = cache(
 // prerequisite modules -> locked, unless dev-unlock is active) so the
 // card lock and the route lock finally agree with each other.
 export const isModuleLockedByPrerequisites = cache(async (moduleCode: string): Promise<boolean> => {
-  if (isDevUnlockAllActive()) return false;
+  if (await isDevUnlockAllActive()) return false;
   const supabase = await createClient();
 
   const { data: moduleRow } = await supabase

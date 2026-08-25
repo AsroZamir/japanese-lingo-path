@@ -22,7 +22,7 @@ type SegmentSeed = {
   orderIndex: number;
   boardText: string;
   visualAction: SenseiVisualAction;
-  pose: "neutral" | "pointing" | "smiling" | "thinking";
+  pose: "netral" | "menunjuk" | "menjelaskan" | "memberi-semangat" | "berpikir" | "menulis" | "merayakan" | "prihatin-mendukung";
   narrationText: string;
 };
 
@@ -34,7 +34,7 @@ const MODULE_INTRO: SegmentSeed[] = [
     boardText:
       "Selamat datang. Hari ini kita mulai dari fondasi paling dasar bahasa Jepang: cara tulisannya bekerja.",
     visualAction: { kind: "text" },
-    pose: "smiling",
+    pose: "memberi-semangat",
     narrationText:
       "Selamat datang. Sebelum kita mulai menghafal huruf, sensei mau menjelaskan dulu gambaran besarnya, supaya kamu tahu sedang menuju ke mana.",
   },
@@ -51,7 +51,7 @@ const MODULE_INTRO: SegmentSeed[] = [
         { label: "Kanji", example: "漢字", note: "dari Tiongkok, ribuan, satu huruf = satu makna" },
       ],
     },
-    pose: "pointing",
+    pose: "menunjuk",
     narrationText:
       "Bahasa Jepang punya tiga sistem tulisan, dan ketiganya dipakai bersamaan dalam satu kalimat, bukan dipilih salah satu. Hiragana untuk kata asli Jepang dan bagian gramatikal. Katakana bentuknya lebih bersudut, dipakai untuk kata serapan dari bahasa asing. Kanji berasal dari Tiongkok, jumlahnya ribuan, dan satu huruf membawa satu makna sendiri. Untuk kanji, tidak usah takut dulu — itu jauh di depan, bukan hari ini.",
   },
@@ -61,7 +61,7 @@ const MODULE_INTRO: SegmentSeed[] = [
     orderIndex: 2,
     boardText: "Hari ini fokus kita hanya satu: hiragana. 46 huruf dasar.",
     visualAction: { kind: "glyph", char: "あ", label: "salah satu dari 46 huruf hiragana dasar" },
-    pose: "neutral",
+    pose: "netral",
     narrationText:
       "Hari ini kita fokus hanya pada hiragana — 46 huruf dasar. Setelah modul ini selesai, kamu akan bisa membaca menu makanan, papan nama, dan tulisan sehari-hari yang pakai hiragana.",
   },
@@ -77,7 +77,7 @@ const MODULE_INTRO: SegmentSeed[] = [
         { label: "Hiragana", example: "か", note: "satu huruf, langsung berbunyi \"ka\"" },
       ],
     },
-    pose: "pointing",
+    pose: "menunjuk",
     narrationText:
       "Ini beda penting dari alfabet Latin yang kamu pakai sehari-hari. Di alfabet Latin, huruf k dan a digabung dulu untuk membentuk bunyi \"ka\". Di hiragana, か itu SATU huruf tunggal, dan langsung berbunyi \"ka\" — bukan gabungan dua huruf terpisah. Satu huruf hiragana mewakili satu suku kata utuh.",
   },
@@ -97,7 +97,7 @@ const MODULE_INTRO: SegmentSeed[] = [
         ["お", "o", "seperti \"o\" pada kata \"oke\""],
       ],
     },
-    pose: "smiling",
+    pose: "memberi-semangat",
     narrationText:
       "Sekarang kabar baiknya. Pembelajar berbahasa Indonesia punya keuntungan yang tidak dimiliki pembelajar berbahasa Inggris di titik ini: vokal bahasa Jepang — a, i, u, e, o — identik dengan vokal bahasa Indonesia. Bukan mirip, tapi benar-benar sama persis dengan cara kamu mengucapkannya sehari-hari. Konsonan seperti k, s, t, n, h, m, y, r, w juga sama. Yang beda supaya tidak salah kira: つ dibaca \"tsu\", ふ ada di antara \"f\" dan \"h\", dan り bukan \"r\" Indonesia yang digulung di lidah.",
   },
@@ -107,7 +107,7 @@ const MODULE_INTRO: SegmentSeed[] = [
     orderIndex: 5,
     boardText: "46 huruf dibagi 5 kelompok kecil. Belajar sedikit, lalu uji semua yang sudah dipelajari.",
     visualAction: { kind: "text" },
-    pose: "smiling",
+    pose: "memberi-semangat",
     narrationText:
       "Supaya tidak berat, 46 huruf ini akan dibagi jadi 5 kelompok kecil — tidak dihafal sekaligus. Setiap kelompok, kita belajar sedikit huruf baru, lalu uji semua yang sudah dipelajari sejauh ini. Siap? Mari kita mulai.",
   },
@@ -125,7 +125,7 @@ const PHASE_INTRO_BY_STAGE: Record<string, SegmentSeed[]> = {
         columns: ["Baris あ", "Baris か"],
         rows: [["あ i u え お", "か き く け こ"]],
       },
-      pose: "pointing",
+      pose: "menunjuk",
       narrationText:
         "Kelompok pertama: baris あ, yaitu lima vokal murni yang sudah kamu kenal bunyinya, ditambah baris か. Sepuluh huruf baru. Setelah kelompok ini, kamu sudah bisa membaca dan mengucapkan sepuluh huruf hiragana pertamamu.",
     },
@@ -137,7 +137,7 @@ const PHASE_INTRO_BY_STAGE: Record<string, SegmentSeed[]> = {
       orderIndex: 0,
       boardText: "Kelompok 2: baris さ dan baris た. 10 huruf baru, total 20.",
       visualAction: { kind: "text" },
-      pose: "pointing",
+      pose: "menunjuk",
       narrationText:
         "Kelompok dua: baris さ dan baris た, sepuluh huruf baru lagi. Setelah ini totalmu jadi 20 huruf. Ujiannya akan mencampur huruf baru dengan huruf dari kelompok satu — supaya tidak lupa yang lama.",
     },
@@ -149,7 +149,7 @@ const PHASE_INTRO_BY_STAGE: Record<string, SegmentSeed[]> = {
       orderIndex: 0,
       boardText: "Kelompok 3: baris な dan baris は. 10 huruf baru, total 30.",
       visualAction: { kind: "text" },
-      pose: "pointing",
+      pose: "menunjuk",
       narrationText:
         "Kelompok tiga: baris な dan baris は, sepuluh huruf baru. Total jadi 30 huruf — lebih dari setengah jalan.",
     },
@@ -161,7 +161,7 @@ const PHASE_INTRO_BY_STAGE: Record<string, SegmentSeed[]> = {
       orderIndex: 0,
       boardText: "Kelompok 4: baris ま, baris や, dan sebagian baris ら. 10 huruf baru, total 40.",
       visualAction: { kind: "text" },
-      pose: "pointing",
+      pose: "menunjuk",
       narrationText:
         "Kelompok empat: baris ま, baris や, dan dua huruf pertama baris ら. Sepuluh huruf baru, total jadi 40. Tinggal sedikit lagi.",
     },
@@ -173,7 +173,7 @@ const PHASE_INTRO_BY_STAGE: Record<string, SegmentSeed[]> = {
       orderIndex: 0,
       boardText: "Kelompok 5, kelompok terakhir: る れ ろ わ を ん. 6 huruf baru, total 46 — lengkap.",
       visualAction: { kind: "text" },
-      pose: "smiling",
+      pose: "memberi-semangat",
       narrationText:
         "Kelompok terakhir: enam huruf — る, れ, ろ, わ, を, dan ん. Setelah ini kamu punya bank lengkap 46 huruf hiragana dasar, siap untuk ujian akhir gabungan.",
     },
@@ -195,7 +195,7 @@ const CONCEPT_MOMENTS: Record<string, SegmentSeed[]> = {
           { label: "は → ぱ", example: "ぱ", note: "\"ha\" jadi \"pa\"" },
         ],
       },
-      pose: "thinking",
+      pose: "berpikir",
       narrationText:
         "Sekarang ada konsep baru. Dua tanda kecil bisa ditambahkan di kanan atas sebuah huruf untuk mengubah bunyinya. Tanda dakuten, dua garis miring kecil, mengubah か menjadi が — dari \"ka\" jadi \"ga\". Huruf yang sama juga bisa berubah lagi dengan tanda handakuten, sebuah lingkaran kecil: は menjadi ぱ, dari \"ha\" jadi \"pa\". Bentuk dasar hurufnya tidak berubah — hanya tandanya yang ditambahkan.",
     },
@@ -214,7 +214,7 @@ const CONCEPT_MOMENTS: Record<string, SegmentSeed[]> = {
           { label: "きょ", example: "きょ", note: "\"kyo\", bukan \"ki-yo\"" },
         ],
       },
-      pose: "thinking",
+      pose: "berpikir",
       narrationText:
         "Konsep baru lagi: youon. Kamu akan melihat huruf besar diikuti huruf kecil ゃ, ゅ, atau ょ. Contohnya きゃ. Ini BUKAN dua suku kata terpisah \"ki\" lalu \"ya\" — keduanya dibaca sebagai satu suku kata gabungan: \"kya\". Huruf keduanya memang ditulis lebih kecil supaya kamu tahu ini bukan huruf berdiri sendiri.",
     },
@@ -356,7 +356,7 @@ async function main() {
         orderIndex: 0,
         boardText: "Perhatikan urutan dan arah goresannya.",
         visualAction: { kind: "write_char" },
-        senseiPose: "pointing",
+        senseiPose: "menunjuk",
         narrationText,
         contentVersion: "v1",
       });

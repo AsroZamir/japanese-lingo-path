@@ -1,0 +1,1 @@
+ALTER TABLE "sensei_segments" ALTER COLUMN "sensei_pose" SET DEFAULT 'netral';

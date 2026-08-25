@@ -523,7 +523,7 @@ function RetrievalStep({
             <b>Hint 3 - Sensei Menulis</b>
             <p>Pelajari kembali urutannya. Hasil dengan bantuan tidak dihitung sebagai penguasaan.</p>
             <div className="hiragana-lab__sensei-writing">
-              <img src="/sensei/sensei-pointing.svg" alt="" width={64} height={83} />
+              <img src="/sensei/sensei-menunjuk.webp" alt="" width={64} height={83} />
               {item.senseiNarrationUrl && (
                 <div className="sensei-board__narration">
                   <AudioButton url={item.senseiNarrationUrl} />
