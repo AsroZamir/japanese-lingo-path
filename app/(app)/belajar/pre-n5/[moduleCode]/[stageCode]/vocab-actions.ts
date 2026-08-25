@@ -30,6 +30,7 @@ import {
 // its existing behavior or stored data changes.
 const VOCAB_PHASE_PREFIX: Record<string, string> = {
   "PRE-N5.04": "V04",
+  "PRE-N5.05": "V05",
 };
 function resolveVocabPhaseCode(moduleCode: string, stageCode: string): string {
   const prefix = VOCAB_PHASE_PREFIX[moduleCode];

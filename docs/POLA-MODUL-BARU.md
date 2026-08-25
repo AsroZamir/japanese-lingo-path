@@ -278,7 +278,31 @@ Dibuktikan lewat pemakaian TANPA PERUBAHAN, bukan cuma diklaim:
   attempt PRE-N5.03 F1 tetap `phase_code='F1'`, tidak ada percampuran.
   **Modul vocab-engine ketiga (05 kosakata / 10 listening) tinggal
   tambah satu baris ke `VOCAB_PHASE_PREFIX`, bukan menulis ulang
-  mekanismenya.**
+  mekanismenya.** **Sudah dilakukan (PROMPT-11, 2026-08-25)** — PRE-N5.05
+  ditambahkan sebagai `"PRE-N5.05": "V05"`, diverifikasi langsung sama
+  seperti V04: attempt PRE-N5.05 F1 tersimpan sebagai `phase_code='V05_F1'`.
+- ~~`/progres` dan `/ulangi` tidak pernah membaca `user_vocab_mastery`
+  sama sekali~~ **Ditemukan dan diselesaikan (PROMPT-11, 2026-08-25)** —
+  grep sebelum sesi ini mengonfirmasi nol referensi ke
+  `user_vocab_mastery`/`vocab_items` di `review-query.ts`,
+  `mastery-tier.ts`, atau `/progres`, artinya mastery kosakata Modul 3
+  dan 4 tidak pernah tampil di mana pun sejak dibangun. Ditambahkan
+  `app/lib/vocab-mastery-query.ts` (`getVocabMasteryMap`,
+  `getVocabReviewQueue`) plus `VocabMasteryList.tsx` di `/progres` dan
+  satu seksi antrean di `/ulangi` — recognition dan production
+  ditampilkan sebagai DUA badge terpisah per kata, bukan digabung
+  (V2.1 §6.3). **Penyederhanaan yang disengaja**: tidak ada tingkat
+  "transferable" untuk kosakata (butuh sinyal lolos RETENTION tanpa
+  bantuan seperti kana punya; belum dibangun ulang di sini) — plafonnya
+  "durable". `/ulangi`-nya juga baru daftar antrean, BUKAN sesi review
+  interaktif otomatis-dinilai seperti kana punya (`ReviewRunner.tsx`
+  tidak diperluas ke vocab) — kalau ada sesi depan yang butuh itu, bangun
+  `VocabReviewRunner` terpisah, jangan paksa masuk ke `ReviewRunner`
+  yang bentuk soalnya kana-spesifik. Diverifikasi lewat
+  `recordVocabAttempt` sungguhan (server action asli, bukan tiruan):
+  kata くも, skill `production`, langsung muncul di `/progres` sebagai
+  `production: familiar` sementara `recognition` tetap `new` — buktinya
+  kedua arah benar-benar terpisah.
 - **Simulasi konbini masih sederhana** (5 transaksi acak dari kategori
   `price`, uang dibayar dipilih dari [1000,5000,10000] terdekat ke atas)
   — belum ada variasi skenario (mis. minta kembalian dalam pecahan

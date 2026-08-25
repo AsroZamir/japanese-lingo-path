@@ -77,6 +77,13 @@ export const vocabItems = pgTable(
     // recognition. Second speaker's audio, when generated; null
     // otherwise (single-speaker modules like PRE-N5.01-03 never fill this).
     audioUrlSpeaker2: text("audio_url_speaker_2"),
+    // PROMPT-11 Bagian 5 (PRE-N5.05) — V2.1 §6.3/7 explicit requirement:
+    // "setiap kata wajib punya satu frasa pasangan (collocation)." Null
+    // for modules where a bare item already IS the whole teaching unit
+    // (numbers, greetings) — this is specifically for vocabulary items
+    // that are near-useless alone (水 vs 水を飲む).
+    collocation: text("collocation"),
+    collocationMeaningId: text("collocation_meaning_id"),
     orderIndex: integer("order_index").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

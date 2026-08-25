@@ -28,6 +28,11 @@ export type VocabItem = {
   // modules (PRE-N5.01-03). V2.1 §6.7 asks for cross-speaker recognition
   // practice specifically for the Interaction/Pragmatics Engine.
   audioUrlSpeaker2: string | null;
+  // PROMPT-11 Bagian 5 (PRE-N5.05) — V2.1's "every word needs one paired
+  // phrase" requirement. Null for modules that don't author one (numbers,
+  // greetings — the item itself already IS the usable unit there).
+  collocation: string | null;
+  collocationMeaningId: string | null;
   mastery: { attempts: number; accuracyPercent: number; dueAt: string | null };
 };
 
@@ -75,7 +80,7 @@ export const getVocabStageBundle = cache(
     const { data: itemRows, error: itemError } = await supabase
       .from("vocab_items")
       .select(
-        "id, category, term_kana, reading, meaning_id, numeric_value, is_irregular, irregular_of, register, register_of, audio_url, audio_url_speaker_2, order_index",
+        "id, category, term_kana, reading, meaning_id, numeric_value, is_irregular, irregular_of, register, register_of, audio_url, audio_url_speaker_2, collocation, collocation_meaning_id, order_index",
       )
       .eq("module_id", moduleRow.data.id)
       .in("category", categories)
@@ -120,6 +125,8 @@ export const getVocabStageBundle = cache(
         registerOfId: row.register_of,
         audioUrl: row.audio_url,
         audioUrlSpeaker2: row.audio_url_speaker_2,
+        collocation: row.collocation,
+        collocationMeaningId: row.collocation_meaning_id,
         mastery: {
           attempts: masteryRaw.attempts,
           accuracyPercent: masteryRaw.attempts > 0 ? Math.round((masteryRaw.correct / masteryRaw.attempts) * 100) : 0,

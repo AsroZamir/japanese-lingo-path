@@ -1,6 +1,14 @@
 import { PageHeader } from "../_components/PageHeader";
 import { getHiraganaMasteryMap } from "@/app/lib/mastery-map-query";
+import { getVocabMasteryMap } from "@/app/lib/vocab-mastery-query";
 import { MasteryMap } from "./MasteryMap";
+import { VocabMasteryList } from "./VocabMasteryList";
+
+const VOCAB_MODULES: { code: string; title: string }[] = [
+  { code: "PRE-N5.03", title: "Angka, Waktu & Counter" },
+  { code: "PRE-N5.04", title: "Sapaan & Ungkapan Dasar" },
+  { code: "PRE-N5.05", title: "Kosakata Dasar" },
+];
 
 export const dynamic = "force-dynamic";
 
@@ -12,9 +20,10 @@ export const dynamic = "force-dynamic";
 // numbers next to it. PROMPT-7 Bagian 7.4 adds the katakana map
 // alongside it once PRE-N5.02 exists, instead of leaving it hiragana-only.
 export default async function ProgressPage() {
-  const [hiraganaEntries, katakanaEntries] = await Promise.all([
+  const [hiraganaEntries, katakanaEntries, vocabModuleEntries] = await Promise.all([
     getHiraganaMasteryMap("hiragana"),
     getHiraganaMasteryMap("katakana"),
+    Promise.all(VOCAB_MODULES.map((mod) => getVocabMasteryMap(mod.code))),
   ]);
   const katakanaStarted = katakanaEntries.some((entry) => entry.attempts > 0);
 
@@ -33,6 +42,14 @@ export default async function ProgressPage() {
           <MasteryMap entries={katakanaEntries} />
         </>
       )}
+
+      {VOCAB_MODULES.map((mod, index) => {
+        const entries = vocabModuleEntries[index];
+        if (entries.length === 0 || !entries.some((entry) => entry.recognition.attempts > 0 || entry.production.attempts > 0)) {
+          return null;
+        }
+        return <VocabMasteryList key={mod.code} moduleTitle={mod.title} entries={entries} />;
+      })}
     </>
   );
 }

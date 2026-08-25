@@ -1932,6 +1932,24 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .mastery-map__detail-body dl { display: grid; gap: 4px; margin: 0; }
 .mastery-map__detail-body dl > div { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
 .mastery-map__detail-body dt { color: var(--moji-faint); }
+
+.vocab-mastery-list { margin-top: 8px; }
+.vocab-mastery-list__category { border: 1px solid var(--moji-line); border-radius: 13px; margin-bottom: 8px; overflow: hidden; background: var(--moji-white); }
+.vocab-mastery-list__category-header { display: flex; justify-content: space-between; width: 100%; padding: 12px 16px; text-align: left; color: var(--moji-ink); font-weight: 700; text-transform: capitalize; }
+.vocab-mastery-list__category-header small { color: var(--moji-muted); font-weight: 400; }
+.vocab-mastery-list__rows { border-top: 1px solid var(--moji-line); }
+.vocab-mastery-list__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--moji-line); }
+.vocab-mastery-list__row:last-child { border-bottom: none; }
+.vocab-mastery-list__word { display: flex; flex-direction: column; gap: 2px; }
+.vocab-mastery-list__word strong { font: 700 17px/1.2 var(--moji-font-jp); color: var(--moji-ink); }
+.vocab-mastery-list__word span { font-size: 11px; color: var(--moji-muted); }
+.vocab-mastery-list__badges { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.vocab-mastery-list__badge { padding: 3px 9px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: .02em; text-align: center; }
+.vocab-mastery-list__badge.is-new { background: var(--moji-line); color: var(--moji-faint); }
+.vocab-mastery-list__badge.is-familiar { background: var(--moji-accent-soft-bg); color: var(--moji-accent); }
+.vocab-mastery-list__badge.is-retrievable { background: #ffe6a8; color: #7a5900; }
+.vocab-mastery-list__badge.is-durable { background: var(--moji-success-bg); color: var(--moji-success); }
+.vocab-mastery-list__badge.is-transferable { background: #06295d; color: #fff; }
 .mastery-map__detail-body dd { margin: 0; color: var(--moji-ink); font-weight: 700; text-align: right; }
 
 /* PROMPT-7 Bagian 4 — /latihan speed drill */
@@ -2277,6 +2295,9 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .vocab-lab__choices button.is-wrong { border-color: var(--moji-accent); background: var(--moji-error-bg); }
 .vocab-lab__step--contrast { padding-top: 8px; }
 .vocab-lab__contrast-badge { padding: 5px 10px; border-radius: 999px; color: #a0442e; background: var(--moji-error-bg); font-size: 9px; font-weight: 900; letter-spacing: .04em; }
+.vocab-lab__collocation { display: flex; flex-direction: column; gap: 3px; padding: 12px 16px; border: 1px dashed var(--moji-line); border-radius: 13px; background: var(--moji-cream); }
+.vocab-lab__collocation span { font: 700 20px/1.3 var(--moji-font-jp); color: var(--moji-ink); }
+.vocab-lab__collocation small { font-size: 12px; color: var(--moji-muted); }
 
 .konbini-sim { max-width: 620px; min-height: 420px; display: flex; flex-direction: column; margin: 0 auto; padding: 25px; border: 1px solid var(--moji-line); border-radius: var(--moji-radius-2xl); background: var(--moji-white); }
 .konbini-sim__header { color: var(--moji-faint); font-size: 11px; font-weight: 800; }

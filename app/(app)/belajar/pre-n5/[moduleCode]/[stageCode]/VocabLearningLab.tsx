@@ -109,6 +109,12 @@ function ListenStep({
           );
         })}
       </div>
+      {checked && item.collocation && (
+        <div className="vocab-lab__collocation">
+          <span>{item.collocation}</span>
+          <small>{item.collocationMeaningId}</small>
+        </div>
+      )}
       <button
         type="button"
         className="primary-button"
@@ -158,6 +164,12 @@ function BuildStep({
       {checked && (
         <div className={isCorrect ? "hiragana-quiz__feedback is-correct" : "hiragana-quiz__feedback is-wrong"}>
           {isCorrect ? "Benar." : "Bacaan yang benar: " + item.reading + "."}
+        </div>
+      )}
+      {checked && item.collocation && (
+        <div className="vocab-lab__collocation">
+          <span>{item.collocation}</span>
+          <small>{item.collocationMeaningId}</small>
         </div>
       )}
       <button

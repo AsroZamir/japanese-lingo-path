@@ -7,17 +7,21 @@ import {
   getHiraganaDistractorPool,
   getAnyPreN5StageId,
 } from "@/app/lib/review-query";
+import { getVocabReviewQueue } from "@/app/lib/vocab-mastery-query";
 import { buildReviewQuestions } from "./build-questions";
 import { ReviewRunner } from "./ReviewRunner";
+
+const SKILL_LABEL: Record<string, string> = { recognition: "Kenali", production: "Produksi" };
 
 export const dynamic = "force-dynamic";
 
 export default async function ReviewPage() {
-  const [queue, counts, distractorPool, stageId] = await Promise.all([
+  const [queue, counts, distractorPool, stageId, vocabQueue] = await Promise.all([
     getReviewQueue(),
     getReviewCounts(),
     getHiraganaDistractorPool(),
     getAnyPreN5StageId(),
+    getVocabReviewQueue(),
   ]);
 
   const questions = stageId != null ? buildReviewQuestions(queue, distractorPool) : [];
@@ -59,6 +63,31 @@ export default async function ReviewPage() {
               </div>
               <span>{isTopUp ? "Latihan tambahan" : "Jatuh tempo"}</span>
               <time>{dueAt ? new Date(dueAt).toLocaleString("id-ID") : "—"}</time>
+            </div>
+          ))}
+        </section>
+      )}
+      {vocabQueue.length > 0 && (
+        <section className="table-card">
+          <div className="table-title">
+            <div>
+              <span className="card-kicker dark">SESI INI</span>
+              <h3>Antrean review kosakata ({vocabQueue.length})</h3>
+            </div>
+          </div>
+          <p style={{ fontSize: "12px", color: "var(--moji-muted)", margin: "0 0 12px" }}>
+            Kenal (mengenali arti) dan Produksi (menghasilkan sendiri) dihitung dan dijadwalkan terpisah — satu kata
+            bisa jatuh tempo di satu arah saja.
+          </p>
+          {vocabQueue.map((entry) => (
+            <div className="review-item" key={entry.id + ":" + entry.skill}>
+              <div className="review-symbol">{entry.termKana}</div>
+              <div>
+                <strong>{entry.termKana}</strong>
+                <small>{entry.reading} — {entry.meaningId}</small>
+              </div>
+              <span>{SKILL_LABEL[entry.skill] ?? entry.skill}</span>
+              <time>{new Date(entry.dueAt).toLocaleString("id-ID")}</time>
             </div>
           ))}
         </section>

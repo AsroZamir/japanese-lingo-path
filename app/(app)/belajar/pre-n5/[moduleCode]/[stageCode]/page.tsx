@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 // docs/POLA-MODUL-BARU.md Bagian 6. The outer page chrome (back link,
 // locked/delayed-gate handling) stays shared since both bundle shapes
 // carry the same PreN5StageSummary `stage` field from getPreN5ModuleOverview.
-const VOCAB_ENGINE_MODULES = ["PRE-N5.03", "PRE-N5.04"];
+const VOCAB_ENGINE_MODULES = ["PRE-N5.03", "PRE-N5.04", "PRE-N5.05"];
 
 export default async function HiraganaStagePage({
   params,
@@ -25,7 +25,7 @@ export default async function HiraganaStagePage({
   params: Promise<{ moduleCode: string; stageCode: string }>;
 }) {
   const { moduleCode, stageCode } = await params;
-  if (!["PRE-N5.01", "PRE-N5.02", "PRE-N5.03", "PRE-N5.04"].includes(moduleCode)) notFound();
+  if (!["PRE-N5.01", "PRE-N5.02", "PRE-N5.03", "PRE-N5.04", "PRE-N5.05"].includes(moduleCode)) notFound();
   if (await isModuleLockedByPrerequisites(moduleCode)) redirect("/belajar");
 
   const isVocabEngine = VOCAB_ENGINE_MODULES.includes(moduleCode);
