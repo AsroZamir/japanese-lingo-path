@@ -1,0 +1,1 @@
+ALTER TABLE "sensei_segments" ADD COLUMN "lip_sync_data" jsonb;

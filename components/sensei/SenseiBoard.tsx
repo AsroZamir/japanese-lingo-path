@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { SenseiSegmentRow } from "@/app/lib/sensei-query";
 import { SenseiWritingDemo } from "./SenseiWritingDemo";
+import { SenseiLayeredCharacter } from "./SenseiLayeredCharacter";
 
 // PROMPT-9/10 — the generic "papan tulis" presentation player.
 // Module-agnostic on purpose: takes whatever segments the caller fetched
@@ -102,15 +103,7 @@ export function SenseiBoard({
         <track kind="captions" />
       </audio>
       <div className="sensei-board__stage">
-        <img
-          key={segment.senseiPose}
-          className="sensei-board__illustration"
-          src={"/sensei/sensei-" + segment.senseiPose + ".webp"}
-          alt=""
-          width={420}
-          height={560}
-          loading="eager"
-        />
+        <SenseiLayeredCharacter pose={segment.senseiPose} audioRef={audioRef} lipSyncData={segment.lipSyncData} />
         <div className="sensei-board__board">
           <div className="sensei-board__visual">
             {segment.visualAction.kind === "glyph" && (

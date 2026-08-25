@@ -86,6 +86,14 @@ export const senseiSegments = pgTable(
     // shape, same split as lesson_content_blocks.narrationText/Url.
     narrationText: text("narration_text"),
     narrationUrl: text("narration_url"),
+    // PROMPT-11 Bagian 4 — lip sync foundation. { mouthCues: { start,
+    // end, value }[] } from Rhubarb Lip Sync (-r phonetic, JSON export),
+    // generated once per narration text — see scripts/generate-lipsync.ts.
+    // Null for every row today (no mouth-shape ART exists yet to drive
+    // with it — see SenseiLayeredCharacter.tsx's silent fallback); the
+    // column exists so generating this data doesn't require a later
+    // migration once real illustrated assets arrive.
+    lipSyncData: jsonb("lip_sync_data"),
     // V2.1 §10.1 single-source-of-truth fields: content_version so
     // authored copy can be revised without breaking old references, and
     // a lightweight review flag (not a full workflow) so unreviewed

@@ -2254,6 +2254,12 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
   .hiragana-morph__cue,
   .hiragana-morph__kana,
   .modul-card-link .modul-card { animation: none; transition: none; }
+  .sensei-board__illustration,
+  .sensei-board__text--written,
+  .sensei-board__narration,
+  .sensei-board__visual > *,
+  .sensei-board__table tbody tr,
+  .sensei-board__compare-item { animation: none; }
 }
 
 /* PROMPT-8 Bagian 4/6 — Vocabulary Engine (PRE-N5.03). Reuses
@@ -2284,27 +2290,57 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
    file previously read like a notification card, not a lesson. Numbers
    below are the ones specified in the work order, not eyeballed. */
 .sensei-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(36,30,24,.55); overflow-y: auto; }
-.sensei-overlay__panel { width: min(88vw, 1440px); min-width: min(1280px, 92vw); max-height: calc(100vh - 40px); overflow-y: auto; }
+.sensei-overlay__panel { width: min(88vw, 1440px); min-width: min(1280px, 92vw); max-height: calc(100dvh - 40px); overflow-y: auto; }
 
 .sensei-board {
-  width: 100%; min-height: max(680px, min(85vh, 860px)); margin: 0 auto; display: flex; flex-direction: column; gap: 40px;
+  position: relative; overflow: hidden;
+  width: 100%; min-height: max(680px, min(85dvh, 860px)); margin: 0 auto; display: flex; flex-direction: column; gap: 40px;
   padding: 40px; border-radius: 28px; background: var(--moji-white);
-  /* "Papan tulis" surface, not a plain white card: a faint frame plus a
-     subtle inner vignette so it reads as a distinct surface from the
-     page behind it, without tipping into a cartoon chalkboard. */
+  /* PROMPT-11 Bagian 3 — "papan tulis" surface, not a plain white card:
+     a layered shadow (tight+warm near shadow, soft+wide far shadow —
+     both brown-based, never neutral gray, which always reads cheap on
+     cream) so the board reads as standing in front of the page, not
+     glued to it. */
   border: 1px solid var(--moji-line);
-  box-shadow: 0 1px 0 #fff inset, 0 30px 60px -20px rgba(36,30,24,.25);
+  box-shadow:
+    0 1px 0 #fff inset,
+    0 2px 4px -1px rgba(94,58,34,.10),
+    0 10px 20px -8px rgba(94,58,34,.14),
+    0 34px 60px -20px rgba(60,36,20,.28);
   background-image: radial-gradient(120% 140% at 15% 0%, #fffdfa 0%, var(--moji-white) 55%);
 }
+/* Very faint grain so the surface doesn't read as an empty flat box —
+   an inline SVG turbulence filter, a few hundred bytes, zero extra
+   requests. Deliberately subtle: opacity .025, screen-blended so it
+   only lifts a hair off pure white/cream. */
+.sensei-board::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .035; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 .sensei-board__stage { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(300px, 34%) minmax(0, 1fr); align-items: end; gap: 32px; }
-.sensei-board__illustration { width: 100%; max-width: 420px; min-height: 420px; height: auto; object-fit: contain; object-position: bottom center; justify-self: center; align-self: end; filter: drop-shadow(0 18px 24px rgba(36,30,24,.12)); }
+/* PROMPT-11 Bagian 4 — wraps the body/mouth/eyes layers (see
+   SenseiLayeredCharacter.tsx); carries the grid-item sizing that used
+   to live on the <img> itself, now that the <img> has a wrapper. */
+.sensei-layered { position: relative; width: 100%; max-width: 420px; min-height: 420px; justify-self: center; align-self: end; }
+.sensei-board__illustration {
+  width: 100%; height: auto; object-fit: contain; object-position: bottom center;
+  filter: drop-shadow(0 18px 24px rgba(36,30,24,.12));
+  animation: sensei-pose-in .2s ease-out, sensei-breathe 4s ease-in-out .2s infinite, sensei-sway 6.4s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+.sensei-layered__mouth, .sensei-layered__eyes { position: absolute; pointer-events: none; }
+@keyframes sensei-pose-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sensei-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.015; } }
+@keyframes sensei-sway { 0%, 100% { translate: 0 0; } 50% { translate: 2px 0; } }
 .sensei-board__board {
   min-width: 62%; height: 100%; display: flex; flex-direction: column; gap: 24px; justify-content: center;
   padding: 36px 40px; border-radius: 22px; background: var(--moji-cream);
   border: 1px solid #ece6da;
   box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgba(36,30,24,.04);
 }
-.sensei-board__text { margin: 0; color: var(--moji-ink); font-size: 27px; line-height: 1.5; font-weight: 600; }
+.sensei-board__text {
+  margin: 0; color: var(--moji-ink); font-size: 28px; line-height: 1.48; font-weight: 700; letter-spacing: -.01em;
+}
 /* "Ditulis" bukan "dicetak" — teks masuk dengan fade+geser halus tiap
    ganti segmen, bukan langsung utuh. Halus, bukan mengetik huruf demi
    huruf (itu akan terasa lebih seperti gimmick daripada papan tulis). */
@@ -2314,27 +2350,67 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
   to { opacity: 1; transform: translateY(0); }
 }
 .sensei-board__narration { display: flex; align-items: center; gap: 14px; }
+.sensei-board__narration, .sensei-board__visual > * { animation: sensei-write-in .42s cubic-bezier(.16,1,.3,1) both; animation-delay: 130ms; }
 .sensei-board__visual:empty { display: none; }
-.sensei-board__glyph { display: grid; justify-items: center; gap: 8px; padding: 8px 0; }
+.sensei-board__glyph { display: grid; justify-items: center; gap: 10px; padding: 8px 0; }
 .sensei-board__glyph span { color: var(--moji-accent); font: 700 84px/1 var(--moji-font-jp); }
-.sensei-board__glyph small { color: var(--moji-faint); font-size: 17px; }
+.sensei-board__glyph small { color: var(--moji-faint); font-size: 13px; }
 .sensei-board__table { width: 100%; border-collapse: collapse; }
 .sensei-board__table th, .sensei-board__table td { padding: 12px 14px; border-bottom: 1px solid var(--moji-line); text-align: left; font-size: 18px; color: var(--moji-ink); }
-.sensei-board__table th { color: var(--moji-faint); font-size: 13px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
-.sensei-board__compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
-.sensei-board__compare-item { display: grid; gap: 8px; padding: 18px; border-radius: 14px; background: #fff; border: 1px solid var(--moji-line); text-align: center; }
-.sensei-board__compare-item b { color: var(--moji-accent); font-size: 17px; }
+.sensei-board__table th { color: var(--moji-faint); font-size: 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+/* Staggered entrance (Bagian 3): each row/card arrives 65ms after the
+   last, easing already in Moji's own token set — the "being explained
+   live" feel, not "already printed". Capped at 6 — anything beyond that
+   just inherits the last delay rather than growing unbounded. */
+.sensei-board__table tbody tr { animation: sensei-write-in .36s cubic-bezier(.16,1,.3,1) both; }
+.sensei-board__table tbody tr:nth-child(1) { animation-delay: 0ms; }
+.sensei-board__table tbody tr:nth-child(2) { animation-delay: 65ms; }
+.sensei-board__table tbody tr:nth-child(3) { animation-delay: 130ms; }
+.sensei-board__table tbody tr:nth-child(4) { animation-delay: 195ms; }
+.sensei-board__table tbody tr:nth-child(5) { animation-delay: 260ms; }
+.sensei-board__table tbody tr:nth-child(n+6) { animation-delay: 325ms; }
+.sensei-board__compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; position: relative; }
+.sensei-board__compare-item {
+  display: grid; gap: 8px; padding: 20px 18px; border-radius: 14px; background: #fff; border: 1px solid var(--moji-line);
+  text-align: center; position: relative;
+  animation: sensei-write-in .36s cubic-bezier(.16,1,.3,1) both;
+}
+.sensei-board__compare-item:nth-child(1) { animation-delay: 0ms; }
+.sensei-board__compare-item:nth-child(2) { animation-delay: 65ms; }
+.sensei-board__compare-item:nth-child(3) { animation-delay: 130ms; }
+.sensei-board__compare-item:nth-child(n+4) { animation-delay: 195ms; }
+/* A small "vs" marker between adjacent cards signals comparison at a
+   glance, not just juxtaposition — only drawn between cards, never
+   before the first or after the last. */
+.sensei-board__compare-item:not(:last-child)::after {
+  content: "↔"; position: absolute; top: 50%; right: -20px; translate: 50% -50%;
+  width: 24px; height: 24px; display: grid; place-items: center; border-radius: 999px;
+  background: var(--moji-white); border: 1px solid var(--moji-line); color: var(--moji-faint);
+  font-size: 11px; z-index: 1;
+}
+.sensei-board__compare-item b { color: var(--moji-accent); font-size: 15px; font-weight: 900; letter-spacing: .03em; }
 .sensei-board__compare-example { color: var(--moji-ink); font: 700 30px/1.2 var(--moji-font-jp); }
-.sensei-board__compare-item small { color: var(--moji-faint); font-size: 14px; }
+.sensei-board__compare-item small { color: var(--moji-faint); font-size: 13px; }
 .sensei-board__writing-loading { padding: 30px; text-align: center; color: var(--moji-faint); font-size: 15px; }
 
 .sensei-board__start-audio, .sensei-board__narration-toggle, .sensei-board__replay {
   height: 52px; padding: 0 22px; border-radius: 999px; border: 1px solid var(--moji-line);
   background: #fff; color: var(--moji-ink); font-size: 15px; font-weight: 700; white-space: nowrap;
+  transition: transform 90ms cubic-bezier(.34,1.56,.64,1);
 }
 .sensei-board__start-audio { border-color: var(--moji-accent); color: var(--moji-accent); background: var(--moji-accent-soft-bg); }
 .sensei-board__narration-toggle[aria-pressed="true"] { color: var(--moji-faint); }
 .sensei-board__replay { color: var(--moji-muted); }
+/* PROMPT-11 Bagian 3 — touch feedback on every sensei-board button
+   (Moji's own "press 90ms" token), Lanjut already reads more prominent
+   than Lewati via .primary-button vs .secondary-button's existing fill. */
+.sensei-board__start-audio:active,
+.sensei-board__narration-toggle:active,
+.sensei-board__replay:active,
+.sensei-board__actions .primary-button:active,
+.sensei-board__actions .secondary-button:active { transform: scale(.96); }
+.sensei-board__actions .primary-button,
+.sensei-board__actions .secondary-button { transition: transform 90ms cubic-bezier(.34,1.56,.64,1); }
 
 .sensei-board__controls { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .sensei-board__dots { display: flex; align-items: center; gap: 10px; }
@@ -2346,19 +2422,49 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .sensei-board__actions .secondary-button, .sensei-board__actions .primary-button { width: auto; height: 52px; padding: 0 28px; margin: 0; font-size: 15px; }
 .sensei-board__reopen { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 8px 14px; border: 1px solid var(--moji-line); border-radius: 999px; color: var(--moji-muted); background: #fff; font-size: 11px; font-weight: 700; }
 
+/* PROMPT-11 Bagian 1 — mobile scroll bug fix. Root cause: the previous
+   rules pinned BOTH the panel and .sensei-board to a hard `height:100vh`
+   (not min-height), then relied on a SECOND, nested scroll container
+   (.sensei-board__board) to reveal overflow. Two problems compounded:
+   (1) 100vh on a phone is calculated against the LARGEST possible
+   viewport (address bar hidden), which is taller than the actually
+   visible screen once the address bar is showing — so a height:100vh
+   box already starts partly off-screen; (2) nesting a nested scroll
+   region inside a grid `1fr` track is fragile once real content (long
+   compare tables, multi-line text) makes the track's natural content
+   height ambiguous. Fixed by making .sensei-overlay the ONLY scroll
+   container (natural document flow inside it, min-height instead of a
+   hard height everywhere) and switching every mobile viewport unit to
+   100dvh, which tracks the actually-visible viewport as the browser
+   chrome shows/hides. */
 @media (max-width: 767px) {
-  .sensei-overlay { padding: 0; }
-  .sensei-overlay__panel { width: 100vw; min-width: 0; max-height: 100vh; height: 100vh; }
-  .sensei-board { width: 100vw; height: 100vh; min-height: 100vh; border-radius: 0; padding: 20px 16px; gap: 20px; }
-  .sensei-board__stage { grid-template-columns: 1fr; grid-template-rows: auto 1fr; align-items: stretch; gap: 16px; min-height: 0; }
-  .sensei-board__illustration { max-width: 220px; min-height: 0; max-height: 220px; justify-self: center; }
-  .sensei-board__board { min-width: 0; height: auto; flex: 1 1 auto; padding: 22px 20px; gap: 18px; overflow-y: auto; }
+  .sensei-overlay {
+    padding: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    align-items: start;
+  }
+  .sensei-overlay__panel { width: 100vw; min-width: 0; max-height: none; height: auto; min-height: 100dvh; }
+  .sensei-board {
+    width: 100vw; height: auto; min-height: 100dvh; border-radius: 0; padding: 20px 16px; gap: 16px;
+  }
+  .sensei-board__stage { grid-template-columns: 1fr; grid-template-rows: auto auto; align-items: stretch; gap: 14px; min-height: 0; }
+  .sensei-layered { max-width: 160px; min-height: 0; max-height: 160px; justify-self: center; }
+  .sensei-board__board { min-width: 0; height: auto; padding: 20px 18px; gap: 16px; overflow-y: visible; }
   .sensei-board__text { font-size: 21px; }
   .sensei-board__glyph span { font-size: 64px; }
   .sensei-board__compare-example { font-size: 24px; }
   .sensei-board__actions { width: 100%; }
   .sensei-board__actions .secondary-button, .sensei-board__actions .primary-button { flex: 1 1 0; }
-  .sensei-board__controls { flex-direction: column-reverse; align-items: stretch; gap: 14px; }
+  /* "Tombol tetap terlihat" — sticky to the bottom of the (only) scroll
+     container instead of scrolling away with the rest of the content. */
+  .sensei-board__controls {
+    position: sticky; bottom: 0; z-index: 1; flex-direction: column-reverse; align-items: stretch; gap: 14px;
+    margin: 0 -16px -20px; padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    background: var(--moji-white); box-shadow: 0 -8px 20px -12px rgba(36,30,24,.18);
+  }
 }
 
 .hiragana-lab__sensei-writing { display: flex; align-items: center; gap: 12px; justify-content: center; margin: 4px 0; }

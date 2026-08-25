@@ -1,0 +1,29 @@
+{
+  "sampleText": "Kabar baiknya, kamu sudah tahu setengah dari bunyinya. Vokal bahasa Jepang — a, i, u, e, o — sama persis dengan vokal bahasa Indonesia. Bukan mirip, tapi benar-benar sama.",
+  "variants": [
+    {
+      "id": "current",
+      "label": "Sekarang dipakai (baseline)",
+      "url": "https://xfwlfioyrcbmknxgmmib.supabase.co/storage/v1/object/public/audio/narration-comparison/current.mp3",
+      "sizeKb": 236
+    },
+    {
+      "id": "worksheet",
+      "label": "Sesuai contoh di prompt (empat komponen eksplisit)",
+      "url": "https://xfwlfioyrcbmknxgmmib.supabase.co/storage/v1/object/public/audio/narration-comparison/worksheet.mp3",
+      "sizeKb": 219
+    },
+    {
+      "id": "conversational",
+      "label": "Lebih santai, seperti ngobrol berdua",
+      "url": "https://xfwlfioyrcbmknxgmmib.supabase.co/storage/v1/object/public/audio/narration-comparison/conversational.mp3",
+      "sizeKb": 224
+    },
+    {
+      "id": "deliberate",
+      "label": "Lebih pelan dan mantap, seperti mentor sabar",
+      "url": "https://xfwlfioyrcbmknxgmmib.supabase.co/storage/v1/object/public/audio/narration-comparison/deliberate.mp3",
+      "sizeKb": 224
+    }
+  ]
+}

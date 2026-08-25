@@ -40,6 +40,14 @@ yarn-error.log*
 /outputs/
 /work/
 
+# PROMPT-11 Bagian 4 — Rhubarb Lip Sync CLI binary (~150MB extracted),
+# downloaded from github.com/DanielSWolf/rhubarb-lip-sync releases into
+# tools/. Same local-only-tool pattern as VOICEVOX: needed to RUN
+# scripts/generate-lipsync.ts, never needed at app runtime, far too
+# large to commit. If missing, re-download the Windows build and
+# extract to tools/Rhubarb-Lip-Sync-<version>-Windows/.
+/tools/
+
 # Playwright E2E — saved session (auth-setup.ts) and run artifacts.
 # The storage state holds a live Supabase session cookie for the E2E
 # test account, so it must never be committed even though it's not

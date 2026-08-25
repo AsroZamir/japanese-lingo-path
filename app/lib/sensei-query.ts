@@ -16,6 +16,15 @@ export type SenseiSegmentRow = {
   kanaId: number | null;
   kanaCharacter: string | null;
   strokeDataUrl: string | null;
+  // PROMPT-11 Bagian 4 — Rhubarb mouth-cue schedule, null until
+  // generated (scripts/generate-lipsync.ts) AND regardless has nothing
+  // to drive visually today (no mouth-shape art exists yet).
+  lipSyncData: SenseiLipSyncData | null;
+};
+
+export type SenseiLipSyncData = {
+  mouthCues: { start: number; end: number; value: string }[];
+  durationSeconds: number;
 };
 
 // One query, three shapes of caller: module_intro (stageId omitted),
@@ -38,7 +47,7 @@ export const getSenseiSegments = cache(
 
     let query = supabase
       .from("sensei_segments")
-      .select("id, order_index, board_text, visual_action, sensei_pose, narration_url, kana_id, stage_id")
+      .select("id, order_index, board_text, visual_action, sensei_pose, narration_url, kana_id, stage_id, lip_sync_data")
       .eq("module_id", moduleRow.id)
       .eq("segment_type", segmentType)
       .order("order_index");
@@ -80,11 +89,12 @@ export const getSenseiSegments = cache(
         orderIndex: row.order_index,
         boardText: row.board_text,
         visualAction: parseVisualAction(row.visual_action),
-        senseiPose: (row.sensei_pose as SenseiPose) ?? "neutral",
+        senseiPose: (row.sensei_pose as SenseiPose) ?? "netral",
         narrationUrl: row.narration_url,
         kanaId: row.kana_id,
         kanaCharacter: kana?.character ?? null,
         strokeDataUrl: kana?.strokeDataKey ? "/kana-strokes/" + kana.strokeDataKey + ".json" : null,
+        lipSyncData: (row.lip_sync_data as SenseiLipSyncData | null) ?? null,
       };
     });
   },
