@@ -41,6 +41,7 @@ function toChoiceItem(kana: DistractorKana): HiraganaLearningItem {
     orderInGroup: null,
     audioUrl: null,
     strokeDataUrl: null,
+    senseiNarrationUrl: null,
     baseCharacter: null,
     mnemonic: { emoji: "✦", title: "", story: "" },
     examples: [],

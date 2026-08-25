@@ -79,6 +79,11 @@ export type HiraganaLearningItem = {
   orderInGroup: number | null;
   audioUrl: string | null;
   strokeDataUrl: string | null;
+  // PROMPT-9 Bagian 3 — narration for the "Sensei Menulis" moment
+  // (sensei_segments, segment_type='writing_demo'). Null until authored
+  // for this character — the UI still shows the stroke animation, just
+  // without a narration button.
+  senseiNarrationUrl: string | null;
   baseCharacter: string | null;
   mnemonic: HiraganaMnemonic;
   examples: HiraganaExample[];
@@ -599,7 +604,7 @@ export const getHiraganaStageBundle = cache(
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const [linkResult, masteryResult, confusionResult] = await Promise.all([
+    const [linkResult, masteryResult, confusionResult, senseiWritingResult] = await Promise.all([
       kanaIds.length > 0
         ? supabase
             .from("kana_word_characters")
@@ -622,10 +627,25 @@ export const getHiraganaStageBundle = cache(
               "kana_a_id.in.(" + kanaIds.join(",") + "),kana_b_id.in.(" + kanaIds.join(",") + ")",
             )
         : Promise.resolve({ data: [], error: null }),
+      // PROMPT-9 Bagian 3 — narration for "Sensei Menulis" (see
+      // RetrievalStep's hint-level-3 in HiraganaLearningLab.tsx), one
+      // row per character at most (segment_type='writing_demo').
+      kanaIds.length > 0
+        ? supabase
+            .from("sensei_segments")
+            .select("kana_id, narration_url")
+            .eq("segment_type", "writing_demo")
+            .in("kana_id", kanaIds)
+        : Promise.resolve({ data: [], error: null }),
     ]);
     if (linkResult.error) throw new Error(linkResult.error.message);
     if (masteryResult.error) throw new Error(masteryResult.error.message);
     if (confusionResult.error) throw new Error(confusionResult.error.message);
+    if (senseiWritingResult.error) throw new Error(senseiWritingResult.error.message);
+    const senseiNarrationByKanaId = new Map<number, string | null>();
+    for (const row of senseiWritingResult.data ?? []) {
+      if (row.kana_id != null) senseiNarrationByKanaId.set(row.kana_id, row.narration_url);
+    }
 
     const kanaIdSet = new Set(kanaIds);
     const confusableIdsByKanaId = new Map<number, number[]>();
@@ -716,6 +736,7 @@ export const getHiraganaStageBundle = cache(
         strokeDataUrl: row.stroke_data_key
           ? "/kana-strokes/" + row.stroke_data_key + ".json"
           : null,
+        senseiNarrationUrl: senseiNarrationByKanaId.get(row.id) ?? null,
         baseCharacter,
         mnemonic:
           type === "basic"

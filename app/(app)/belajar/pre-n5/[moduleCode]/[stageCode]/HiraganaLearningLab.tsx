@@ -31,7 +31,6 @@ import {
   saveHiraganaStageState,
 } from "./actions";
 import * as wanakana from "wanakana";
-import { VocalBridgeIntro } from "./VocalBridgeIntro";
 
 // V2.1 §6.1 Kana Script Engine: lihat-dengar -> bedakan -> ikuti stroke ->
 // tulis dari memori singkat -> tulis dari audio -> campuran kumulatif.
@@ -521,8 +520,17 @@ function RetrievalStep({
           </>
         ) : (
           <>
-            <b>Hint 3 - Model</b>
+            <b>Hint 3 - Sensei Menulis</b>
             <p>Pelajari kembali urutannya. Hasil dengan bantuan tidak dihitung sebagai penguasaan.</p>
+            <div className="hiragana-lab__sensei-writing">
+              <img src="/sensei/sensei-pointing.svg" alt="" width={64} height={83} />
+              {item.senseiNarrationUrl && (
+                <div className="sensei-board__narration">
+                  <AudioButton url={item.senseiNarrationUrl} />
+                  <span>Dengarkan arahnya</span>
+                </div>
+              )}
+            </div>
             <KanaStrokeAnimator character={item.character} strokeData={strokeData} />
             <button type="button" className="primary-button" onClick={onCloseHint}>
               Tutup bantuan dan coba lagi
@@ -574,21 +582,6 @@ export function HiraganaLearningLab({
     firstIncompleteIndex >= 0 ? firstIncompleteIndex : Math.max(bundle.units.length - 1, 0);
 
   const [unitIndex, setUnitIndex] = useState(startingUnitIndex);
-  // PROMPT-7 Bagian 5 — vocal bridge intro, only ever relevant right
-  // before F1's very first batch (startingUnitIndex 0, nothing completed
-  // yet) of the HIRAGANA module specifically — "vokal Indonesia = vokal
-  // Jepang" isn't a katakana-onboarding point. A learner resuming mid-way
-  // through F1, or any later stage, never sees it either — it's a
-  // one-time "you already know half of this" moment, not a recurring banner.
-  const isHiraganaScript =
-    typeof bundle.stage.configuration.script !== "string" ||
-    bundle.stage.configuration.script === "hiragana";
-  const [showVocalBridge, setShowVocalBridge] = useState(
-    isHiraganaScript &&
-      bundle.stage.code === "F1" &&
-      startingUnitIndex === 0 &&
-      initialCompleted.length === 0,
-  );
   const [phase, setPhase] = useState<LearningPhase>("anchor");
   const [itemIndex, setItemIndex] = useState(0);
   const [completedUnitCodes, setCompletedUnitCodes] = useState(initialCompleted);
@@ -942,15 +935,6 @@ export function HiraganaLearningLab({
 
   if (!unit) {
     return <div className="hiragana-stage__empty">Data batch Hiragana belum tersedia.</div>;
-  }
-
-  if (showVocalBridge) {
-    return (
-      <VocalBridgeIntro
-        vowels={bundle.items.slice(0, 5)}
-        onContinue={() => setShowVocalBridge(false)}
-      />
-    );
   }
 
   const phaseSteps: { key: LearningPhase; label: string }[] = [

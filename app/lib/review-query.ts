@@ -84,6 +84,7 @@ function toLearningItem(
     orderInGroup: row.order_in_group,
     audioUrl: row.audio_url,
     strokeDataUrl: row.stroke_data_key ? "/kana-strokes/" + row.stroke_data_key + ".json" : null,
+    senseiNarrationUrl: null,
     baseCharacter: null,
     mnemonic: HIRAGANA_LAB_MNEMONICS[row.character] ??
       HIRAGANA_MNEMONICS[row.character] ?? {

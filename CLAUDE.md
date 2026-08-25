@@ -1,6 +1,59 @@
 # CLAUDE.md — Japanese Lingo Path
 
-Panduan kerja untuk Claude Code di repo ini. Diperbarui 24 Agustus 2026 (PROMPT-7).
+Panduan kerja untuk Claude Code di repo ini. Diperbarui 25 Agustus 2026 (PROMPT-9).
+
+**PROMPT-8 (25 Agustus 2026, ringkas — laporan lengkap di riwayat sesi):**
+kunci antar-modul di `/belajar` dibuka oleh `NEXT_PUBLIC_DEV_UNLOCK_ALL`
+(dulu cuma kunci antar-tahap) DAN sekarang benar-benar ditegakkan di
+level route (`isModuleLockedByPrerequisites`, `app/lib/curriculum-v2.ts`)
+— sebelumnya `learning_module_prerequisites` cuma tampilan kartu, tanpa
+penegakan nyata. **PRE-N5.03 (Angka, Waktu, Harga & Counter Dasar) aktif**
+— modul KETIGA, TIPE BEDA dari kana (bukan bentuk huruf) — melahirkan
+**Vocabulary Engine** (`db/schema/vocab.ts`: `vocab_items`/
+`user_vocab_attempts`/`user_vocab_mastery`, `app/lib/vocab-engine-query.ts`,
+`vocab-actions.ts` di folder stage yang sama dengan hiragana) yang
+disiapkan untuk dipakai ulang modul 04/05/10. Detail lengkap type-neutral
+vs type-specific: `docs/POLA-MODUL-BARU.md`.
+
+**PROMPT-9 (25 Agustus 2026) — Mesin Sensei:** fitur "papan tulis" —
+materi muncul bertahap dengan narasi Indonesia opsional (tombol putar,
+BUKAN autoplay, TIDAK ADA video) dan ilustrasi sensei diam (4 pose:
+neutral/pointing/smiling/thinking, SVG placeholder di `public/sensei/`,
+**butuh ilustrator sungguhan** — lihat laporan). Tabel baru
+`sensei_segments` (`db/schema/sensei.ts`) — netral-modul dari awal,
+di-scope ke `learning_modules`/`learning_stages` (BUKAN ke
+`kanaLessons`/V1), satu baris = satu "beat" di papan (teks + aksi visual
+jsonb + pose + narasi opsional), dipakai ulang untuk SEMUA 67 modul lewat
+`segment_type` (`module_intro`/`phase_intro`/`concept_moment`/
+`writing_demo`). Query: `app/lib/sensei-query.ts`. Render: `components/
+sensei/SenseiBoard.tsx` (pemutar generik) + `SenseiIntroGate.tsx`
+(overlay dismissible per sesi browser lewat sessionStorage, BUKAN kolom
+DB — sengaja ringan, sama seperti `VocalBridgeIntro` lama yang sekarang
+DIHAPUS dan isinya digabung ke module_intro PRE-N5.01).
+
+**"Sensei Menulis" (Bagian 3) TIDAK membangun renderer baru dari
+`hanzi-writer`** meski paket itu ada di `package.json` — `@k1low/
+kakitori`'s `Char.animate()` (dipakai `KanaStrokeAnimator`,
+`components/kana/KanaWritingCoach.tsx`) SUDAH menganimasikan goresan
+persis seperti yang diminta, jadi dipakai ulang langsung (via
+`SenseiWritingDemo.tsx`) — bukan direimplementasi. Trigger-nya di Hint
+3 (`RetrievalStep`'s "Masih lupa - lihat gerakan lengkap") yang MEMANG
+sudah hanya muncul setelah percobaan gagal, bukan tombol baru terpisah.
+Narasi arah goresan untuk 46 huruf inti **dihasilkan otomatis** dari
+koordinat `medians`/`strokeGroups` asli (`scripts/seed-sensei-
+pre-n5-01.ts`'s `buildStrokeNarration`), bukan ditulis manual satu-satu
+— **perlu ditinjau penutur asli** untuk kealamian bahasanya, tapi
+arahnya sendiri terbukti benar dari data.
+
+**Verifikasi あ/お tanpa login:** karena login browser otomatis diblokir
+classifier keamanan sesi ini (baik lewat suntik cookie sesi test maupun
+form login sungguhan), verifikasi visual wajib "render あ dan お, hitung
+goresan" dikerjakan lewat file HTML statis mandiri yang membaca
+`public/kana-strokes/hiragana/{あ,お}.json` langsung dan menggambar SVG
+manual (server statis lokal di luar Next.js, tanpa proxy/auth) — bukan
+lewat aplikasi yang sedang berjalan. Hasilnya: 3 goresan masing-masing,
+bentuk benar. Teknik ini dicatat di sini karena berguna untuk verifikasi
+karakter lain di masa depan tanpa perlu login.
 
 PROMPT-7 Bagian 1-5 (hiragana): `/latihan` diganti total dari mock jadi
 latihan kecepatan nyata (`app/lib/speed-drill-query.ts`,
@@ -519,8 +572,14 @@ VOICEVOX gratis dan lokal, tapi aplikasinya harus terbuka (server
 `localhost:50021`) saat script audio dijalankan. Google Cloud menuntut prepayment
 IDR 500.000 untuk Indonesia; Azure free tier menolak akun ini.
 
-Catatan: narasi Indonesia saat ini **hanya ada di V1 (M01)**, lewat
-`lesson_content_blocks.narration_url`. V2 belum punya narasi Indonesia sama sekali.
+Catatan: narasi Indonesia ada di dua tempat sekarang — V1 (M01) lewat
+`lesson_content_blocks.narration_url`, dan V2 lewat `sensei_segments.
+narration_url` (PROMPT-9, Mesin Sensei) untuk PRE-N5.01 (module_intro,
+5 phase_intro, 2 concept_moment, 46 narasi writing_demo) serta
+module_intro PRE-N5.02/03. Dua tabel terpisah, dua pipeline generate
+terpisah (`generate-narration.ts` vs `generate-sensei-narration.ts`)
+tapi model/suara/pola upload yang sama persis — lihat Bagian atas file
+ini untuk detail Mesin Sensei.
 
 ## 6. Pedagogi
 

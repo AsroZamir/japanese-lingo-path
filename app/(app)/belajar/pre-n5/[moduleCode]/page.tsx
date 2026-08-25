@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getPreN5ModuleOverview } from "@/app/lib/pre-n5-01-query";
+import { getSenseiSegments } from "@/app/lib/sensei-query";
 import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
 import { isModuleLockedByPrerequisites } from "@/app/lib/curriculum-v2";
 import { PageHeader } from "../../../_components/PageHeader";
 import { DevUnlockBanner } from "../../../_components/DevUnlockBanner";
+import { SenseiIntroGate } from "@/components/sensei/SenseiIntroGate";
 
 export const dynamic = "force-dynamic";
 
@@ -39,8 +41,15 @@ export default async function PreN5ModulePage({
   if (!moduleOverview) notFound();
 
   const phaseStages = moduleOverview.stages.filter((stage) => /^F[1-5]$/.test(stage.code));
+  const introSegments = await getSenseiSegments(moduleCode, "module_intro");
 
   return (
+    <SenseiIntroGate
+      segments={introSegments}
+      storageKey={"sensei-seen-module-" + moduleCode}
+      finishLabel="Mulai belajar"
+      reopenLabel="Lihat perkenalan modul lagi"
+    >
     <div className="content pre-n5-module">
       <Link href="/belajar" className="back-button">
         Kembali ke daftar modul
@@ -208,5 +217,6 @@ export default async function PreN5ModulePage({
         </div>
       </section>
     </div>
+    </SenseiIntroGate>
   );
 }

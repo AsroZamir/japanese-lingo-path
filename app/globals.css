@@ -2278,6 +2278,43 @@ a.pre-n5-stage-card:hover { border-color: #d8a18f; transform: translateY(-2px); 
 .konbini-sim__step p { max-width: 430px; margin: 0; color: var(--moji-muted); font-size: 13px; line-height: 1.5; }
 .konbini-sim__step .hiragana-quiz__input { width: min(100%, 320px); }
 
+/* PROMPT-9 Bagian 2 — Mesin Sensei (papan tulis). Modal-style overlay,
+   module-agnostic; only the segments fed into it change per caller. */
+.sensei-board { max-width: 760px; margin: 0 auto; display: grid; gap: 18px; padding: 28px; border: 1px solid var(--moji-line); border-radius: var(--moji-radius-2xl); background: var(--moji-white); }
+.sensei-board__stage { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: start; gap: 22px; }
+.sensei-board__illustration { width: 140px; height: auto; }
+.sensei-board__board { min-width: 0; display: grid; gap: 14px; padding: 20px 22px; border-radius: 16px; background: var(--moji-cream); }
+.sensei-board__text { margin: 0; color: var(--moji-ink); font-size: 15px; line-height: 1.6; }
+.sensei-board__narration { display: flex; align-items: center; gap: 10px; color: var(--moji-muted); font-size: 11px; font-weight: 700; }
+.sensei-board__visual:empty { display: none; }
+.sensei-board__glyph { display: grid; justify-items: center; gap: 4px; padding: 10px 0; }
+.sensei-board__glyph span { color: var(--moji-accent); font: 700 84px/1 var(--moji-font-jp); }
+.sensei-board__glyph small { color: var(--moji-faint); font-size: 11px; }
+.sensei-board__table { width: 100%; border-collapse: collapse; }
+.sensei-board__table th, .sensei-board__table td { padding: 8px 10px; border-bottom: 1px solid var(--moji-line); text-align: left; font-size: 12.5px; color: var(--moji-ink); }
+.sensei-board__table th { color: var(--moji-faint); font-size: 10px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+.sensei-board__compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.sensei-board__compare-item { display: grid; gap: 4px; padding: 12px; border-radius: 12px; background: #fff; border: 1px solid var(--moji-line); text-align: center; }
+.sensei-board__compare-item b { color: var(--moji-accent); font-size: 13px; }
+.sensei-board__compare-example { color: var(--moji-ink); font: 700 22px/1.2 var(--moji-font-jp); }
+.sensei-board__compare-item small { color: var(--moji-faint); font-size: 10px; }
+.sensei-board__writing-loading { padding: 30px; text-align: center; color: var(--moji-faint); font-size: 12px; }
+.sensei-board__controls { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.sensei-board__progress { color: var(--moji-faint); font-size: 10px; font-weight: 900; letter-spacing: .05em; }
+.sensei-board__actions { display: flex; gap: 10px; }
+.sensei-board__actions .secondary-button, .sensei-board__actions .primary-button { width: auto; margin: 0; }
+.sensei-board__reopen { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 8px 14px; border: 1px solid var(--moji-line); border-radius: 999px; color: var(--moji-muted); background: #fff; font-size: 11px; font-weight: 700; }
+
+@media (max-width: 680px) {
+  .sensei-board { padding: 18px; }
+  .sensei-board__stage { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .sensei-board__illustration { width: 96px; }
+}
+
+.sensei-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(36,30,24,.45); overflow-y: auto; }
+.sensei-overlay__panel { width: 100%; max-height: calc(100vh - 40px); overflow-y: auto; }
+.hiragana-lab__sensei-writing { display: flex; align-items: center; gap: 12px; justify-content: center; margin: 4px 0; }
+
 @media (max-width: 680px) {
   .vocab-lab__kana { font-size: 60px; }
   .vocab-lab__choices { grid-template-columns: 1fr; }

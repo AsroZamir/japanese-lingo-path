@@ -23,6 +23,9 @@
     "generate:narration": "tsx scripts/generate-narration.ts",
     "generate:voice-samples": "tsx scripts/generate-voice-comparison-samples.ts",
     "seed:pre-n5-03": "tsx scripts/seed-pre-n5-03-vocab.ts",
+    "seed:sensei-pre-n5-01": "tsx scripts/seed-sensei-pre-n5-01.ts",
+    "seed:sensei-modul-2-3-intro": "tsx scripts/seed-sensei-modul-2-3-intro.ts",
+    "generate:sensei-narration": "tsx scripts/generate-sensei-narration.ts",
     "e2e:auth-setup": "tsx scripts/auth-setup.ts"
   },
   "dependencies": {

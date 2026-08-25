@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getHiraganaStageBundle } from "@/app/lib/pre-n5-01-query";
 import { getVocabStageBundle } from "@/app/lib/vocab-engine-query";
+import { getStageOpeningSegments } from "@/app/lib/sensei-query";
 import { isDevUnlockAllActive } from "@/app/lib/dev-mode";
 import { isModuleLockedByPrerequisites } from "@/app/lib/curriculum-v2";
 import { DevUnlockBanner } from "../../../../_components/DevUnlockBanner";
+import { SenseiIntroGate } from "@/components/sensei/SenseiIntroGate";
 import { HiraganaStagePlayer } from "./HiraganaStagePlayer";
 import { VocabStagePlayer } from "./VocabStagePlayer";
 
@@ -65,8 +67,18 @@ export default async function HiraganaStagePage({
   );
   const bankSize = "allItems" in bundle ? bundle.allItems.length : bundle.items.length;
   const bankLabel = "allItems" in bundle ? "kosakata" : "huruf";
+  const stageOpeningSegments =
+    bundle.stage.code === "BOSS" || bundle.stage.code === "RETENTION"
+      ? []
+      : await getStageOpeningSegments(moduleCode, bundle.stage.code);
 
   return (
+    <SenseiIntroGate
+      segments={stageOpeningSegments}
+      storageKey={"sensei-seen-stage-" + moduleCode + "-" + bundle.stage.code}
+      finishLabel="Mulai tahap ini"
+      reopenLabel="Lihat perkenalan tahap ini lagi"
+    >
     <div className="content hiragana-stage-page">
       {isDevUnlockAllActive() && <DevUnlockBanner />}
       <header className="hiragana-stage-page__header">
@@ -93,5 +105,6 @@ export default async function HiraganaStagePage({
 
       {"allItems" in bundle ? <VocabStagePlayer bundle={bundle} /> : <HiraganaStagePlayer bundle={bundle} />}
     </div>
+    </SenseiIntroGate>
   );
 }

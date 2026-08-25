@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" width="200" height="260" role="img" aria-label="Ilustrasi sensei, pose menunjuk">
+  <ellipse cx="100" cy="240" rx="70" ry="14" fill="#241E18" opacity="0.08"/>
+  <path d="M40 258 C40 170 60 150 100 150 C140 150 160 170 160 258 Z" fill="#CC5436"/>
+  <path d="M132 168 L188 118 C194 112 204 112 210 118 C216 124 216 134 210 140 L156 190 Z" fill="#CC5436"/>
+  <circle cx="210" cy="118" r="12" fill="#F6F6F0" stroke="#CC5436" stroke-width="5"/>
+  <circle cx="100" cy="86" r="56" fill="#F6F6F0" stroke="#CC5436" stroke-width="6"/>
+  <circle cx="78" cy="82" r="6" fill="#241E18"/>
+  <circle cx="122" cy="82" r="6" fill="#241E18"/>
+  <path d="M84 110 Q100 118 116 110" fill="none" stroke="#241E18" stroke-width="5" stroke-linecap="round"/>
+  <path d="M52 60 Q100 20 148 60" fill="none" stroke="#241E18" stroke-width="8" stroke-linecap="round"/>
+</svg>
